@@ -1,0 +1,56 @@
+.kind {
+  &.kind-function {
+    color: var(--kind-function);
+  }
+
+  &.kind-struct {
+    color: var(--kind-struct);
+  }
+
+  &.kind-enum {
+    color: var(--kind-enum);
+  }
+
+  &.kind-trait {
+    color: var(--kind-trait);
+  }
+
+  &.kind-module {
+    color: var(--kind-module);
+  }
+}
+
+.kind-badge {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  border: 1px solid currentColor;
+
+  &.kind-function {
+    background: rgba(37, 99, 235, var(--kind-bg-opacity));
+  }
+
+  &.kind-struct {
+    background: rgba(14, 165, 233, var(--kind-bg-opacity));
+  }
+
+  &.kind-enum {
+    background: rgba(139, 92, 246, var(--kind-bg-opacity));
+  }
+
+  &.kind-trait {
+    background: rgba(249, 115, 22, var(--kind-bg-opacity));
+  }
+
+  &.kind-module {
+    background: rgba(16, 185, 129, var(--kind-bg-opacity));
+  }
+
+  &:not(.kind-function):not(.kind-struct):not(.kind-enum):not(.kind-trait):not(
+      .kind-module
+    ) {
+    color: var(--kind-default);
+  }
+}

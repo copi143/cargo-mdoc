@@ -1,0 +1,29 @@
+:root {
+  font: 16px/1.6 var(--sans);
+  color: var(--ink);
+  background: var(--paper);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+
+  --ink: #0b1324;
+  --muted: #41516b;
+  --muted-2: #6a7a94;
+  --paper: #f2f6fb;
+  --panel: #ffffff;
+  --line: #d6deeb;
+  --accent: #1f6feb;
+  --accent-soft: rgba(31, 111, 235, 0.14);
+  --cool: #3b82f6;
+  --shadow: none;
+  --shadow-soft: none;
+  --sans: "Source Sans 3", system-ui, sans-serif;
+  --heading: "Space Grotesk", system-ui, sans-serif;
+  --mono: "Source Code Pro", ui-monospace, monospace;
+  --kind-function: #2563eb;
+  --kind-struct: #0ea5e9;
+  --kind-enum: #8b5cf6;
+  --kind-trait: #f97316;
+  --kind-module: #10b981;
+  --kind-default: #64748b;
+  --kind-bg-opacity: 0.14;
+}

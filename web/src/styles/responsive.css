@@ -1,0 +1,54 @@
+@media (max-width: 980px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    min-height: unset;
+
+    &.list {
+      border-right: 1px solid var(--line);
+      border-bottom: none;
+    }
+  }
+
+  .meta {
+    width: 100%;
+  }
+
+  .home-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .brand {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .topbar {
+    gap: 16px;
+  }
+
+  .cfg {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .home-page {
+    gap: 16px;
+  }
+
+  .home-layout {
+    gap: 12px;
+  }
+
+  .home-side {
+    gap: 12px;
+  }
+
+  .home-card {
+    padding: 16px;
+  }
+}

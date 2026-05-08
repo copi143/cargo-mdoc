@@ -1,0 +1,61 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+
+  background:
+    linear-gradient(0deg, rgba(31, 111, 235, 0.05) 0%, transparent 20%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(31, 111, 235, 0.05) 0,
+      rgba(31, 111, 235, 0.05) 1px,
+      transparent 1px,
+      transparent 120px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(31, 111, 235, 0.04) 0,
+      rgba(31, 111, 235, 0.04) 1px,
+      transparent 1px,
+      transparent 120px
+    ),
+    var(--paper);
+}
+
+#app {
+  width: 100%;
+  min-height: 100svh;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+
+  font-family: var(--heading);
+  line-height: 1.1;
+}
+
+h1 {
+  font-size: clamp(2rem, 2.3vw + 1.6rem, 3.2rem);
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+
+  color: var(--muted-2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+code,
+pre {
+  font-family: var(--mono);
+}
