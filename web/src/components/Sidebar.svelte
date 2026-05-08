@@ -13,6 +13,16 @@
   export let onSelectItem: (item: ItemDoc) => void = () => {};
   export let onQueryChange: (value: string) => void = () => {};
   export let onKindChange: (value: "all" | ItemKind) => void = () => {};
+
+  const formatSource = (item: ItemDoc): string => {
+    if (!item.source) return "Source unavailable";
+
+    const { file, line_start, line_end } = item.source;
+    const range =
+      line_start === line_end ? `${line_start}` : `${line_start}-${line_end}`;
+
+    return `${file}:${range}`;
+  };
 </script>
 
 <aside class="panel list">
@@ -59,7 +69,10 @@
           style={`--i: ${index}`}
           on:click={() => onSelectItem(item)}
         >
-          <span class="path">{item.path}</span>
+          <span class="row-main">
+            <span class="path">{item.path}</span>
+            <span class="source-line">{formatSource(item)}</span>
+          </span>
           <span class={`kind kind-${item.kind.toLowerCase()}`}>{item.kind}</span
           >
         </button>

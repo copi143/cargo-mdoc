@@ -2,6 +2,13 @@
 name = "cargo-mdoc"
 version = "0.1.0"
 edition = "2024"
+authors = ["copi143 <copi143@outlook.com>"]
+description = "Static analysis and documentation IR generation for Rust API availability conditions"
+readme = "README.md"
+repository = "https://github.com/copi143/cargo-mdoc"
+homepage = "https://github.com/copi143/cargo-mdoc"
+keywords = ["rust", "cfg", "documentation", "analysis"]
+categories = ["development-tools", "command-line-utilities"]
 
 [dependencies]
 anyhow = "1.0.102"

@@ -40,7 +40,13 @@
     </div>
     <div class="meta-card">
       <div class="meta-label">Source</div>
-      <div class="meta-value">mdoc-ra.json</div>
+      <div class="meta-value">mdoc.json</div>
+    </div>
+    <div class="meta-card">
+      <div class="meta-label">README</div>
+      <div class="meta-value">
+        {packageInfo?.readme_path ?? "not set"}
+      </div>
     </div>
   </div>
 </header>

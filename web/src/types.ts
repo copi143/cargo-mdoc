@@ -1,5 +1,11 @@
 export type ItemKind = "Function" | "Struct" | "Enum" | "Trait" | "Module";
 
+export type SourceLocation = {
+  file: string;
+  line_start: number;
+  line_end: number;
+};
+
 export type CfgExpr =
   | { kind: "True" }
   | { kind: "False" }
@@ -14,6 +20,8 @@ export type ItemDoc = {
   docs: string;
   cfg: CfgExpr;
   kind: ItemKind;
+  source?: SourceLocation;
+  source_code?: string;
 };
 
 export type PackageInfo = {
@@ -22,6 +30,8 @@ export type PackageInfo = {
   edition?: string;
   description?: string;
   license?: string;
+  readme_path?: string;
+  readme?: string;
 };
 
 export type Counts = Partial<Record<ItemKind, number>>;

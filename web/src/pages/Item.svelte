@@ -1,8 +1,13 @@
 <script lang="ts">
   import type { CfgExpr, ItemDoc } from "../types";
+  import { renderMarkdown } from "../lib/markdown";
+  import { renderRustSource } from "../lib/highlight";
 
   export let selectedItem: ItemDoc | null = null;
   export let formatCfg: (cfg?: CfgExpr | null) => string = () => "";
+
+  $: renderedDocs = renderMarkdown(selectedItem?.docs || "No docs provided.");
+  $: renderedSource = renderRustSource(selectedItem?.source_code || "");
 </script>
 
 {#if selectedItem}
@@ -20,10 +25,28 @@
   </div>
   <div class="detail-body">
     <h3>Docs</h3>
-    <pre class="doc">{selectedItem.docs || "No docs provided."}</pre>
+    <div class="markdown-body doc">{@html renderedDocs}</div>
+    <h3>Source</h3>
+    <div class="source-card">
+      <div class="source-header">
+        <span>{selectedItem.source?.file ?? "Unknown file"}</span>
+        <span>
+          {#if selectedItem.source}
+            {selectedItem.source.line_start}
+            {#if selectedItem.source.line_end !== selectedItem.source.line_start}
+              - {selectedItem.source.line_end}
+            {/if}
+          {/if}
+        </span>
+      </div>
+      <pre class="source-code"><code class="hljs language-rust"
+          >{@html renderedSource}</code
+        ></pre>
+    </div>
   </div>
 {:else}
   <div class="empty detail-empty">
-    Select an item from the index to inspect its docs and cfg gates.
+    Select an item from the index to inspect its docs, cfg gates, and source
+    location.
   </div>
 {/if}

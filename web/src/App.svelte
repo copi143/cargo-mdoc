@@ -87,10 +87,10 @@
   onMount(() => {
     const load = async (): Promise<void> => {
       try {
-        const response = await fetch("/mdoc-ra.json", { cache: "no-store" });
+        const response = await fetch("/mdoc.json", { cache: "no-store" });
 
         if (!response.ok) {
-          throw new Error(`Failed to load mdoc-ra.json (${response.status})`);
+          throw new Error(`Failed to load mdoc.json (${response.status})`);
         }
 
         const data = await response.json();
@@ -175,6 +175,7 @@
     <section class="panel detail">
       {#if view === "home"}
         <Home
+          {packageInfo}
           {items}
           {counts}
           {topModules}
