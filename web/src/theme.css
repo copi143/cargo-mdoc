@@ -1,0 +1,66 @@
+:root {
+  --kind-function: #2563eb;
+  --kind-struct: #0ea5e9;
+  --kind-enum: #8b5cf6;
+  --kind-trait: #f97316;
+  --kind-module: #10b981;
+  --kind-default: #64748b;
+  --kind-bg-opacity: 0.14;
+}
+
+.kind.kind-function {
+  color: var(--kind-function);
+}
+
+.kind.kind-struct {
+  color: var(--kind-struct);
+}
+
+.kind.kind-enum {
+  color: var(--kind-enum);
+}
+
+.kind.kind-trait {
+  color: var(--kind-trait);
+}
+
+.kind.kind-module {
+  color: var(--kind-module);
+}
+
+.kind-badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 4px 8px;
+
+  border: 1px solid currentColor;
+
+  font-size: 0.75rem;
+
+  gap: 6px;
+}
+
+.kind-badge.kind-function {
+  background: rgba(37, 99, 235, var(--kind-bg-opacity));
+}
+
+.kind-badge.kind-struct {
+  background: rgba(14, 165, 233, var(--kind-bg-opacity));
+}
+
+.kind-badge.kind-enum {
+  background: rgba(139, 92, 246, var(--kind-bg-opacity));
+}
+
+.kind-badge.kind-trait {
+  background: rgba(249, 115, 22, var(--kind-bg-opacity));
+}
+
+.kind-badge.kind-module {
+  background: rgba(16, 185, 129, var(--kind-bg-opacity));
+}
+
+.kind-badge:not(.kind-function):not(.kind-struct):not(.kind-enum):not(.kind-trait):not(.kind-module) {
+  color: var(--kind-default);
+}

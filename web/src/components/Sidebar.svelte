@@ -60,7 +60,8 @@
           on:click={() => onSelectItem(item)}
         >
           <span class="path">{item.path}</span>
-          <span class="kind">{item.kind}</span>
+          <span class={`kind kind-${item.kind.toLowerCase()}`}>{item.kind}</span
+          >
         </button>
       {/each}
     {/if}

@@ -8,7 +8,9 @@
 {#if selectedItem}
   <div class="detail-header">
     <div>
-      <p class="kicker">{selectedItem.kind}</p>
+      <p class={`kicker kind-badge kind-${selectedItem.kind.toLowerCase()}`}>
+        {selectedItem.kind}
+      </p>
       <h2>{selectedItem.path}</h2>
     </div>
     <div class="cfg">

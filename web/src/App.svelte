@@ -95,8 +95,13 @@
 
         const data = await response.json();
 
-        packageInfo = data.package || null;
-        items = Array.isArray(data.items) ? data.items : [];
+        if (Array.isArray(data)) {
+          packageInfo = null;
+          items = data;
+        } else {
+          packageInfo = data.package || null;
+          items = Array.isArray(data.items) ? data.items : [];
+        }
 
         onHashChange();
       } catch (err) {
