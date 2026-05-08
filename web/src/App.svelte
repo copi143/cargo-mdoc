@@ -70,7 +70,6 @@
     }
   };
 
-  /** @param {ItemDoc | null | undefined} item */
   const selectItem = (item?: ItemDoc | null) => {
     if (!item) return;
     selectedPath = item.path;
