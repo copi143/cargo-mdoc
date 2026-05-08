@@ -1,89 +1,166 @@
 <script>
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from './assets/vite.svg'
-  import heroImg from './assets/hero.png'
-  import Counter from './lib/Counter.svelte'
+  import { onMount } from "svelte";
+  import Topbar from "./components/Topbar.svelte";
+  import Sidebar from "./components/Sidebar.svelte";
+  import Home from "./pages/Home.svelte";
+  import Item from "./pages/Item.svelte";
+
+  let loading = true;
+  let error = "";
+  let items = [];
+  let packageInfo = null;
+  let query = "";
+  let kindFilter = "all";
+  let selectedPath = "";
+  let view = "home";
+
+  const kindOptions = ["all", "Function", "Struct", "Enum", "Trait", "Module"];
+
+  const normalize = (value) => (value || "").toLowerCase();
+
+  const formatCfg = (cfg) => {
+    if (!cfg) return "true";
+
+    switch (cfg.kind) {
+      case "True":
+        return "true";
+      case "False":
+        return "false";
+      case "Feature":
+        return `feature="${cfg.value}"`;
+      case "Flag":
+        return cfg.value;
+      case "All":
+        return `all(${(cfg.value || []).map(formatCfg).join(", ")})`;
+      case "Any":
+        return `any(${(cfg.value || []).map(formatCfg).join(", ")})`;
+      case "Not":
+        return `not(${formatCfg(cfg.value)})`;
+      default:
+        return "unknown";
+    }
+  };
+
+  const onHashChange = () => {
+    const hash = window.location.hash;
+
+    if (hash.startsWith("#/item/")) {
+      selectedPath = decodeURIComponent(hash.slice(7));
+      view = "item";
+    } else if (hash.startsWith("#/home")) {
+      selectedPath = "";
+      view = "home";
+    } else {
+      selectedPath = "";
+      view = "home";
+    }
+  };
+
+  const selectItem = (item) => {
+    if (!item) return;
+    selectedPath = item.path;
+    view = "item";
+    window.location.hash = `#/item/${encodeURIComponent(item.path)}`;
+  };
+
+  const goHome = () => {
+    window.location.hash = "#/home";
+    selectedPath = "";
+    view = "home";
+  };
+
+  onMount(async () => {
+    try {
+      const response = await fetch("/mdoc-ra.json", { cache: "no-store" });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load mdoc-ra.json (${response.status})`);
+      }
+
+      const data = await response.json();
+
+      packageInfo = data.package || null;
+      items = Array.isArray(data.items) ? data.items : [];
+
+      onHashChange();
+
+      window.addEventListener("hashchange", onHashChange);
+    } catch (err) {
+      error = err instanceof Error ? err.message : "Failed to load data";
+    } finally {
+      loading = false;
+    }
+
+    return () => window.removeEventListener("hashchange", onHashChange);
+  });
+
+  $: filteredItems = items
+    .filter((item) => {
+      if (kindFilter !== "all" && item.kind !== kindFilter) return false;
+      const q = normalize(query.trim());
+      if (!q) return true;
+      return (
+        normalize(item.path).includes(q) || normalize(item.docs).includes(q)
+      );
+    })
+    .sort((a, b) => a.path.localeCompare(b.path));
+
+  $: selectedItem = items.find((item) => item.path === selectedPath) || null;
+
+  $: counts = items.reduce((acc, item) => {
+    acc[item.kind] = (acc[item.kind] || 0) + 1;
+    return acc;
+  }, {});
+
+  const moduleDepth = (path) => path.split("::").length;
+
+  $: topModules = items
+    .filter((item) => item.kind === "Module" && moduleDepth(item.path) === 1)
+    .sort((a, b) => a.path.localeCompare(b.path))
+    .slice(0, 8);
+
+  $: prominentItems = items
+    .filter((item) => item.kind !== "Module")
+    .sort((a, b) => a.path.localeCompare(b.path))
+    .slice(0, 8);
 </script>
 
-<section id="center">
-  <div class="hero">
-    <img src={heroImg} class="base" width="170" height="179" alt="" />
-    <img src={svelteLogo} class="framework" alt="Svelte logo" />
-    <img src={viteLogo} class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/App.svelte</code> and save to test <code>HMR</code></p>
-  </div>
-  <Counter />
-</section>
+<div class="shell">
+  <Topbar {packageInfo} {items} {counts} />
 
-<div class="ticks"></div>
+  {#if error}
+    <div class="state error">{error}</div>
+  {:else if loading}
+    <div class="state loading">Loading documentation index...</div>
+  {/if}
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true">
-      <use href="/icons.svg#documentation-icon"></use>
-    </svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank" rel="noreferrer">
-          <img class="logo" src={viteLogo} alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://svelte.dev/" target="_blank" rel="noreferrer">
-          <img class="button-icon" src={svelteLogo} alt="" />
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true">
-      <use href="/icons.svg#social-icon"></use>
-    </svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li>
-        <a href="https://github.com/vitejs/vite" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#github-icon"></use>
-          </svg>
-          GitHub
-        </a>
-      </li>
-      <li>
-        <a href="https://chat.vite.dev/" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#discord-icon"></use>
-          </svg>
-          Discord
-        </a>
-      </li>
-      <li>
-        <a href="https://x.com/vite_js" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#x-icon"></use>
-          </svg>
-          X.com
-        </a>
-      </li>
-      <li>
-        <a href="https://bsky.app/profile/vite.dev" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#bluesky-icon"></use>
-          </svg>
-          Bluesky
-        </a>
-      </li>
-    </ul>
-  </div>
-</section>
+  <main class="content" aria-busy={loading}>
+    <Sidebar
+      {filteredItems}
+      {counts}
+      {kindOptions}
+      {selectedPath}
+      {kindFilter}
+      {query}
+      {view}
+      onHome={goHome}
+      onSelectItem={selectItem}
+      onQueryChange={(value) => (query = value)}
+      onKindChange={(value) => (kindFilter = value)}
+    />
 
-<div class="ticks"></div>
-<section id="spacer"></section>
+    <section class="panel detail">
+      {#if view === "home"}
+        <Home
+          {items}
+          {counts}
+          {topModules}
+          {prominentItems}
+          onSelectItem={selectItem}
+        />
+      {:else}
+        <Item {selectedItem} {formatCfg} />
+      {/if}
+    </section>
+  </main>
+</div>
