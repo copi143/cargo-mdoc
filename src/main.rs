@@ -78,6 +78,14 @@ impl RaCollector {
     }
 
     pub fn collect_crate(&mut self, crate_root: &Path) -> Result<()> {
+        if let Some(member_roots) = workspace_member_roots(crate_root)? {
+            for member_root in member_roots {
+                self.collect_crate(&member_root)?;
+            }
+
+            return Ok(());
+        }
+
         let src = crate_root.join("src");
 
         let root = if src.join("lib.rs").exists() {
@@ -613,14 +621,24 @@ fn and_cfg(a: CfgExpr, b: CfgExpr) -> CfgExpr {
 
 fn resolve_module_file(current_file: &Path, mod_name: &str) -> Result<PathBuf> {
     let parent = current_file.parent().context("Missing parent")?;
+    let stem = current_file
+        .file_stem()
+        .and_then(|value| value.to_str())
+        .context("Missing file stem")?;
 
     let direct = parent.join(format!("{}.rs", mod_name));
     let nested = parent.join(mod_name).join("mod.rs");
+    let sibling = parent.join(stem).join(format!("{}.rs", mod_name));
+    let sibling_nested = parent.join(stem).join(mod_name).join("mod.rs");
 
     if direct.exists() {
         Ok(direct)
+    } else if sibling.exists() {
+        Ok(sibling)
     } else if nested.exists() {
         Ok(nested)
+    } else if sibling_nested.exists() {
+        Ok(sibling_nested)
     } else {
         anyhow::bail!("Cannot resolve module {}", mod_name)
     }
@@ -689,19 +707,21 @@ fn read_package_info(crate_root: &Path) -> Result<Option<PackageInfo>> {
     let doc = toml::from_str::<toml::Value>(&text)
         .with_context(|| format!("Failed parsing {:?}", path))?;
 
-    let package = match doc.get("package").and_then(|v| v.as_table()) {
-        Some(table) => table,
-        None => return Ok(None),
-    };
+    let package = doc.get("package").and_then(|v| v.as_table());
+    let workspace = doc.get("workspace").and_then(|v| v.as_table());
+
+    if package.is_none() && workspace.is_none() {
+        return Ok(None);
+    }
 
     let get_string = |key: &str| {
         package
-            .get(key)
+            .and_then(|table| table.get(key))
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
     };
 
-    let readme_path = match package.get("readme") {
+    let mut readme_path = match package.and_then(|table| table.get("readme")) {
         Some(value) if value.is_str() => value.as_str().map(|s| s.to_string()),
         Some(value) if value.is_bool() => value.as_bool().and_then(|enabled| {
             if enabled {
@@ -712,6 +732,10 @@ fn read_package_info(crate_root: &Path) -> Result<Option<PackageInfo>> {
         }),
         _ => None,
     };
+
+    if readme_path.is_none() && workspace.is_some() && crate_root.join("README.md").exists() {
+        readme_path = Some("README.md".to_string());
+    }
 
     let readme = match readme_path.as_deref() {
         Some(path) => {
@@ -731,7 +755,11 @@ fn read_package_info(crate_root: &Path) -> Result<Option<PackageInfo>> {
 
     let name = match get_string("name") {
         Some(value) => value,
-        None => return Ok(None),
+        None => crate_root
+            .file_name()
+            .and_then(|value| value.to_str())
+            .map(|value| value.to_string())
+            .unwrap_or_else(|| "workspace".to_string()),
     };
 
     Ok(Some(PackageInfo {
@@ -743,6 +771,44 @@ fn read_package_info(crate_root: &Path) -> Result<Option<PackageInfo>> {
         readme_path,
         readme,
     }))
+}
+
+fn workspace_member_roots(crate_root: &Path) -> Result<Option<Vec<PathBuf>>> {
+    let path = crate_root.join("Cargo.toml");
+
+    if !path.exists() {
+        return Ok(None);
+    }
+
+    let text = fs::read_to_string(&path).with_context(|| format!("Failed reading {:?}", path))?;
+
+    let doc = toml::from_str::<toml::Value>(&text)
+        .with_context(|| format!("Failed parsing {:?}", path))?;
+
+    let workspace = match doc.get("workspace").and_then(|v| v.as_table()) {
+        Some(table) => table,
+        None => return Ok(None),
+    };
+
+    let members = match workspace.get("members").and_then(|v| v.as_array()) {
+        Some(members) => members,
+        None => return Ok(None),
+    };
+
+    let mut roots = Vec::new();
+
+    for member in members {
+        if let Some(member) = member.as_str() {
+            let member_root = crate_root.join(member);
+            let src = member_root.join("src");
+
+            if src.join("lib.rs").exists() || src.join("main.rs").exists() {
+                roots.push(member_root);
+            }
+        }
+    }
+
+    Ok(Some(roots))
 }
 
 fn parse_args() -> Result<CliOptions> {
@@ -800,7 +866,7 @@ fn parse_args() -> Result<CliOptions> {
     let output = match (stdout, output) {
         (true, output) => output,
         (false, Some(output)) => Some(output),
-        (false, None) if cfg!(debug_assertions) => Some(PathBuf::from("web/public/mdoc.json")),
+        (false, None) if cfg!(debug_assertions) => Some(PathBuf::from("web/mdoc.json")),
         (false, None) => None,
     };
 
@@ -819,15 +885,37 @@ fn print_usage() {
 fn main() -> Result<()> {
     let cli = parse_args()?;
 
+    let cwd = std::env::current_dir().context("Failed to resolve current directory")?;
+    let crate_root = if cli.crate_root.is_absolute() {
+        cli.crate_root.clone()
+    } else {
+        cwd.join(&cli.crate_root)
+    };
+
+    let output_path = if cli.stdout {
+        None
+    } else {
+        let raw_output = cli.output.unwrap_or_else(|| PathBuf::from("mdoc.json"));
+
+        Some(if raw_output.is_absolute() {
+            raw_output
+        } else {
+            cwd.join(raw_output)
+        })
+    };
+
+    std::env::set_current_dir(&crate_root)
+        .with_context(|| format!("Failed to change working directory to {:?}", crate_root))?;
+
     let mut collector = RaCollector::new();
 
-    collector.collect_crate(&cli.crate_root)?;
+    collector.collect_crate(Path::new("."))?;
 
     let items = collector.items;
     let items_len = items.len();
 
     let output = OutputDoc {
-        package: read_package_info(&cli.crate_root)?,
+        package: read_package_info(Path::new("."))?,
         items,
     };
 
@@ -836,7 +924,7 @@ fn main() -> Result<()> {
     if cli.stdout {
         println!("{}", json);
     } else {
-        let output_path = cli.output.unwrap_or_else(|| PathBuf::from("mdoc.json"));
+        let output_path = output_path.expect("output path must exist when not writing to stdout");
 
         if let Some(parent) = output_path
             .parent()
