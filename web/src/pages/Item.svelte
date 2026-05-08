@@ -1,6 +1,8 @@
-<script>
-  export let selectedItem = null;
-  export let formatCfg = () => "";
+<script lang="ts">
+  import type { CfgExpr, ItemDoc } from "../types";
+
+  export let selectedItem: ItemDoc | null = null;
+  export let formatCfg: (cfg?: CfgExpr | null) => string = () => "";
 </script>
 
 {#if selectedItem}

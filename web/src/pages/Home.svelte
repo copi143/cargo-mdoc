@@ -1,9 +1,11 @@
-<script>
-  export let items = [];
-  export let counts = {};
-  export let topModules = [];
-  export let prominentItems = [];
-  export let onSelectItem = () => {};
+<script lang="ts">
+  import type { Counts, ItemDoc } from "../types";
+
+  export let items: ItemDoc[] = [];
+  export let counts: Counts = {};
+  export let topModules: ItemDoc[] = [];
+  export let prominentItems: ItemDoc[] = [];
+  export let onSelectItem: (item: ItemDoc) => void = () => {};
 </script>
 
 <div class="detail-header">

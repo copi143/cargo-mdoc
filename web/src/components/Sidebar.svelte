@@ -1,16 +1,18 @@
-<script>
-  export let filteredItems = [];
-  export let counts = {};
-  export let kindOptions = [];
-  export let selectedPath = "";
-  export let kindFilter = "all";
-  export let query = "";
-  export let view = "home";
+<script lang="ts">
+  import type { Counts, ItemDoc, ItemKind } from "../types";
 
-  export let onHome = () => {};
-  export let onSelectItem = () => {};
-  export let onQueryChange = () => {};
-  export let onKindChange = () => {};
+  export let filteredItems: ItemDoc[] = [];
+  export let counts: Counts = {};
+  export let kindOptions: Array<"all" | ItemKind> = [];
+  export let selectedPath = "";
+  export let kindFilter: "all" | ItemKind = "all";
+  export let query = "";
+  export let view: "home" | "item" = "home";
+
+  export let onHome: () => void = () => {};
+  export let onSelectItem: (item: ItemDoc) => void = () => {};
+  export let onQueryChange: (value: string) => void = () => {};
+  export let onKindChange: (value: "all" | ItemKind) => void = () => {};
 </script>
 
 <aside class="panel list">

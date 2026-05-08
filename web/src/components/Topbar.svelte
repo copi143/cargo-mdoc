@@ -1,7 +1,9 @@
-<script>
-  export let packageInfo;
-  export let items = [];
-  export let counts = {};
+<script lang="ts">
+  import type { Counts, ItemDoc, PackageInfo } from "../types";
+
+  export let packageInfo: PackageInfo | null = null;
+  export let items: ItemDoc[] = [];
+  export let counts: Counts = {};
 </script>
 
 <header class="topbar">

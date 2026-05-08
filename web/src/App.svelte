@@ -1,24 +1,38 @@
-<script>
+<script lang="ts">
   import { onMount } from "svelte";
   import Topbar from "./components/Topbar.svelte";
   import Sidebar from "./components/Sidebar.svelte";
   import Home from "./pages/Home.svelte";
   import Item from "./pages/Item.svelte";
+  import type {
+    CfgExpr,
+    Counts,
+    ItemDoc,
+    ItemKind,
+    PackageInfo,
+  } from "./types";
 
   let loading = true;
   let error = "";
-  let items = [];
-  let packageInfo = null;
+  let items: ItemDoc[] = [];
+  let packageInfo: PackageInfo | null = null;
   let query = "";
-  let kindFilter = "all";
+  let kindFilter: "all" | ItemKind = "all";
   let selectedPath = "";
-  let view = "home";
+  let view: "home" | "item" = "home";
 
-  const kindOptions = ["all", "Function", "Struct", "Enum", "Trait", "Module"];
+  const kindOptions: Array<"all" | ItemKind> = [
+    "all",
+    "Function",
+    "Struct",
+    "Enum",
+    "Trait",
+    "Module",
+  ];
 
-  const normalize = (value) => (value || "").toLowerCase();
+  const normalize = (value: string) => (value || "").toLowerCase();
 
-  const formatCfg = (cfg) => {
+  const formatCfg = (cfg?: CfgExpr | null): string => {
     if (!cfg) return "true";
 
     switch (cfg.kind) {
@@ -56,7 +70,8 @@
     }
   };
 
-  const selectItem = (item) => {
+  /** @param {ItemDoc | null | undefined} item */
+  const selectItem = (item?: ItemDoc | null) => {
     if (!item) return;
     selectedPath = item.path;
     view = "item";
@@ -69,27 +84,30 @@
     view = "home";
   };
 
-  onMount(async () => {
-    try {
-      const response = await fetch("/mdoc-ra.json", { cache: "no-store" });
+  onMount(() => {
+    const load = async (): Promise<void> => {
+      try {
+        const response = await fetch("/mdoc-ra.json", { cache: "no-store" });
 
-      if (!response.ok) {
-        throw new Error(`Failed to load mdoc-ra.json (${response.status})`);
+        if (!response.ok) {
+          throw new Error(`Failed to load mdoc-ra.json (${response.status})`);
+        }
+
+        const data = await response.json();
+
+        packageInfo = data.package || null;
+        items = Array.isArray(data.items) ? data.items : [];
+
+        onHashChange();
+      } catch (err) {
+        error = err instanceof Error ? err.message : "Failed to load data";
+      } finally {
+        loading = false;
       }
+    };
 
-      const data = await response.json();
-
-      packageInfo = data.package || null;
-      items = Array.isArray(data.items) ? data.items : [];
-
-      onHashChange();
-
-      window.addEventListener("hashchange", onHashChange);
-    } catch (err) {
-      error = err instanceof Error ? err.message : "Failed to load data";
-    } finally {
-      loading = false;
-    }
+    window.addEventListener("hashchange", onHashChange);
+    void load();
 
     return () => window.removeEventListener("hashchange", onHashChange);
   });
@@ -107,12 +125,12 @@
 
   $: selectedItem = items.find((item) => item.path === selectedPath) || null;
 
-  $: counts = items.reduce((acc, item) => {
+  $: counts = items.reduce<Counts>((acc, item) => {
     acc[item.kind] = (acc[item.kind] || 0) + 1;
     return acc;
-  }, {});
+  }, {} as Counts);
 
-  const moduleDepth = (path) => path.split("::").length;
+  const moduleDepth = (path: string) => path.split("::").length;
 
   $: topModules = items
     .filter((item) => item.kind === "Module" && moduleDepth(item.path) === 1)
