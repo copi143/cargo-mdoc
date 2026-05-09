@@ -561,6 +561,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c49485b5a4fb4a0a254a5720d4f5fca8150f78a4063e9447f4e802714cbb57c"
 dependencies = [
  "ra_ap_intern",
+ "ra_ap_syntax",
  "rustc-hash 2.1.2",
  "tracing",
 ]

@@ -1,20 +1,50 @@
+use ra_ap_cfg::CfgAtom;
+use ra_ap_cfg::CfgExpr as RaCfgExpr;
+use ra_ap_syntax::ast::{self, AstNode};
+use ra_ap_syntax::{SyntaxKind, SyntaxNode};
+
 use crate::model::CfgExpr;
 
-pub fn parse_cfg_attrs(attrs: &[String]) -> CfgExpr {
+pub fn parse_cfg_from_node(node: &SyntaxNode) -> CfgExpr {
     let mut exprs = Vec::new();
 
-    for attr in attrs {
-        if attr.starts_with("#[cfg(") {
-            let content = attr
-                .trim_start_matches("#[cfg(")
-                .trim_end_matches(")]")
-                .trim();
+    for child in node.children() {
+        if child.kind() != SyntaxKind::ATTR {
+            continue;
+        }
 
-            exprs.push(parse_cfg_expr(content));
-        } else if attr.starts_with("#[cfg_attr(") {
-            if let Some(cfg_expr) = parse_cfg_attr(attr) {
-                exprs.push(cfg_expr);
+        let Some(attr) = ast::Attr::cast(child) else {
+            continue;
+        };
+
+        let Some(meta) = attr.meta() else {
+            continue;
+        };
+
+        match meta {
+            ast::Meta::CfgMeta(cfg_meta) => {
+                if let Some(pred) = cfg_meta.cfg_predicate() {
+                    exprs.push(ra_to_model(RaCfgExpr::parse_from_ast(pred)));
+                }
             }
+            ast::Meta::CfgAttrMeta(cfg_attr_meta) => {
+                if let Some(cond) = cfg_attr_meta.cfg_predicate() {
+                    let mut combined = ra_to_model(RaCfgExpr::parse_from_ast(cond));
+
+                    for inner_meta in cfg_attr_meta.metas() {
+                        if let ast::Meta::CfgMeta(inner_cfg) = inner_meta {
+                            if let Some(inner_pred) = inner_cfg.cfg_predicate() {
+                                let inner_expr =
+                                    ra_to_model(RaCfgExpr::parse_from_ast(inner_pred));
+                                combined = and_cfg(combined, inner_expr);
+                            }
+                        }
+                    }
+
+                    exprs.push(combined);
+                }
+            }
+            _ => {}
         }
     }
 
@@ -27,43 +57,29 @@ pub fn parse_cfg_attrs(attrs: &[String]) -> CfgExpr {
     }
 }
 
-pub fn parse_cfg_expr(input: &str) -> CfgExpr {
-    let input = input.trim();
-
-    if input.starts_with("feature") {
-        if let Some(start) = input.find('"') {
-            if let Some(end) = input.rfind('"') {
-                return CfgExpr::Feature(input[start + 1..end].to_string());
+fn ra_to_model(expr: RaCfgExpr) -> CfgExpr {
+    match expr {
+        RaCfgExpr::Invalid => CfgExpr::True,
+        RaCfgExpr::Atom(atom) => match atom {
+            CfgAtom::Flag(name) => CfgExpr::Flag(name.to_string()),
+            CfgAtom::KeyValue { key, value } => {
+                if key.as_str() == "feature" {
+                    CfgExpr::Feature(value.to_string())
+                } else {
+                    CfgExpr::Flag(format!("{} = \"{}\"", key, value))
+                }
             }
+        },
+        RaCfgExpr::All(exprs) => {
+            let converted: Vec<CfgExpr> = exprs.into_vec().into_iter().map(ra_to_model).collect();
+            CfgExpr::All(converted)
         }
+        RaCfgExpr::Any(exprs) => {
+            let converted: Vec<CfgExpr> = exprs.into_vec().into_iter().map(ra_to_model).collect();
+            CfgExpr::Any(converted)
+        }
+        RaCfgExpr::Not(inner) => CfgExpr::Not(Box::new(ra_to_model(*inner))),
     }
-
-    if input.starts_with("all(") {
-        let inner = input.trim_start_matches("all(").trim_end_matches(')');
-        return CfgExpr::All(
-            split_cfg_args(inner)
-                .into_iter()
-                .map(|x| parse_cfg_expr(&x))
-                .collect(),
-        );
-    }
-
-    if input.starts_with("any(") {
-        let inner = input.trim_start_matches("any(").trim_end_matches(')');
-        return CfgExpr::Any(
-            split_cfg_args(inner)
-                .into_iter()
-                .map(|x| parse_cfg_expr(&x))
-                .collect(),
-        );
-    }
-
-    if input.starts_with("not(") {
-        let inner = input.trim_start_matches("not(").trim_end_matches(')');
-        return CfgExpr::Not(Box::new(parse_cfg_expr(inner)));
-    }
-
-    CfgExpr::Flag(input.to_string())
 }
 
 pub fn and_cfg(a: CfgExpr, b: CfgExpr) -> CfgExpr {
@@ -85,75 +101,4 @@ pub fn and_cfg(a: CfgExpr, b: CfgExpr) -> CfgExpr {
         }
         (lhs, rhs) => CfgExpr::All(vec![lhs, rhs]),
     }
-}
-
-fn parse_cfg_attr(attr: &str) -> Option<CfgExpr> {
-    let inner = attr.strip_prefix("#[cfg_attr(")?.strip_suffix(")]")?.trim();
-
-    let split_at = split_top_level_comma(inner)?;
-    let condition = inner[..split_at].trim();
-    let nested = inner[split_at + 1..].trim();
-
-    if nested.starts_with("cfg(") {
-        let nested_cfg = nested
-            .trim_start_matches("cfg(")
-            .trim_end_matches(')')
-            .trim();
-
-        return Some(and_cfg(
-            parse_cfg_expr(condition),
-            parse_cfg_expr(nested_cfg),
-        ));
-    }
-
-    Some(parse_cfg_expr(condition))
-}
-
-fn split_top_level_comma(input: &str) -> Option<usize> {
-    let mut depth = 0;
-
-    for (index, ch) in input.char_indices() {
-        match ch {
-            '(' => depth += 1,
-            ')' => {
-                if depth > 0 {
-                    depth -= 1;
-                }
-            }
-            ',' if depth == 0 => return Some(index),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn split_cfg_args(input: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut depth = 0;
-    let mut current = String::new();
-
-    for c in input.chars() {
-        match c {
-            '(' => {
-                depth += 1;
-                current.push(c);
-            }
-            ')' => {
-                depth -= 1;
-                current.push(c);
-            }
-            ',' if depth == 0 => {
-                out.push(current.trim().to_string());
-                current.clear();
-            }
-            _ => current.push(c),
-        }
-    }
-
-    if !current.trim().is_empty() {
-        out.push(current.trim().to_string());
-    }
-
-    out
 }

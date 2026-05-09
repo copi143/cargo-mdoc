@@ -22,5 +22,5 @@ chrono = "0.4.44"
 ra_ap_syntax = "0.0.331"
 ra_ap_parser = "0.0.331"
 ra_ap_tt = "0.0.331"
-ra_ap_cfg = "0.0.331"
+ra_ap_cfg = { version = "0.0.331", features = ["syntax"] }
 ra_ap_mbe = "0.0.331"

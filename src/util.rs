@@ -115,10 +115,40 @@ pub fn source_location(
 
 pub fn source_snippet(source: &str, node: &SyntaxNode) -> String {
     let range = node.text_range();
-    let start: usize = range.start().into();
     let end: usize = range.end().into();
+    let mut start: usize = range.start().into();
 
-    source.get(start..end).unwrap_or("").trim().to_string()
+    let line_start = source[..start]
+        .rfind('\n')
+        .map(|i| i + 1)
+        .unwrap_or(0);
+    start = line_start;
+
+    let raw = source.get(start..end).unwrap_or("");
+    let lines: Vec<&str> = raw.lines().collect();
+
+    if lines.is_empty() {
+        return String::new();
+    }
+
+    let common_indent = lines
+        .iter()
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| line.len() - line.trim_start().len())
+        .min()
+        .unwrap_or(0);
+
+    lines
+        .iter()
+        .map(|line| {
+            if line.len() >= common_indent {
+                &line[common_indent..]
+            } else {
+                line.trim_start()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 pub fn line_number_at(source: &str, byte_offset: usize) -> usize {

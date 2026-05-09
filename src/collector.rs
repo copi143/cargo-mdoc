@@ -4,7 +4,7 @@ use ra_ap_syntax::{Edition, SourceFile, SyntaxKind, SyntaxNode};
 use std::fs;
 use std::path::Path;
 
-use crate::cfg_expr::{and_cfg, parse_cfg_attrs};
+use crate::cfg_expr::{and_cfg, parse_cfg_from_node};
 use crate::model::{CfgExpr, ItemDoc, ItemKind, SourceLocation, Visibility};
 use crate::util::{
     collect_attrs, extract_docs, join_path, module_path_string, resolve_module_file,
@@ -197,7 +197,7 @@ impl RaCollector {
             .unwrap_or_else(|| "<anonymous>".into());
 
         let attrs = collect_attrs(func.syntax());
-        let cfg = and_cfg(inherited_cfg, parse_cfg_attrs(&attrs));
+        let cfg = and_cfg(inherited_cfg, parse_cfg_from_node(func.syntax()));
         let docs = extract_docs(&attrs);
 
         self.push_item(
@@ -237,7 +237,7 @@ impl RaCollector {
             package_id,
             name,
             extract_docs(&attrs),
-            and_cfg(inherited_cfg, parse_cfg_attrs(&attrs)),
+            and_cfg(inherited_cfg, parse_cfg_from_node(st.syntax())),
             ItemKind::Struct,
             visibility_from_ast(st.visibility()),
             &mod_path,
@@ -270,7 +270,7 @@ impl RaCollector {
             package_id,
             name,
             extract_docs(&attrs),
-            and_cfg(inherited_cfg, parse_cfg_attrs(&attrs)),
+            and_cfg(inherited_cfg, parse_cfg_from_node(en.syntax())),
             ItemKind::Enum,
             visibility_from_ast(en.visibility()),
             &mod_path,
@@ -303,7 +303,7 @@ impl RaCollector {
             package_id,
             name,
             extract_docs(&attrs),
-            and_cfg(inherited_cfg, parse_cfg_attrs(&attrs)),
+            and_cfg(inherited_cfg, parse_cfg_from_node(tr.syntax())),
             ItemKind::Trait,
             visibility_from_ast(tr.visibility()),
             &mod_path,
@@ -334,7 +334,7 @@ impl RaCollector {
             .unwrap_or_else(|| "<anonymous>".into());
 
         let attrs = collect_attrs(module.syntax());
-        let cfg = and_cfg(inherited_cfg, parse_cfg_attrs(&attrs));
+        let cfg = and_cfg(inherited_cfg, parse_cfg_from_node(module.syntax()));
 
         self.push_item(
             package_id,
