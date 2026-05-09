@@ -176,6 +176,8 @@ fn main() -> Result<()> {
         collector.collect_crate(&workspace_root, &crate_root, &package_id, &package.name)?;
     }
 
+    collector.associate_impls();
+
     let mut items = collector.items;
     // Deterministic ordering: package -> path -> line, so output is reproducible
     items.sort_by(|a, b| {

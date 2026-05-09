@@ -5,19 +5,25 @@ use std::fs;
 use std::path::Path;
 
 use crate::cfg_expr::{and_cfg, parse_cfg_from_node};
-use crate::model::{CfgExpr, ItemDoc, ItemKind, SourceLocation, Visibility};
+use crate::model::{
+    CfgExpr, ImplDoc, ImplItemDoc, ItemDoc, ItemKind, SourceLocation, Visibility,
+};
 use crate::util::{
     collect_attrs, extract_docs, join_path, module_path_string, resolve_module_file,
-    source_location, source_snippet, visibility_from_ast,
+    source_location, source_snippet, type_path_from_ast_type, visibility_from_ast,
 };
 
 pub struct RaCollector {
     pub items: Vec<ItemDoc>,
+    pub impls: Vec<ImplDoc>,
 }
 
 impl RaCollector {
     pub fn new() -> Self {
-        Self { items: Vec::new() }
+        Self {
+            items: Vec::new(),
+            impls: Vec::new(),
+        }
     }
 
     // Entry point: finds lib.rs or main.rs and walks from there.
@@ -159,6 +165,32 @@ impl RaCollector {
                         )?;
                     }
                 }
+                SyntaxKind::IMPL => {
+                    if let Some(imp) = ast::Impl::cast(child.clone()) {
+                        self.collect_impl(
+                            workspace_root,
+                            package_id,
+                            current_file,
+                            source,
+                            imp,
+                            &mod_path,
+                            inherited_cfg.clone(),
+                        )?;
+                    }
+                    // Still recurse into the impl body so nested items (methods, etc.)
+                    // are also collected as regular ItemDoc for global querying.
+                    // This matches the previous behavior before impl tracking was added.
+                    self.walk_syntax_node(
+                        workspace_root,
+                        crate_root,
+                        package_id,
+                        child,
+                        current_file,
+                        source,
+                        mod_path.clone(),
+                        inherited_cfg.clone(),
+                    )?;
+                }
                 SyntaxKind::MODULE => {
                     if let Some(module) = ast::Module::cast(child.clone()) {
                         self.collect_module(
@@ -174,7 +206,7 @@ impl RaCollector {
                     }
                 }
                 // Recurse into unsupported nodes to find nested items;
-                // this handles items inside blocks, impls, etc.
+                // this handles items inside blocks, etc.
                 _ => {
                     self.walk_syntax_node(
                         workspace_root,
@@ -383,6 +415,90 @@ impl RaCollector {
         Ok(())
     }
 
+    fn collect_impl(
+        &mut self,
+        workspace_root: &Path,
+        package_id: &str,
+        current_file: &Path,
+        source: &str,
+        imp: ast::Impl,
+        mod_path: &[String],
+        inherited_cfg: CfgExpr,
+    ) -> Result<()> {
+        let cfg = and_cfg(inherited_cfg, parse_cfg_from_node(imp.syntax()));
+
+        let self_ty = imp.self_ty().map(|ty| type_path_from_ast_type(&ty));
+        let target_typename = self_ty.as_deref().unwrap_or("<unknown>");
+        let target_path = join_path(mod_path, target_typename);
+
+        let trait_name = imp.trait_().map(|ty| type_path_from_ast_type(&ty));
+
+        // Collect methods from the impl's associated item list
+        let mut items = Vec::new();
+        if let Some(item_list) = imp.assoc_item_list() {
+            for assoc in item_list.assoc_items() {
+                match assoc {
+                    ast::AssocItem::Fn(func) => {
+                        let name = func
+                            .name()
+                            .map(|n| n.text().to_string())
+                            .unwrap_or_else(|| "<anonymous>".into());
+
+                        let attrs = collect_attrs(func.syntax());
+                        let item_cfg = and_cfg(cfg.clone(), parse_cfg_from_node(func.syntax()));
+                        let docs = extract_docs(&attrs);
+
+                        items.push(ImplItemDoc {
+                            name,
+                            kind: ItemKind::Function,
+                            docs,
+                            visibility: visibility_from_ast(func.visibility()),
+                            cfg: item_cfg,
+                            source: source_location(
+                                workspace_root,
+                                current_file,
+                                source,
+                                func.syntax(),
+                            ),
+                            source_code: source_snippet(source, func.syntax()),
+                        });
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        let source_loc = source_location(workspace_root, current_file, source, imp.syntax());
+        let id = format!("impl:{}:{}:{}", package_id, target_path, source_loc.line_start);
+
+        self.impls.push(ImplDoc {
+            id,
+            package_id: package_id.to_string(),
+            target_path,
+            trait_name,
+            cfg,
+            source: source_loc,
+            source_code: source_snippet(source, imp.syntax()),
+            items,
+        });
+
+        Ok(())
+    }
+
+    // After all collection is done, associate each impl with its target item
+    // by matching target_path (stripped of generics) against item.path.
+    pub fn associate_impls(&mut self) {
+        let impls = std::mem::take(&mut self.impls);
+        for imp in impls {
+            let base = imp.target_path.split('<').next().unwrap_or(&imp.target_path).trim();
+            if let Some(item) = self.items.iter_mut().find(|item| {
+                item.package_id == imp.package_id && item.path == base
+            }) {
+                item.impls.push(imp);
+            }
+        }
+    }
+
     fn push_item(
         &mut self,
         package_id: &str,
@@ -417,6 +533,7 @@ impl RaCollector {
             signature: None,
             attributes,
             deprecated: None,
+            impls: Vec::new(),
         });
     }
 }

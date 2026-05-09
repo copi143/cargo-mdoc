@@ -926,3 +926,100 @@ pre > code.hljs {
 .detail-title-name {
   font-weight: 700;
 }
+
+.impls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.impl-block {
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.impl-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9rem;
+  border-bottom: 1px solid transparent;
+}
+
+.impl-block[open] .impl-header {
+  border-bottom-color: var(--line);
+}
+
+.impl-label {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--ink);
+  word-break: break-word;
+}
+
+.impl-toggle {
+  font-size: 0.75rem;
+  color: var(--muted-2);
+}
+
+.impl-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.impl-meta {
+  font-size: 0.78rem;
+  color: var(--muted-2);
+}
+
+.impl-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.impl-items h4 {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted-2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.impl-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.impl-item-header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.impl-item-kind {
+  font-size: 0.7rem;
+}
+
+.impl-item-name {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.impl-item-doc {
+  padding: 10px;
+  font-size: 0.85rem;
+}

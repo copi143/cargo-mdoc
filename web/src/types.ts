@@ -15,6 +15,26 @@ export type CfgExpr =
   | { kind: "Any"; value: CfgExpr[] }
   | { kind: "Not"; value: CfgExpr };
 
+export type ImplItemDoc = {
+  name: string;
+  kind: ItemKind;
+  docs: string;
+  cfg: CfgExpr;
+  source: SourceLocation;
+  source_code: string;
+};
+
+export type ImplDoc = {
+  id: string;
+  package_id: string;
+  target_path: string;
+  trait_name?: string;
+  cfg: CfgExpr;
+  source: SourceLocation;
+  source_code: string;
+  items: ImplItemDoc[];
+};
+
 export type ItemDoc = {
   path: string;
   docs: string;
@@ -22,6 +42,7 @@ export type ItemDoc = {
   kind: ItemKind;
   source?: SourceLocation;
   source_code?: string;
+  impls?: ImplDoc[];
 };
 
 export type PackageInfo = {

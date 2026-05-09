@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { CfgExpr, ItemDoc } from "../types";
+  import type { CfgExpr, ImplDoc, ItemDoc } from "../types";
   import { renderMarkdown } from "../lib/markdown";
   import { renderRustSource } from "../lib/highlight";
 
@@ -8,6 +8,14 @@
 
   $: renderedDocs = renderMarkdown(selectedItem?.docs || "No docs provided.");
   $: renderedSource = renderRustSource(selectedItem?.source_code || "");
+  $: impls = selectedItem?.impls ?? [];
+
+  const implLabel = (impl: ImplDoc): string => {
+    if (impl.trait_name) {
+      return `impl ${impl.trait_name} for ${impl.target_path}`;
+    }
+    return `impl ${impl.target_path}`;
+  };
 
   const splitDisplayPath = (
     path: string,
@@ -46,6 +54,46 @@
   </div>
   <div class="detail-body">
     <div class="markdown-body doc">{@html renderedDocs}</div>
+    {#if impls.length > 0}
+      <section class="impls-section">
+        <h3>Impl Blocks ({impls.length})</h3>
+        {#each impls as impl (impl.id)}
+          <details class="impl-block">
+            <summary class="impl-header">
+              <span class="impl-label">{implLabel(impl)}</span>
+              {#if impl.cfg.kind !== "True"}
+                <span class="cfg"><span class="cfg-label">cfg</span><code>{formatCfg(impl.cfg)}</code></span>
+              {/if}
+              <span class="impl-toggle">▼</span>
+            </summary>
+            <div class="impl-body">
+              <div class="impl-meta">
+                <span class="source-meta">{impl.source.file}:{impl.source.line_start}{#if impl.source.line_end !== impl.source.line_start}-{impl.source.line_end}{/if}</span>
+              </div>
+              <pre class="source-code"><code class="hljs language-rust">{@html renderRustSource(impl.source_code)}</code></pre>
+              {#if impl.items.length > 0}
+                <div class="impl-items">
+                  <h4>Methods & Associated Items</h4>
+                  {#each impl.items as item}
+                    <div class="impl-item">
+                      <div class="impl-item-header">
+                        <span class="impl-item-kind kind-badge kind-{item.kind.toLowerCase()}">{item.kind}</span>
+                        <code class="impl-item-name">{item.name}</code>
+                        {#if item.cfg.kind !== "True"}
+                          <span class="cfg"><span class="cfg-label">cfg</span><code>{formatCfg(item.cfg)}</code></span>
+                        {/if}
+                      </div>
+                      <div class="markdown-body doc impl-item-doc">{@html renderMarkdown(item.docs || "_No docs_")}</div>
+                      <pre class="source-code"><code class="hljs language-rust">{@html renderRustSource(item.source_code)}</code></pre>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            </div>
+          </details>
+        {/each}
+      </section>
+    {/if}
     <h3>Source</h3>
     <div class="source-card">
       <div class="source-header">

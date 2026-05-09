@@ -227,6 +227,7 @@ pub struct ItemDoc {
     pub signature: Option<String>,
     pub attributes: Option<Vec<String>>,
     pub deprecated: Option<Deprecation>,
+    pub impls: Vec<ImplDoc>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -246,6 +247,33 @@ pub struct Diagnostic {
     pub package_id: Option<PackageId>,
     pub file: Option<String>,
     pub line: Option<usize>,
+}
+
+// A method or associated item inside an impl block
+#[derive(Debug, Clone, Serialize)]
+pub struct ImplItemDoc {
+    pub name: String,
+    pub kind: ItemKind,
+    pub docs: String,
+    pub visibility: Visibility,
+    pub cfg: CfgExpr,
+    pub source: SourceLocation,
+    pub source_code: String,
+}
+
+// An impl block associated with a type
+#[derive(Debug, Clone, Serialize)]
+pub struct ImplDoc {
+    pub id: String,
+    pub package_id: PackageId,
+    /// Full path of the type the impl is for (e.g. "my_crate::MyStruct")
+    pub target_path: String,
+    /// Present for trait impls like `impl Display for MyStruct`
+    pub trait_name: Option<String>,
+    pub cfg: CfgExpr,
+    pub source: SourceLocation,
+    pub source_code: String,
+    pub items: Vec<ImplItemDoc>,
 }
 
 #[derive(Debug, Clone, Serialize)]

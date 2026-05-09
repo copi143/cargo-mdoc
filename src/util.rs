@@ -196,6 +196,13 @@ pub fn source_snippet(source: &str, node: &SyntaxNode) -> String {
         .join("\n")
 }
 
+// Extract the string representation of a type from an AST type node.
+// Handles simple path types (MyStruct), generics (Vec<u8>), etc.
+// Used for resolving impl target types like `impl Foo for Bar`.
+pub fn type_path_from_ast_type(ty: &ast::Type) -> String {
+    ty.syntax().text().to_string().trim().to_string()
+}
+
 // Counts newlines up to a byte offset to compute 1-indexed line numbers
 pub fn line_number_at(source: &str, byte_offset: usize) -> usize {
     source
