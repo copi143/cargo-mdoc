@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import DependencyGraph from "./components/DependencyGraph.svelte";
   import Topbar from "./components/Topbar.svelte";
   import Sidebar from "./components/Sidebar.svelte";
   import Home from "./pages/Home.svelte";
@@ -10,16 +11,19 @@
     ItemDoc,
     ItemKind,
     PackageInfo,
+    ResolveGraph,
   } from "./types";
 
   let loading = true;
   let error = "";
   let items: ItemDoc[] = [];
   let packageInfo: PackageInfo | null = null;
+  let resolveGraph: ResolveGraph | null = null;
   let query = "";
   let kindFilter: "all" | ItemKind = "all";
   let selectedPath = "";
   let view: "home" | "item" = "home";
+  let graphOpen = false;
 
   const kindOptions: Array<"all" | ItemKind> = [
     "all",
@@ -83,6 +87,15 @@
     view = "home";
   };
 
+  const openGraph = () => {
+    if (!resolveGraph) return;
+    graphOpen = true;
+  };
+
+  const closeGraph = () => {
+    graphOpen = false;
+  };
+
   onMount(() => {
     const load = async (): Promise<void> => {
       try {
@@ -96,9 +109,11 @@
 
         if (Array.isArray(data)) {
           packageInfo = null;
+          resolveGraph = null;
           items = data;
         } else {
           packageInfo = data.package || null;
+          resolveGraph = data.resolve_graph || data.lock_graph || null;
           items = Array.isArray(data.items) ? data.items : [];
         }
 
@@ -148,7 +163,13 @@
 </script>
 
 <div class="shell">
-  <Topbar {packageInfo} {items} {counts} />
+  <Topbar
+    {packageInfo}
+    {items}
+    {counts}
+    onOpenGraph={openGraph}
+    graphAvailable={Boolean(resolveGraph)}
+  />
 
   {#if error}
     <div class="state error">{error}</div>
@@ -179,6 +200,7 @@
           {counts}
           {topModules}
           {prominentItems}
+          {resolveGraph}
           onSelectItem={selectItem}
         />
       {:else}
@@ -186,4 +208,8 @@
       {/if}
     </section>
   </main>
+
+  {#if graphOpen}
+    <DependencyGraph {resolveGraph} onClose={closeGraph} />
+  {/if}
 </div>

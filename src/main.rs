@@ -14,7 +14,7 @@ mod util;
 
 use cli::parse_args;
 use collector::RaCollector;
-use lockfile::lock_graph;
+use lockfile::resolve_graph;
 use metadata_build::{
     declared_dependencies, load_metadata, package_doc, package_source_kind, workspace_resolver,
 };
@@ -58,7 +58,6 @@ fn main() -> Result<()> {
 
     let mut package_id_by_metadata: HashMap<String, PackageId> = HashMap::new();
     let mut package_id_by_manifest: HashMap<String, PackageId> = HashMap::new();
-    let mut package_id_by_lock_key: HashMap<String, PackageId> = HashMap::new();
 
     let workspace_members: HashSet<String> = metadata
         .workspace_members
@@ -89,14 +88,6 @@ fn main() -> Result<()> {
         package_id_by_metadata.insert(package.id.to_string(), package_id.clone());
         package_id_by_manifest.insert(manifest_rel.clone(), package_id.clone());
 
-        let lock_key = format!(
-            "{}@{}|{}",
-            package.name,
-            package.version,
-            source_string.as_deref().unwrap_or("local")
-        );
-        package_id_by_lock_key.insert(lock_key, package_id.clone());
-
         packages.push(package_doc(
             package,
             &workspace_root,
@@ -125,10 +116,10 @@ fn main() -> Result<()> {
         .filter_map(|value| package_id_by_metadata.get(&value.to_string()).cloned())
         .collect();
 
-    let (lock_graph, mut diagnostics) = lock_graph(
+    let (resolve_graph, mut diagnostics) = resolve_graph(
         &workspace_root,
         &metadata,
-        &package_id_by_lock_key,
+        &package_id_by_metadata,
         &workspace_member_ids,
     );
 
@@ -219,7 +210,7 @@ fn main() -> Result<()> {
         workspace,
         packages,
         declared_dependencies,
-        lock_graph,
+        resolve_graph,
         items,
         diagnostics,
     };

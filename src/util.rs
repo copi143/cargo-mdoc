@@ -145,27 +145,3 @@ pub fn package_id_for(
 ) -> PackageId {
     format!("pkg:{}@{}|{}|{}", name, version, source_key, manifest_path)
 }
-
-pub fn lock_node_id(name: &str, version: &str, source: Option<&str>) -> LockNodeId {
-    let source_key = source.unwrap_or("local");
-    format!("crate:{}@{}|{}", name, version, source_key)
-}
-
-pub fn parse_lock_dep(spec: &str) -> Option<(String, String, Option<String>)> {
-    let trimmed = spec.trim();
-
-    let (main, source) = if let Some(start) = trimmed.rfind(" (") {
-        let source_all = trimmed.strip_suffix(')')?;
-        let source = source_all[start + 2..].trim();
-        let main = trimmed[..start].trim();
-        (main, Some(source.to_string()))
-    } else {
-        (trimmed, None)
-    };
-
-    let mut parts = main.split_whitespace();
-    let name = parts.next()?.to_string();
-    let version = parts.next()?.to_string();
-
-    Some((name, version, source))
-}

@@ -35,3 +35,31 @@ export type PackageInfo = {
 };
 
 export type Counts = Partial<Record<ItemKind, number>>;
+
+export type ResolveGraphNode = {
+  id: string;
+  name: string;
+  version: string;
+  source?: string | null;
+  checksum?: string | null;
+  replace?: string | null;
+  workspace_member: boolean;
+  package_id?: string | null;
+};
+
+export type ResolveGraphEdge = {
+  from: string;
+  to: string;
+  kind: "normal" | "dev" | "build" | "unknown";
+  req?: string | null;
+  optional?: boolean | null;
+  uses_default_features?: boolean | null;
+  features: string[];
+};
+
+export type ResolveGraph = {
+  generated_by?: string | null;
+  nodes: ResolveGraphNode[];
+  edges: ResolveGraphEdge[];
+  roots: string[];
+};

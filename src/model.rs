@@ -164,9 +164,7 @@ pub struct LockEdge {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct LockGraph {
-    pub lockfile_path: String,
-    pub lockfile_version: Option<u32>,
+pub struct ResolveGraph {
     pub generated_by: Option<String>,
     pub nodes: Vec<LockNode>,
     pub edges: Vec<LockEdge>,
@@ -233,7 +231,7 @@ pub struct InternalDoc {
     pub workspace: WorkspaceInfo,
     pub packages: Vec<PackageDoc>,
     pub declared_dependencies: Vec<DeclaredDependencyEdge>,
-    pub lock_graph: Option<LockGraph>,
+    pub resolve_graph: Option<ResolveGraph>,
     pub items: Vec<ItemDoc>,
     pub diagnostics: Vec<Diagnostic>,
 }

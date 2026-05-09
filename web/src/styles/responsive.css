@@ -21,6 +21,29 @@
     grid-template-columns: 1fr;
     overflow: auto;
   }
+
+  .graph-modal {
+    width: min(100vw - 24px, 1200px);
+    max-height: calc(100vh - 24px);
+  }
+
+  .graph-modal-body {
+    grid-template-columns: 1fr;
+  }
+
+  .graph-viewport {
+    min-height: 420px;
+  }
+
+  .graph-modal-actions {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .graph-tree-node,
+  .graph-focus-node {
+    min-width: 0;
+  }
 }
 
 @media (max-width: 640px) {
@@ -52,5 +75,34 @@
 
   .home-card {
     padding: 16px;
+  }
+
+  .graph-overlay {
+    padding: 12px;
+  }
+
+  .graph-modal {
+    width: calc(100vw - 24px);
+  }
+
+  .graph-modal-header {
+    flex-direction: column;
+  }
+
+  .graph-modal-actions {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .graph-mode-switch {
+    width: 100%;
+
+    button {
+      flex: 1;
+    }
+  }
+
+  .graph-node-card {
+    width: 220px;
   }
 }

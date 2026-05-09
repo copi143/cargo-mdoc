@@ -3,6 +3,8 @@
 
   export let packageInfo: PackageInfo | null = null;
   export let items: ItemDoc[] = [];
+  export let onOpenGraph: () => void = () => {};
+  export let graphAvailable = false;
 </script>
 
 <header class="topbar">
@@ -34,6 +36,12 @@
     <div class="meta-card">
       <div class="meta-label">Source</div>
       <div class="meta-value">mdoc.json</div>
+    </div>
+    <div class="meta-card meta-action">
+      <div class="meta-label">Graph</div>
+      <button class="ghost" on:click={onOpenGraph} disabled={!graphAvailable}>
+        Open dependency graph
+      </button>
     </div>
   </div>
 </header>

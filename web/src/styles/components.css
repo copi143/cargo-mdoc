@@ -196,6 +196,7 @@
 
 .home-card {
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
   gap: 12px;
   min-height: 180px;
@@ -219,6 +220,566 @@
   &.home-readme {
     min-height: 100%;
   }
+}
+
+.home-graph {
+  gap: 16px;
+}
+
+.home-graph-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.graph-badge,
+.graph-tag,
+.graph-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--line);
+}
+
+.graph-badge,
+.graph-tag {
+  color: var(--muted);
+  background: var(--panel);
+}
+
+.graph-pill-button,
+.graph-node-button,
+.graph-tree-node,
+.graph-focus-node {
+  background: #fff;
+}
+
+.graph-pill-button,
+.graph-node-button,
+.graph-tree-node,
+.graph-focus-node,
+.graph-mode-switch button {
+  cursor: pointer;
+}
+
+.graph-pill-button {
+  color: var(--accent);
+  border: 1px solid var(--line);
+}
+
+.graph-node-button {
+  width: 100%;
+  text-align: left;
+}
+
+.graph-node-button.selected,
+.graph-tree-node--selected,
+.graph-focus-node {
+  border-color: var(--accent);
+}
+
+.graph-mode-switch {
+  display: inline-flex;
+  gap: 8px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+
+  button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid transparent;
+
+    &.active {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+  }
+}
+
+.graph-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.graph-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  h4 {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted-2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+.graph-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.graph-pill {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.graph-list {
+  display: grid;
+  gap: 10px;
+}
+
+.graph-node {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.graph-node-head {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.graph-node-subtitle,
+.graph-node-meta,
+.graph-edge-row {
+  font-size: 0.78rem;
+  color: var(--muted-2);
+}
+
+.graph-node-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.graph-node-edges {
+  display: grid;
+  gap: 6px;
+}
+
+.graph-edge-row {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.graph-tree-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 360px) minmax(0, 1fr);
+  gap: 16px;
+  min-height: 0;
+}
+
+.graph-viewport {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  border: 1px solid var(--line);
+}
+
+.graph-viewport--dragging {
+  cursor: grabbing;
+}
+
+.graph-surface {
+  position: relative;
+  transform-origin: 0 0;
+}
+
+.graph-links {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.graph-edge {
+  opacity: 0.9;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.graph-edge--upstream {
+  stroke: #b45309;
+}
+
+.graph-edge--downstream {
+  stroke: #1d4ed8;
+}
+
+.graph-edge--neutral {
+  opacity: 0.4;
+  stroke: var(--muted-2);
+}
+
+.graph-node-card {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-soft);
+}
+
+.graph-node-card--selected {
+  border-color: var(--accent);
+  border-width: 2px;
+}
+
+.graph-node-card--upstream {
+  border-left-color: #b45309;
+  border-left-width: 3px;
+}
+
+.graph-node-card--downstream {
+  border-left-color: #1d4ed8;
+  border-left-width: 3px;
+}
+
+.graph-node-card-head {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.graph-node-card-subtitle,
+.graph-node-card-meta,
+.graph-node-card-source,
+.graph-hint {
+  font-size: 0.78rem;
+  color: var(--muted-2);
+}
+
+.graph-node-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.graph-node-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: transparent;
+  border: 1px solid currentColor;
+}
+
+.graph-hint {
+  position: absolute;
+  padding: 6px 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-soft);
+}
+
+.graph-tree-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.graph-tree-intro h3,
+.graph-section h3 {
+  margin: 0;
+}
+
+.graph-tree-section--upstream {
+  --graph-branch-color: #b45309;
+}
+
+.graph-tree-section--downstream {
+  --graph-branch-color: #1d4ed8;
+}
+
+.graph-tree-center {
+  display: grid;
+  place-items: center;
+}
+
+.graph-tree-grid {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding-bottom: 6px;
+  overflow: auto;
+}
+
+.graph-tree-grid--upstream {
+  align-content: start;
+  justify-items: end;
+}
+
+.graph-tree-grid--downstream {
+  align-content: start;
+  justify-items: start;
+}
+
+.graph-tree-column {
+  display: grid;
+  gap: 10px;
+  min-width: min(100%, 280px);
+}
+
+.graph-tree-column-label {
+  font-size: 0.72rem;
+  color: var(--muted-2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.graph-focus-node {
+  min-width: min(100%, 360px);
+  padding: 14px 16px;
+  text-align: left;
+  border: 2px solid var(--accent);
+}
+
+.graph-focus-kicker {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  color: var(--muted-2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.graph-tree-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.graph-tree {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.graph-tree-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.graph-tree-node {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--graph-branch-color, var(--line));
+}
+
+.graph-tree-node--selected {
+  border-color: var(--accent);
+  border-width: 2px;
+}
+
+.graph-tree-node--upstream {
+  border-left-color: var(--graph-branch-color, #b45309);
+  border-left-width: 3px;
+}
+
+.graph-tree-node--downstream {
+  border-left-color: var(--graph-branch-color, #1d4ed8);
+  border-left-width: 3px;
+}
+
+.graph-tree-node-head {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.graph-tree-node-subtitle,
+.graph-tree-node-meta {
+  font-size: 0.78rem;
+  color: var(--muted-2);
+}
+
+.graph-tree-node-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.graph-tree-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: transparent;
+  border: 1px solid var(--graph-branch-color, var(--line));
+}
+
+.graph-tree-children {
+  display: grid;
+  gap: 12px;
+  padding: 0 0 0 22px;
+  margin: 0;
+  list-style: none;
+  border-left: 2px solid var(--graph-branch-color, var(--line));
+}
+
+.graph-tree-children > li {
+  position: relative;
+}
+
+.graph-tree-children > li::before {
+  position: absolute;
+  top: 18px;
+  left: -22px;
+  width: 22px;
+  content: "";
+  border-top: 2px solid var(--graph-branch-color, var(--line));
+}
+
+.graph-tree-edge--upstream,
+.graph-tree-edge--downstream {
+  border-left-color: var(--graph-branch-color, var(--line));
+}
+
+.graph-tree-node--upstream {
+  border-color: color-mix(
+    in srgb,
+    var(--graph-branch-color, var(--line)) 85%,
+    white
+  );
+}
+
+.graph-tree-node--downstream {
+  border-color: color-mix(
+    in srgb,
+    var(--graph-branch-color, var(--line)) 85%,
+    white
+  );
+}
+
+.graph-tree-node--upstream .graph-tree-node-meta,
+.graph-tree-node--downstream .graph-tree-node-meta,
+.graph-tree-node--upstream .graph-tree-node-subtitle,
+.graph-tree-node--downstream .graph-tree-node-subtitle {
+  color: var(--muted-2);
+}
+
+.graph-tree-node--upstream .graph-tree-tag,
+.graph-tree-node--downstream .graph-tree-tag {
+  color: var(--muted);
+}
+
+.graph-tree-node--upstream,
+.graph-tree-node--downstream,
+.graph-tree-node--selected,
+.graph-focus-node,
+.graph-pill-button,
+.graph-node-button.selected {
+  box-shadow: none;
+}
+
+.graph-tree-node--upstream:hover {
+  border-color: var(--graph-branch-color, #b45309);
+}
+
+.graph-tree-node--downstream:hover {
+  border-color: var(--graph-branch-color, #1d4ed8);
+}
+
+.graph-tree-node--upstream:hover,
+.graph-tree-node--downstream:hover,
+.graph-node-button:hover,
+.graph-pill-button:hover,
+.graph-focus-node:hover {
+  border-color: var(--accent);
+}
+
+.graph-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.graph-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 18, 30, 0.56);
+  border: 0;
+}
+
+.graph-modal {
+  position: relative;
+  z-index: 1;
+  width: min(1200px, calc(100vw - 40px));
+  max-height: min(92vh, 980px);
+  overflow: hidden;
+}
+
+.graph-modal-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.graph-modal-body {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  gap: 16px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.graph-modal-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.graph-section-wide {
+  min-width: 0;
+}
+
+.graph-list-modal {
+  max-height: calc(92vh - 260px);
+  padding-right: 6px;
+  overflow: auto;
+}
+
+.graph-list-modal .graph-node-button.selected {
+  border-color: var(--accent);
 }
 
 .home-body {

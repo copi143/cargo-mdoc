@@ -14,7 +14,7 @@ precise item-to-package attribution.
   "workspace": {},
   "packages": [],
   "declared_dependencies": [],
-  "lock_graph": {},
+  "resolve_graph": {},
   "items": [],
   "diagnostics": []
 }
@@ -73,12 +73,10 @@ precise item-to-package attribution.
 
 `to_package_id` is set only when the dependency resolves to a local or workspace package.
 
-## Lock Graph
+## Resolve Graph
 
 ```json
 {
-  "lockfile_path": "Cargo.lock",
-  "lockfile_version": 3,
   "nodes": [
     {
       "id": "crate:tokio@1.0.0|registry+https://github.com/rust-lang/crates.io-index",
@@ -102,8 +100,8 @@ precise item-to-package attribution.
 }
 ```
 
-The lock graph is parsed directly from Cargo.lock. Fields not present in the lockfile are left
-as `null` or `unknown`.
+The resolve graph is parsed directly from Cargo metadata. Fields not present in the metadata are
+left as `null` or `unknown`.
 
 ## Items
 
