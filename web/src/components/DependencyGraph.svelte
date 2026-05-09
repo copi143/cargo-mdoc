@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ResolveGraph } from "../types";
+  import dagre from "dagre";
 
   export let resolveGraph: ResolveGraph | null = null;
   export let onClose: () => void = () => {};
@@ -32,18 +33,22 @@
   let selectedDownstreamNodeIds = new Set<string>();
   let panX = 40;
   let panY = 40;
+  let scale = 1;
   let dragStartX = 0;
   let dragStartY = 0;
   let dragOriginX = 0;
   let dragOriginY = 0;
   let isPanning = false;
+  let didDrag = false;
+
+  const DRAG_THRESHOLD = 5;
+  const MIN_SCALE = 0.1;
+  const MAX_SCALE = 5;
+  const ZOOM_STEP = 0.1;
 
   const NODE_WIDTH = 240;
   const NODE_HEIGHT = 86;
-  const COLUMN_GAP = 280;
-  const ROW_GAP = 120;
   const MARGIN_X = 80;
-  const MARGIN_Y = 80;
 
   const formatNodeLabel = (node: ResolveGraph["nodes"][number]): string =>
     `${node.name} ${node.version}`;
@@ -65,6 +70,25 @@
   const resetPan = (): void => {
     panX = 40;
     panY = 40;
+    scale = 1;
+  };
+
+  const zoomIn = () => {
+    const newScale = Math.min(MAX_SCALE, scale + ZOOM_STEP);
+    const cx = graphCanvasWidth / 2;
+    const cy = graphCanvasHeight / 2;
+    panX = cx - (cx - panX) * (newScale / scale);
+    panY = cy - (cy - panY) * (newScale / scale);
+    scale = newScale;
+  };
+
+  const zoomOut = () => {
+    const newScale = Math.max(MIN_SCALE, scale - ZOOM_STEP);
+    const cx = graphCanvasWidth / 2;
+    const cy = graphCanvasHeight / 2;
+    panX = cx - (cx - panX) * (newScale / scale);
+    panY = cy - (cy - panY) * (newScale / scale);
+    scale = newScale;
   };
 
   const edgeKindLabel = (kind: string): string => {
@@ -151,7 +175,7 @@
   };
 
   const buildLayout = () => {
-    if (!resolveGraph || graphNodeById.size === 0) {
+    if (!resolveGraph || graphNodeById.size === 0 || resolveGraph.nodes.length === 0) {
       graphLayoutNodes = [];
       graphLayoutEdges = [];
       graphCanvasWidth = 0;
@@ -159,139 +183,78 @@
       return;
     }
 
-    const depthMap = new Map<string, number>();
-    const rootIds = uniqueSorted(
-      (resolveGraph.roots.length
-        ? resolveGraph.roots
-        : resolveGraph.nodes
-            .filter((node) => (incomingMap.get(node.id) ?? []).length === 0)
-            .map((node) => node.id)
-      ).filter((nodeId) => graphNodeById.has(nodeId)),
-    );
-
-    const fallbackRootId = rootIds[0] ?? resolveGraph.nodes[0]?.id;
-    if (fallbackRootId) {
-      depthMap.set(fallbackRootId, 0);
-    }
-
-    for (const rootId of rootIds) {
-      depthMap.set(rootId, 0);
-    }
-
-    let changed = true;
-    let guard = resolveGraph.nodes.length * 2;
-    while (changed && guard-- > 0) {
-      changed = false;
-
-      for (const edge of resolveGraph.edges) {
-        const sourceDepth = depthMap.get(edge.from);
-        if (sourceDepth === undefined) continue;
-
-        const nextDepth = sourceDepth + 1;
-        const currentDepth = depthMap.get(edge.to);
-
-        if (currentDepth === undefined || nextDepth < currentDepth) {
-          depthMap.set(edge.to, nextDepth);
-          changed = true;
-        }
-      }
-    }
-
-    const unresolvedIds = resolveGraph.nodes
-      .map((node) => node.id)
-      .filter((nodeId) => depthMap.get(nodeId) === undefined);
-
-    for (const nodeId of unresolvedIds) {
-      depthMap.set(nodeId, 0);
-    }
-
-    const layerMap = new Map<number, string[]>();
-    let maxLayer = 0;
+    const g = new dagre.graphlib.Graph();
+    g.setGraph({
+      rankdir: "LR",
+      nodesep: 60,
+      ranksep: 280,
+      marginx: 80,
+      marginy: 80,
+    });
+    g.setDefaultEdgeLabel(() => ({}));
 
     for (const node of resolveGraph.nodes) {
-      const layer = depthMap.get(node.id) ?? 0;
-      maxLayer = Math.max(maxLayer, layer);
-      const existing = layerMap.get(layer) ?? [];
-      existing.push(node.id);
-      layerMap.set(layer, existing);
+      g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
     }
 
-    const layers = Array.from({ length: maxLayer + 1 }, (_, layer) =>
-      uniqueSorted(layerMap.get(layer) ?? []),
-    );
+    for (const edge of resolveGraph.edges) {
+      g.setEdge(edge.from, edge.to);
+    }
 
-    const nodePositions = new Map<
-      string,
-      { x: number; y: number; layer: number }
-    >();
-    let maxRows = 0;
+    dagre.layout(g);
 
-    layers.forEach((layerNodes, layerIndex) => {
-      maxRows = Math.max(maxRows, layerNodes.length);
-      layerNodes.forEach((nodeId, rowIndex) => {
-        nodePositions.set(nodeId, {
-          x: MARGIN_X + layerIndex * COLUMN_GAP,
-          y: MARGIN_Y + rowIndex * ROW_GAP,
-          layer: layerIndex,
-        });
-      });
-    });
-
-    graphLayoutNodes = resolveGraph.nodes
+    const nodeEntries = resolveGraph.nodes
       .map((node) => {
-        const position = nodePositions.get(node.id) ?? {
-          x: MARGIN_X,
-          y: MARGIN_Y,
-          layer: 0,
-        };
-
+        const pos = g.node(node.id);
+        if (!pos) return null;
         return {
           id: node.id,
           node,
-          x: position.x,
-          y: position.y,
-          layer: position.layer,
+          x: pos.x - NODE_WIDTH / 2,
+          y: pos.y - NODE_HEIGHT / 2,
+          layer: 0,
           incoming: graphIncoming?.[node.id] ?? 0,
           outgoing: graphOutgoing?.[node.id] ?? 0,
         };
       })
-      .sort((left, right) => {
-        if (left.layer !== right.layer) return left.layer - right.layer;
-        return sortNodeIds(left.id, right.id);
-      });
+      .filter((n): n is NonNullable<typeof n> => n !== null);
 
-    const positionById = new Map(
-      graphLayoutNodes.map((entry) => [entry.id, entry]),
-    );
+    const uniqueXs = [...new Set(nodeEntries.map(n => Math.round(n.x)))].sort((a, b) => a - b);
+    const xToLayer = new Map(uniqueXs.map((x, i) => [x, i]));
+    for (const n of nodeEntries) {
+      n.layer = xToLayer.get(Math.round(n.x)) ?? 0;
+    }
+
+    graphLayoutNodes = nodeEntries.sort((a, b) => {
+      if (a.layer !== b.layer) return a.layer - b.layer;
+      return sortNodeIds(a.id, b.id);
+    });
 
     graphLayoutEdges = resolveGraph.edges
       .map((edge) => {
-        const source = positionById.get(edge.from);
-        const target = positionById.get(edge.to);
-        if (!source || !target) return null;
+        const edgeData = g.edge(edge.from, edge.to);
+        if (!edgeData?.points || edgeData.points.length < 2) return null;
 
-        const sourceX = source.x + NODE_WIDTH;
-        const sourceY = source.y + NODE_HEIGHT / 2;
-        const targetX = target.x;
-        const targetY = target.y + NODE_HEIGHT / 2;
-        const controlOffset = Math.max(90, Math.abs(targetX - sourceX) / 2);
-        const midX = sourceX + (targetX - sourceX) / 2;
-        const path = `M ${sourceX} ${sourceY} C ${sourceX + controlOffset} ${sourceY}, ${targetX - controlOffset} ${targetY}, ${targetX} ${targetY}`;
+        const pts = edgeData.points;
+        let path = `M ${pts[0].x} ${pts[0].y}`;
+        for (let i = 1; i < pts.length; i++) {
+          path += ` L ${pts[i].x} ${pts[i].y}`;
+        }
 
-        return {
-          from: edge.from,
-          to: edge.to,
-          kind: edge.kind,
-          path,
-        };
+        return { from: edge.from, to: edge.to, kind: edge.kind, path };
       })
       .filter((edge): edge is NonNullable<typeof edge> => Boolean(edge));
 
-    graphCanvasWidth = MARGIN_X * 2 + maxLayer * COLUMN_GAP + NODE_WIDTH;
-    graphCanvasHeight = Math.max(
-      MARGIN_Y * 2 + maxRows * ROW_GAP,
-      MARGIN_Y * 2 + NODE_HEIGHT,
-    );
+    if (nodeEntries.length === 0) {
+      graphCanvasWidth = 0;
+      graphCanvasHeight = 0;
+      return;
+    }
+
+    const maxX = Math.max(...nodeEntries.map(n => n.x + NODE_WIDTH), 0);
+    const maxY = Math.max(...nodeEntries.map(n => n.y + NODE_HEIGHT), 0);
+    graphCanvasWidth = maxX + MARGIN_X;
+    graphCanvasHeight = Math.max(maxY + MARGIN_X, 400);
   };
 
   $: graphNodeById = new Map(
@@ -368,10 +331,9 @@
 
   const onGraphPointerDown = (event: PointerEvent): void => {
     if (event.button !== 0) return;
-    const target = event.target instanceof HTMLElement ? event.target : null;
-    if (target?.closest("button")) return;
 
     isPanning = true;
+    didDrag = false;
     dragStartX = event.clientX;
     dragStartY = event.clientY;
     dragOriginX = panX;
@@ -381,8 +343,15 @@
 
   const onGraphPointerMove = (event: PointerEvent): void => {
     if (!isPanning) return;
-    panX = dragOriginX + (event.clientX - dragStartX);
-    panY = dragOriginY + (event.clientY - dragStartY);
+    const dx = event.clientX - dragStartX;
+    const dy = event.clientY - dragStartY;
+    if (!didDrag && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
+      didDrag = true;
+    }
+    if (didDrag) {
+      panX = dragOriginX + dx;
+      panY = dragOriginY + dy;
+    }
   };
 
   const onGraphPointerEnd = (event: PointerEvent): void => {
@@ -395,6 +364,28 @@
     } catch {
       /* ignore */
     }
+    if (!didDrag) {
+      const el = document.elementFromPoint(event.clientX, event.clientY);
+      const card = el?.closest("[data-node-id]");
+      if (card) {
+        const nodeId = card.getAttribute("data-node-id");
+        if (nodeId) selectNode(nodeId);
+      }
+    }
+  };
+
+  const onGraphWheel = (event: WheelEvent): void => {
+    event.preventDefault();
+    const delta = event.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+    const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale + delta));
+
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const mx = event.clientX - rect.left;
+    const my = event.clientY - rect.top;
+
+    panX = mx - (mx - panX) * (newScale / scale);
+    panY = my - (my - panY) * (newScale / scale);
+    scale = newScale;
   };
 </script>
 
@@ -445,9 +436,10 @@
             </button>
           </div>
           {#if mode === "graph"}
-            <button class="ghost" type="button" on:click={resetPan}
-              >Reset view</button
-            >
+            <button class="ghost" type="button" on:click={zoomIn}>放大</button>
+            <button class="ghost" type="button" on:click={zoomOut}>缩小</button>
+            <span class="graph-zoom-level">{Math.round(scale * 100)}%</span>
+            <button class="ghost" type="button" on:click={resetPan}>重置</button>
           {/if}
           <button class="ghost" type="button" on:click={onClose}>Close</button>
         </div>
@@ -552,10 +544,11 @@
           on:pointermove={onGraphPointerMove}
           on:pointerup={onGraphPointerEnd}
           on:pointercancel={onGraphPointerEnd}
+          on:wheel|nonpassive={onGraphWheel}
         >
           <div
             class="graph-surface"
-            style={`width: ${graphCanvasWidth}px; height: ${graphCanvasHeight}px; transform: translate(${panX}px, ${panY}px);`}
+            style={`width: ${graphCanvasWidth}px; height: ${graphCanvasHeight}px; transform: translate(${panX}px, ${panY}px) scale(${scale}); transform-origin: 0 0;`}
           >
             <svg
               class="graph-links"
@@ -576,6 +569,7 @@
                 class={`graph-node-card ${selectedNodeId === layoutNode.id ? "graph-node-card--selected" : ""} ${selectedUpstreamNodeIds.has(layoutNode.id) ? "graph-node-card--upstream" : ""} ${selectedDownstreamNodeIds.has(layoutNode.id) ? "graph-node-card--downstream" : ""}`}
                 type="button"
                 style={`left: ${layoutNode.x}px; top: ${layoutNode.y}px; width: ${NODE_WIDTH}px; min-height: ${NODE_HEIGHT}px;`}
+                data-node-id={layoutNode.id}
                 on:click={() => selectNode(layoutNode.id)}
               >
                 <div class="graph-node-card-head">

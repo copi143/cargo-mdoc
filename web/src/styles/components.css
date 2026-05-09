@@ -1023,3 +1023,12 @@ pre > code.hljs {
   padding: 10px;
   font-size: 0.85rem;
 }
+
+.graph-zoom-level {
+  display: inline-flex;
+  align-items: center;
+  min-width: 40px;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
