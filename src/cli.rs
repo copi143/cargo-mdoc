@@ -34,6 +34,7 @@ pub fn parse_args() -> Result<CliOptions> {
             value if value.starts_with('-') => {
                 anyhow::bail!("Unknown argument: {}", value);
             }
+            // Positional arguments are allowed as the crate_root shorthand
             value => {
                 if crate_root.is_some() {
                     anyhow::bail!("Unexpected positional argument: {}", value);
@@ -43,10 +44,13 @@ pub fn parse_args() -> Result<CliOptions> {
         }
     }
 
+    // --stdout and --output conflict: output is either file or stream, not both
     if stdout && output.is_some() {
         anyhow::bail!("--stdout cannot be combined with --output");
     }
 
+    // In debug builds, default to the example crate for quick iteration;
+    // in release, default to cwd so `cargo run` works as expected
     let crate_root = match crate_root {
         Some(value) => value,
         None if cfg!(debug_assertions) => PathBuf::from("example"),
@@ -56,6 +60,7 @@ pub fn parse_args() -> Result<CliOptions> {
     let output = match (stdout, output) {
         (true, output) => output,
         (false, Some(output)) => Some(output),
+        // In debug mode, write to web/ for the frontend dev server by default
         (false, None) if cfg!(debug_assertions) => Some(PathBuf::from("web/mdoc.json")),
         (false, None) => None,
     };

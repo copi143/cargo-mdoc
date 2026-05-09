@@ -17,6 +17,8 @@ pub fn load_metadata(manifest_path: &Path) -> Result<Metadata> {
         .with_context(|| format!("Failed running cargo metadata for {:?}", manifest_path))
 }
 
+// cargo_metadata::Metadata exposes workspace_resolver only in newer versions;
+// we parse the resolver from Cargo.toml directly for broader compatibility.
 pub fn workspace_resolver(workspace_root: &Path) -> Option<String> {
     let path = workspace_root.join("Cargo.toml");
     let text = fs::read_to_string(&path).ok()?;
@@ -43,6 +45,8 @@ pub fn package_source_kind(source: Option<&str>, is_workspace_member: bool) -> P
 
 pub fn target_doc(target: &Target, workspace_root: &Path) -> TargetDoc {
     let crate_types = if target.crate_types.is_empty() {
+        // Empty crate_types is the default (rlib for lib, bin for binary);
+        // omit from output to reduce verbosity
         None
     } else {
         Some(
@@ -80,6 +84,8 @@ pub fn package_doc(
 
     let source_string = package.source.as_ref().map(|value| value.to_string());
     let source_kind = package_source_kind(source_string.as_deref(), is_workspace_member);
+    // For local packages, source.value is the root directory relative to workspace;
+    // for registry/git packages, source.value is the URL or registry source
     let source_value = match source_kind {
         PackageSourceKind::WorkspaceMember | PackageSourceKind::Path => Some(root_dir.clone()),
         _ => source_string.clone(),
@@ -90,6 +96,7 @@ pub fn package_doc(
         .as_ref()
         .map(|value| rel_path(workspace_root, value.as_std_path()));
 
+    // Only read README content for local packages to avoid network access
     let is_local = manifest_path.starts_with(workspace_root);
     let readme = if is_local {
         readme_path.as_deref().and_then(|path| {
@@ -136,6 +143,7 @@ pub fn dependency_kind(kind: DependencyKind) -> DependencyKindDoc {
         DependencyKind::Normal => DependencyKindDoc::Normal,
         DependencyKind::Development => DependencyKindDoc::Dev,
         DependencyKind::Build => DependencyKindDoc::Build,
+        // cargo_metadata may introduce new kinds; fall back to Normal
         _ => DependencyKindDoc::Normal,
     }
 }
@@ -160,6 +168,8 @@ pub fn declared_dependencies(
                 .as_ref()
                 .map(|value| rel_path(workspace_root, value.as_std_path()));
 
+            // Normalize path to always point to Cargo.toml;
+            // dep.path may be the directory or the Cargo.toml itself
             let manifest_path = path.as_deref().map(|value| {
                 if value.ends_with("Cargo.toml") {
                     value.to_string()
@@ -168,6 +178,8 @@ pub fn declared_dependencies(
                 }
             });
 
+            // Resolve the dependency's package_id by its manifest path;
+            // returns None for non-local dependencies (registry/git)
             let to_package_id = manifest_path
                 .as_deref()
                 .and_then(|path| package_id_by_manifest.get(path))
@@ -183,6 +195,9 @@ pub fn declared_dependencies(
                 optional: dep.optional,
                 uses_default_features: dep.uses_default_features,
                 features: dep.features.clone(),
+                // target cfg from Cargo.toml uses a different syntax than
+                // Rust #[cfg]; it is stored as an unparsed string flag
+                // rather than a recursive CfgExpr
                 target_cfg: dep
                     .target
                     .as_ref()

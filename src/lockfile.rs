@@ -6,6 +6,9 @@ use crate::model::{
     Diagnostic, DiagnosticLevel, LockEdge, LockEdgeKind, LockNode, PackageId, ResolveGraph,
 };
 
+// Builds a dependency resolve graph from cargo metadata.
+// The resolve graph mirrors Cargo.lock structure and is separate from
+// declared_dependencies (which comes from Cargo.toml dependency declarations).
 pub fn resolve_graph(
     _workspace_root: &Path,
     metadata: &Metadata,
@@ -14,6 +17,7 @@ pub fn resolve_graph(
 ) -> (Option<ResolveGraph>, Vec<Diagnostic>) {
     let mut diagnostics = Vec::new();
 
+    // resolve can be absent when metadata is collected without the resolve feature
     let resolve = match &metadata.resolve {
         Some(resolve) => resolve,
         None => {
@@ -70,6 +74,10 @@ pub fn resolve_graph(
             package_id,
         });
 
+        // cargo_metadata's resolve graph only provides package-level dependency
+        // references without the edge metadata (kind, features, etc.).
+        // Rich edge information is available in declared_dependencies instead.
+        // LockEdge fields beyond from/to are left as None/Unknown intentionally.
         for dep in &node.deps {
             edges.push(LockEdge {
                 from: node.id.to_string(),
@@ -91,6 +99,8 @@ pub fn resolve_graph(
         ))
     });
 
+    // resolve.root is the root package (singleton), missing in workspaces;
+    // for workspace projects, all workspace members are roots.
     let roots = if let Some(root) = &resolve.root {
         vec![root.to_string()]
     } else {

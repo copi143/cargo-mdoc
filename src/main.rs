@@ -28,18 +28,22 @@ fn main() -> Result<()> {
     let cli = parse_args()?;
 
     let cwd = std::env::current_dir().context("Failed to resolve current directory")?;
+
+    // Support both relative and absolute crate_root paths
     let crate_root = if cli.crate_root.is_absolute() {
         cli.crate_root.clone()
     } else {
         cwd.join(&cli.crate_root)
     };
 
+    // manifest_path can be a direct Cargo.toml path or a directory containing one
     let manifest_path = if crate_root.is_file() {
         crate_root.clone()
     } else {
         crate_root.join("Cargo.toml")
     };
 
+    // Resolve output path relative to cwd, or stdout mode suppresses the file
     let output_path = if cli.stdout {
         None
     } else {
@@ -56,6 +60,9 @@ fn main() -> Result<()> {
     let workspace_root = PathBuf::from(metadata.workspace_root.as_std_path());
     let resolver = workspace_resolver(&workspace_root);
 
+    // Two lookup maps for resolving PackageId:
+    //   metadata id   -> PackageId (for resolve graph / workspace members)
+    //   manifest path -> PackageId (for dependency edge resolution by path)
     let mut package_id_by_metadata: HashMap<String, PackageId> = HashMap::new();
     let mut package_id_by_manifest: HashMap<String, PackageId> = HashMap::new();
 
@@ -72,6 +79,8 @@ fn main() -> Result<()> {
         let is_workspace_member = workspace_members.contains(&package.id.to_string());
         let source_string = package.source.as_ref().map(|value| value.to_string());
 
+        // source_key distinguishes packages from different origins;
+        // this ensures package_id is unique even if two packages share a name + version
         let source_key = if is_workspace_member {
             "workspace".to_string()
         } else {
@@ -130,6 +139,8 @@ fn main() -> Result<()> {
         let source_string = package.source.as_ref().map(|value| value.to_string());
         let source_kind = package_source_kind(source_string.as_deref(), is_workspace_member);
 
+        // Only workspace members and local path dependencies have local source;
+        // registry/git packages cannot be analyzed statically without fetching
         let is_local = matches!(
             source_kind,
             PackageSourceKind::WorkspaceMember | PackageSourceKind::Path
@@ -166,6 +177,7 @@ fn main() -> Result<()> {
     }
 
     let mut items = collector.items;
+    // Deterministic ordering: package -> path -> line, so output is reproducible
     items.sort_by(|a, b| {
         (a.package_id.as_str(), a.path.as_str(), a.source.line_start).cmp(&(
             b.package_id.as_str(),
@@ -204,6 +216,8 @@ fn main() -> Result<()> {
         generator: GeneratorInfo {
             name: "cargo-mdoc".to_string(),
             version: env!("CARGO_PKG_VERSION").to_string(),
+            // Intentionally not running rustc/cargo to get versions;
+            // these fields are placeholders for future enhancement
             rustc_version: None,
             cargo_version: None,
         },
@@ -222,6 +236,8 @@ fn main() -> Result<()> {
     } else {
         let output_path = output_path.expect("output path must exist when not writing to stdout");
 
+        // Only create parent directory when it has a meaningful path;
+        // skip for bare filenames like "mdoc.json" (current dir)
         if let Some(parent) = output_path
             .parent()
             .filter(|parent| !parent.as_os_str().is_empty())

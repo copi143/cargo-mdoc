@@ -20,6 +20,9 @@ impl RaCollector {
         Self { items: Vec::new() }
     }
 
+    // Entry point: finds lib.rs or main.rs and walks from there.
+    // Preferring lib.rs over main.rs matches Cargo's convention
+    // where lib.rs is the crate root for library crates.
     pub fn collect_crate(
         &mut self,
         workspace_root: &Path,
@@ -48,6 +51,9 @@ impl RaCollector {
         Ok(())
     }
 
+    // Parses a source file and walks its syntax tree.
+    // Each file is parsed independently; there is no cross-file cache
+    // because Rust's module system typically maps 1:1 to files.
     fn walk_file(
         &mut self,
         workspace_root: &Path,
@@ -82,6 +88,10 @@ impl RaCollector {
         Ok(())
     }
 
+    // Recursive syntax walker.
+    // Known item kinds (FN, STRUCT, etc.) are dispatched to typed handlers;
+    // unknown nodes are recursed into to find nested items (e.g., items inside
+    // mod or impl blocks).
     fn walk_syntax_node(
         &mut self,
         workspace_root: &Path,
@@ -163,6 +173,8 @@ impl RaCollector {
                         )?;
                     }
                 }
+                // Recurse into unsupported nodes to find nested items;
+                // this handles items inside blocks, impls, etc.
                 _ => {
                     self.walk_syntax_node(
                         workspace_root,
@@ -351,6 +363,7 @@ impl RaCollector {
 
         mod_path.push(name.clone());
 
+        // Inline module (mod foo { ... }) vs file module (mod foo;)
         if let Some(item_list) = module.item_list() {
             self.walk_syntax_node(
                 workspace_root,
@@ -385,6 +398,8 @@ impl RaCollector {
     ) {
         let path = join_path(mod_path, &name);
         let module_path = module_path_string(mod_path);
+        // id includes line_start to disambiguate items with identical paths;
+        // this can happen when macro expansion produces items at the same path
         let id = format!("item:{}:{}:{}", package_id, path, source.line_start);
 
         self.items.push(ItemDoc {

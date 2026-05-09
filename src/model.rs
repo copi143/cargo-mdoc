@@ -1,6 +1,10 @@
 use serde::Serialize;
 use std::collections::BTreeMap;
 
+// CfgExpr uses #[serde(tag = "kind", content = "value")] so JSON output
+// is a tagged union like {"kind": "All", "value": [...]}.
+// This is the project's own IR, decoupled from ra_ap_cfg's representation,
+// to avoid leaking library types into the stable output format.
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "kind", content = "value")]
 pub enum CfgExpr {
@@ -13,6 +17,9 @@ pub enum CfgExpr {
     Not(Box<CfgExpr>),
 }
 
+// Only basic item kinds are tracked in the MVP;
+// TypeAlias, Constant, Static, Union, Macro, and Impl are intentionally excluded
+// to keep the analysis scope manageable.
 #[derive(Debug, Clone, Serialize)]
 pub enum ItemKind {
     Function,
@@ -27,6 +34,8 @@ pub struct SourceLocation {
     pub file: String,
     pub line_start: usize,
     pub line_end: usize,
+    // Column offsets are not yet tracked; they require byte-to-column mapping
+    // which is non-trivial for multi-byte characters
     pub col_start: Option<usize>,
     pub col_end: Option<usize>,
 }
@@ -35,6 +44,8 @@ pub struct SourceLocation {
 pub struct GeneratorInfo {
     pub name: String,
     pub version: String,
+    // rustc and cargo versions are collected by the build system metadata;
+    // intentionally omitted in MVP to avoid running external tooling
     pub rustc_version: Option<String>,
     pub cargo_version: Option<String>,
 }
@@ -49,6 +60,9 @@ pub struct WorkspaceInfo {
     pub default_members: Vec<PackageId>,
 }
 
+// PackageId is a string with a structured format:
+// pkg:<name>@<version>|<source_key>|<manifest_path>
+// This is globally unique across workspace + dependency packages.
 pub type PackageId = String;
 
 #[derive(Debug, Clone, Serialize)]
@@ -64,6 +78,8 @@ pub enum PackageSourceKind {
 pub struct PackageSource {
     pub kind: PackageSourceKind,
     pub value: Option<String>,
+    // VCS metadata is captured from Cargo.lock but not actively used;
+    // stored for forward compatibility with workspace audit tools
     pub rev: Option<String>,
     pub branch: Option<String>,
     pub tag: Option<String>,
@@ -114,12 +130,16 @@ pub struct DeclaredDependencyEdge {
     pub from_package_id: PackageId,
     pub dep_name: String,
     pub to_package_id: Option<PackageId>,
+    // Renamed dependencies (e.g., `tokio = { package = "tokio-util" }`)
     pub package_rename: Option<String>,
     pub req: Option<String>,
     pub kind: DependencyKindDoc,
     pub optional: bool,
     pub uses_default_features: bool,
     pub features: Vec<String>,
+    // target_cfg stores the raw cfg string from Cargo.toml;
+    // it is stored as an unparsed Flag rather than a recursively parsed CfgExpr
+    // because Cargo's target specification syntax differs from Rust #[cfg] syntax
     pub target_cfg: Option<CfgExpr>,
     pub path: Option<String>,
     pub registry: Option<String>,
@@ -191,6 +211,7 @@ pub struct Deprecation {
 pub struct ItemDoc {
     pub id: ItemId,
     pub package_id: PackageId,
+    // path is the full qualified path: e.g. "tokio::net::TcpListener"
     pub path: String,
     pub name: String,
     pub module_path: String,
@@ -200,6 +221,9 @@ pub struct ItemDoc {
     pub cfg: CfgExpr,
     pub source: SourceLocation,
     pub source_code: String,
+    // signature and deprecated are reserved for future enhancement;
+    // signature would capture function type signatures from AST,
+    // deprecated would parse #[deprecated(...)] attributes
     pub signature: Option<String>,
     pub attributes: Option<Vec<String>>,
     pub deprecated: Option<Deprecation>,
@@ -216,6 +240,7 @@ pub enum DiagnosticLevel {
 #[derive(Debug, Clone, Serialize)]
 pub struct Diagnostic {
     pub level: DiagnosticLevel,
+    // code is a stable machine-readable identifier like "CRATE_ROOT_MISSING"
     pub code: String,
     pub message: String,
     pub package_id: Option<PackageId>,
