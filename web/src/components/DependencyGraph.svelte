@@ -174,6 +174,20 @@
     return collected;
   };
 
+  const collectFocusSet = (startNodeId: string): Set<string> => {
+    const focus = new Set<string>([startNodeId]);
+    const upLayers = buildLayers(startNodeId, "upstream");
+    const downLayers = buildLayers(startNodeId, "downstream");
+    const MAX_FOCUS_DEPTH = 2;
+    for (let i = 0; i < Math.min(upLayers.length, MAX_FOCUS_DEPTH); i++) {
+      for (const id of upLayers[i]) focus.add(id);
+    }
+    for (let i = 0; i < Math.min(downLayers.length, MAX_FOCUS_DEPTH); i++) {
+      for (const id of downLayers[i]) focus.add(id);
+    }
+    return focus;
+  };
+
   const buildLayout = () => {
     if (!resolveGraph || graphNodeById.size === 0 || resolveGraph.nodes.length === 0) {
       graphLayoutNodes = [];
@@ -183,7 +197,10 @@
       return;
     }
 
-    const g = new dagre.graphlib.Graph();
+    const focusSet = selectedNodeId && graphNodeById.has(selectedNodeId)
+      ? collectFocusSet(selectedNodeId) : new Set<string>();
+
+    const g = new dagre.graphlib.Graph({ compound: focusSet.size > 0 });
     g.setGraph({
       rankdir: "LR",
       nodesep: 60,
@@ -193,12 +210,21 @@
     });
     g.setDefaultEdgeLabel(() => ({}));
 
+    if (focusSet.size > 0) {
+      g.setNode("focus-cluster", { label: "" });
+      g.setNode("other-cluster", { label: "" });
+    }
+
     for (const node of resolveGraph.nodes) {
       g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+      if (focusSet.size > 0) {
+        g.setParent(node.id, focusSet.has(node.id) ? "focus-cluster" : "other-cluster");
+      }
     }
 
     for (const edge of resolveGraph.edges) {
-      g.setEdge(edge.from, edge.to);
+      const bothInFocus = focusSet.size > 0 && focusSet.has(edge.from) && focusSet.has(edge.to);
+      g.setEdge(edge.from, edge.to, { weight: bothInFocus ? 10 : 1 });
     }
 
     dagre.layout(g);
@@ -321,6 +347,7 @@
   }
 
   $: if (resolveGraph && mode === "graph") {
+    selectedNodeId;
     buildLayout();
   } else {
     graphLayoutNodes = [];

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Counts, ItemDoc, ItemKind } from "../types";
+  import type { Counts, Features, ItemDoc, ItemKind, PackageDoc } from "../types";
 
   export let filteredItems: ItemDoc[] = [];
   export let counts: Counts = {};
@@ -8,21 +8,27 @@
   export let kindFilter: "all" | ItemKind = "all";
   export let query = "";
   export let view: "home" | "item" = "home";
+  export let packages: PackageDoc[] = [];
+  export let selectedPackageId = "";
+  export let enabledFeatures: Features = {};
 
   export let onHome: () => void = () => {};
   export let onSelectItem: (item: ItemDoc) => void = () => {};
   export let onQueryChange: (value: string) => void = () => {};
   export let onKindChange: (value: "all" | ItemKind) => void = () => {};
+  export let onPackageChange: (id: string) => void = () => {};
+  export let onFeatureToggle: (feature: string) => void = () => {};
+  export let selectedPackageName = "";
+  export let featureNamesList: string[] = [];
 
   const formatSource = (item: ItemDoc): string => {
     if (!item.source) return "Source unavailable";
-
     const { file, line_start, line_end } = item.source;
     const range =
       line_start === line_end ? `${line_start}` : `${line_start}-${line_end}`;
-
     return `${file}:${range}`;
   };
+
 </script>
 
 <aside class="panel list">
@@ -35,6 +41,45 @@
       Home
     </button>
   </div>
+
+  {#if packages.length > 0}
+    <div class="crates">
+      <div class="section-label">Crate</div>
+      <div class="crate-pills">
+        <button
+          class="crate-pill"
+          class:active={!selectedPackageId}
+          on:click={() => onPackageChange("")}
+        >All crates</button>
+        {#each packages as pkg}
+          <button
+            class="crate-pill"
+            class:active={(pkg.id ?? pkg.name) === selectedPackageId}
+            on:click={() => onPackageChange(pkg.id ?? pkg.name)}
+          >
+            {pkg.name}
+          </button>
+        {/each}
+      </div>
+    </div>
+  {/if}
+
+  {#if featureNamesList.length > 0}
+    <div class="features">
+      <div class="section-label">Features — {selectedPackageName}</div>
+      <div class="feature-pills">
+        {#each featureNamesList as feat}
+          <button
+            class="feature-pill"
+            class:on={enabledFeatures[feat] !== undefined}
+            on:click={() => onFeatureToggle(feat)}
+          >
+            {feat}
+          </button>
+        {/each}
+      </div>
+    </div>
+  {/if}
 
   <div class="search">
     <input
@@ -73,8 +118,7 @@
             <span class="path">{item.path}</span>
             <span class="source-line">{formatSource(item)}</span>
           </span>
-          <span class={`kind kind-${item.kind.toLowerCase()}`}>{item.kind}</span
-          >
+          <span class={`kind kind-${item.kind.toLowerCase()}`}>{item.kind}</span>
         </button>
       {/each}
     {/if}

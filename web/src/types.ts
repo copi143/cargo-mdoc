@@ -35,7 +35,10 @@ export type ImplDoc = {
   items: ImplItemDoc[];
 };
 
+export type Features = Record<string, string[]>;
+
 export type ItemDoc = {
+  package_id?: string;
   path: string;
   docs: string;
   cfg: CfgExpr;
@@ -45,7 +48,8 @@ export type ItemDoc = {
   impls?: ImplDoc[];
 };
 
-export type PackageInfo = {
+export type PackageDoc = {
+  id?: string;
   name: string;
   version?: string;
   edition?: string;
@@ -53,7 +57,11 @@ export type PackageInfo = {
   license?: string;
   readme_path?: string;
   readme?: string;
+  features?: Features;
+  is_workspace_member?: boolean;
 };
+
+export type PackageInfo = PackageDoc;
 
 export type Counts = Partial<Record<ItemKind, number>>;
 

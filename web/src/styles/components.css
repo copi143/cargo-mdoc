@@ -1024,6 +1024,49 @@ pre > code.hljs {
   font-size: 0.85rem;
 }
 
+.crates,
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--muted-2);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.crate-pills,
+.feature-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.crate-pill,
+.feature-pill {
+  padding: 3px 8px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--line);
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: var(--accent);
+  }
+
+  &.active,
+  &.on {
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+}
+
 .graph-zoom-level {
   display: inline-flex;
   align-items: center;

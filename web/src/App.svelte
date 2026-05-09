@@ -8,8 +8,10 @@
   import type {
     CfgExpr,
     Counts,
+    Features,
     ItemDoc,
     ItemKind,
+    PackageDoc,
     PackageInfo,
     ResolveGraph,
   } from "./types";
@@ -18,12 +20,47 @@
   let error = "";
   let items: ItemDoc[] = [];
   let packageInfo: PackageInfo | null = null;
+  let packages: PackageDoc[] = [];
   let resolveGraph: ResolveGraph | null = null;
   let query = "";
   let kindFilter: "all" | ItemKind = "all";
+  let selectedPackageId = "";
+  let enabledFeatures: Features = {};
   let selectedPath = "";
   let view: "home" | "item" = "home";
   let graphOpen = false;
+
+  const evaluateCfg = (cfg: CfgExpr, enabled: Features): boolean => {
+    switch (cfg.kind) {
+      case "True": return true;
+      case "False": return false;
+      case "Feature": return enabled[cfg.value] !== undefined;
+      case "Flag": return true;
+      case "All": return cfg.value.every(c => evaluateCfg(c, enabled));
+      case "Any": return cfg.value.some(c => evaluateCfg(c, enabled));
+      case "Not": return !evaluateCfg(cfg.value, enabled);
+    }
+  };
+
+  const selectPackage = (id: string) => {
+    selectedPackageId = id;
+    if (id) {
+      const pkg = packages.find(p => (p.id ?? p.name) === id);
+      enabledFeatures = pkg?.features ? { ...pkg.features } : {};
+    } else {
+      enabledFeatures = {};
+    }
+  };
+
+  const toggleFeature = (feature: string) => {
+    if (enabledFeatures[feature] !== undefined) {
+      const next = { ...enabledFeatures };
+      delete next[feature];
+      enabledFeatures = next;
+    } else {
+      enabledFeatures = { ...enabledFeatures, [feature]: [] };
+    }
+  };
 
   const kindOptions: Array<"all" | ItemKind> = [
     "all",
@@ -109,10 +146,15 @@
 
         if (Array.isArray(data)) {
           packageInfo = null;
+          packages = [];
           resolveGraph = null;
           items = data;
         } else {
           packageInfo = data.package || null;
+          packages = Array.isArray(data.packages) ? data.packages : [];
+          if (packageInfo && !packages.find(p => p.name === packageInfo?.name)) {
+            packages = [packageInfo as PackageDoc, ...packages];
+          }
           resolveGraph = data.resolve_graph || data.lock_graph || null;
           items = Array.isArray(data.items) ? data.items : [];
         }
@@ -131,7 +173,25 @@
     return () => window.removeEventListener("hashchange", onHashChange);
   });
 
-  $: filteredItems = items
+  $: workspacePackages = packages.filter((p) => p.is_workspace_member !== false);
+
+  $: selectedPackage = workspacePackages.find(
+    (p) => (p.id ?? p.name) === selectedPackageId,
+  );
+  $: featureNamesList = selectedPackage?.features
+    ? Object.keys(selectedPackage.features).sort()
+    : [];
+  $: selectedPackageName = selectedPackage?.name ?? "";
+
+  $: crateItems = !selectedPackageId
+    ? items
+    : items.filter((item) => item.package_id === selectedPackageId);
+
+  $: cfgFiltered = selectedPackageId
+    ? crateItems.filter((item) => evaluateCfg(item.cfg, enabledFeatures))
+    : crateItems;
+
+  $: filteredItems = cfgFiltered
     .filter((item) => {
       if (kindFilter !== "all" && item.kind !== kindFilter) return false;
       const q = normalize(query.trim());
@@ -144,7 +204,7 @@
 
   $: selectedItem = items.find((item) => item.path === selectedPath) || null;
 
-  $: counts = items.reduce<Counts>((acc, item) => {
+  $: counts = crateItems.reduce<Counts>((acc, item) => {
     acc[item.kind] = (acc[item.kind] || 0) + 1;
     return acc;
   }, {} as Counts);
@@ -186,10 +246,17 @@
       {kindFilter}
       {query}
       {view}
+      packages={workspacePackages}
+      {selectedPackageId}
+      {enabledFeatures}
+      {selectedPackageName}
+      {featureNamesList}
       onHome={goHome}
       onSelectItem={selectItem}
       onQueryChange={(value) => (query = value)}
       onKindChange={(value) => (kindFilter = value)}
+      onPackageChange={(id) => selectPackage(id)}
+      onFeatureToggle={(feat) => toggleFeature(feat)}
     />
 
     <section class="panel detail">

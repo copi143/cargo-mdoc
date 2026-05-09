@@ -10,38 +10,32 @@
 <header class="topbar">
   <div class="brand">
     <div class="brand-mark">mdoc</div>
-    <div>
+    <div class="brand-info">
       <p class="kicker">Rust module surface</p>
-      <h1>{packageInfo?.name ?? "Documentation Index"}</h1>
-      <p class="subtitle">
+      <p class="brand-title">
+        <span class="brand-name">{packageInfo?.name ?? "Documentation Index"}</span>
         {#if packageInfo}
-          <span>{packageInfo.version ?? "0.0.0"}</span>
-          <span class="dot">•</span>
+          <span class="brand-version">{packageInfo.version ?? "0.0.0"}</span>
+        {/if}
+      </p>
+      {#if packageInfo}
+        <p class="brand-meta">
           <span>Edition {packageInfo.edition ?? "unknown"}</span>
           {#if packageInfo.license}
             <span class="dot">•</span>
             <span>{packageInfo.license}</span>
           {/if}
-        {:else}
-          Load the latest mdoc export to explore the API surface.
-        {/if}
-      </p>
+        </p>
+      {/if}
     </div>
   </div>
   <div class="meta">
-    <div class="meta-card">
-      <div class="meta-label">Items</div>
-      <div class="meta-value">{items.length}</div>
+    <div class="meta-items">
+      <span class="meta-label">Items</span>
+      <span class="meta-count">{items.length}</span>
     </div>
-    <div class="meta-card">
-      <div class="meta-label">Source</div>
-      <div class="meta-value">mdoc.json</div>
-    </div>
-    <div class="meta-card meta-action">
-      <div class="meta-label">Graph</div>
-      <button class="ghost" on:click={onOpenGraph} disabled={!graphAvailable}>
-        Open dependency graph
-      </button>
-    </div>
+    <button class="ghost" on:click={onOpenGraph} disabled={!graphAvailable}>
+      Dependency graph
+    </button>
   </div>
 </header>
