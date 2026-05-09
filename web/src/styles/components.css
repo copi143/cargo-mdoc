@@ -95,8 +95,10 @@
 
 .list-items {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 10px;
+  min-height: 0;
   padding-right: 6px;
   overflow: auto;
 
@@ -281,7 +283,8 @@
 }
 
 .doc {
-  min-height: 240px;
+  box-sizing: content-box;
+  min-height: 1.65em;
   padding: 16px;
   line-height: 1.65;
   color: var(--muted);
@@ -316,6 +319,10 @@
   }
 }
 
+pre > code.hljs {
+  padding: 0 !important;
+}
+
 .home-markdown {
   max-height: 360px;
   line-height: 1.6;
@@ -329,4 +336,32 @@
     font-size: 1rem;
     letter-spacing: 0.02em;
   }
+}
+
+.detail-body {
+  flex: 1;
+  min-height: 0;
+  padding-right: 4px;
+  overflow: auto;
+}
+
+.home-card.home-readme {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.detail-title {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0;
+  align-items: baseline;
+}
+
+.detail-title-namespace {
+  font-weight: 400;
+}
+
+.detail-title-name {
+  font-weight: 700;
 }

@@ -4,6 +4,7 @@
 
 body {
   margin: 0;
+  overflow: hidden;
 
   background:
     linear-gradient(0deg, rgba(31, 111, 235, 0.05) 0%, transparent 20%),
@@ -24,9 +25,16 @@ body {
     var(--paper);
 }
 
+#app,
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
 #app {
   width: 100%;
-  min-height: 100svh;
+  min-height: 100dvh;
 }
 
 h1,

@@ -8,15 +8,36 @@
 
   $: renderedDocs = renderMarkdown(selectedItem?.docs || "No docs provided.");
   $: renderedSource = renderRustSource(selectedItem?.source_code || "");
+
+  const splitDisplayPath = (
+    path: string,
+  ): { namespace: string; name: string } => {
+    const separatorIndex = path.lastIndexOf("::");
+
+    if (separatorIndex === -1) {
+      return { namespace: "", name: path };
+    }
+
+    return {
+      namespace: path.slice(0, separatorIndex + 2),
+      name: path.slice(separatorIndex + 2),
+    };
+  };
 </script>
 
 {#if selectedItem}
+  {@const displayPath = splitDisplayPath(selectedItem.path)}
   <div class="detail-header">
     <div>
       <p class={`kicker kind-badge kind-${selectedItem.kind.toLowerCase()}`}>
         {selectedItem.kind}
       </p>
-      <h2>{selectedItem.path}</h2>
+      <h2 class="detail-title">
+        {#if displayPath.namespace}
+          <span class="detail-title-namespace">{displayPath.namespace}</span>
+        {/if}
+        <span class="detail-title-name">{displayPath.name}</span>
+      </h2>
     </div>
     <div class="cfg">
       <span class="cfg-label">cfg</span>
@@ -24,7 +45,6 @@
     </div>
   </div>
   <div class="detail-body">
-    <h3>Docs</h3>
     <div class="markdown-body doc">{@html renderedDocs}</div>
     <h3>Source</h3>
     <div class="source-card">

@@ -1,9 +1,8 @@
 <script lang="ts">
-  import type { Counts, ItemDoc, PackageInfo } from "../types";
+  import type { ItemDoc, PackageInfo } from "../types";
 
   export let packageInfo: PackageInfo | null = null;
   export let items: ItemDoc[] = [];
-  export let counts: Counts = {};
 </script>
 
 <header class="topbar">
@@ -33,20 +32,8 @@
       <div class="meta-value">{items.length}</div>
     </div>
     <div class="meta-card">
-      <div class="meta-label">Kinds</div>
-      <div class="meta-value">
-        {Object.keys(counts).length || 0}
-      </div>
-    </div>
-    <div class="meta-card">
       <div class="meta-label">Source</div>
       <div class="meta-value">mdoc.json</div>
-    </div>
-    <div class="meta-card">
-      <div class="meta-label">README</div>
-      <div class="meta-value">
-        {packageInfo?.readme_path ?? "not set"}
-      </div>
     </div>
   </div>
 </header>
