@@ -6,7 +6,8 @@ use std::path::Path;
 
 use crate::cfg_expr::{and_cfg, parse_cfg_from_node};
 use crate::model::{
-    CfgExpr, ImplDoc, ImplItemDoc, ItemDoc, ItemKind, SourceLocation, Visibility,
+    CfgExpr, Diagnostic, DiagnosticLevel, ImplDoc, ImplItemDoc, ItemDoc, ItemKind, SourceLocation,
+    Visibility,
 };
 use crate::util::{
     collect_attrs, extract_docs, join_path, module_path_string, resolve_module_file,
@@ -16,6 +17,7 @@ use crate::util::{
 pub struct RaCollector {
     pub items: Vec<ItemDoc>,
     pub impls: Vec<ImplDoc>,
+    pub diagnostics: Vec<Diagnostic>,
 }
 
 impl RaCollector {
@@ -23,6 +25,7 @@ impl RaCollector {
         Self {
             items: Vec::new(),
             impls: Vec::new(),
+            diagnostics: Vec::new(),
         }
     }
 
@@ -109,8 +112,6 @@ impl RaCollector {
         mod_path: Vec<String>,
         inherited_cfg: CfgExpr,
     ) -> Result<()> {
-        let _ = crate_root;
-
         for child in node.children() {
             match child.kind() {
                 SyntaxKind::FN => {
@@ -242,7 +243,7 @@ impl RaCollector {
 
         let attrs = collect_attrs(func.syntax());
         let cfg = and_cfg(inherited_cfg, parse_cfg_from_node(func.syntax()));
-        let docs = extract_docs(&attrs);
+        let docs = extract_docs(&func);
 
         self.push_item(
             package_id,
@@ -280,7 +281,7 @@ impl RaCollector {
         self.push_item(
             package_id,
             name,
-            extract_docs(&attrs),
+            extract_docs(&st),
             and_cfg(inherited_cfg, parse_cfg_from_node(st.syntax())),
             ItemKind::Struct,
             visibility_from_ast(st.visibility()),
@@ -313,7 +314,7 @@ impl RaCollector {
         self.push_item(
             package_id,
             name,
-            extract_docs(&attrs),
+            extract_docs(&en),
             and_cfg(inherited_cfg, parse_cfg_from_node(en.syntax())),
             ItemKind::Enum,
             visibility_from_ast(en.visibility()),
@@ -346,7 +347,7 @@ impl RaCollector {
         self.push_item(
             package_id,
             name,
-            extract_docs(&attrs),
+            extract_docs(&tr),
             and_cfg(inherited_cfg, parse_cfg_from_node(tr.syntax())),
             ItemKind::Trait,
             visibility_from_ast(tr.visibility()),
@@ -370,20 +371,18 @@ impl RaCollector {
         mut mod_path: Vec<String>,
         inherited_cfg: CfgExpr,
     ) -> Result<()> {
-        let _ = crate_root;
-
         let name = module
             .name()
             .map(|n| n.text().to_string())
             .unwrap_or_else(|| "<anonymous>".into());
 
         let attrs = collect_attrs(module.syntax());
-        let cfg = and_cfg(inherited_cfg, parse_cfg_from_node(module.syntax()));
+        let cfg = and_cfg(inherited_cfg.clone(), parse_cfg_from_node(module.syntax()));
 
         self.push_item(
             package_id,
             name.clone(),
-            extract_docs(&attrs),
+            extract_docs(&module),
             cfg.clone(),
             ItemKind::Module,
             visibility_from_ast(module.visibility()),
@@ -395,7 +394,6 @@ impl RaCollector {
 
         mod_path.push(name.clone());
 
-        // Inline module (mod foo { ... }) vs file module (mod foo;)
         if let Some(item_list) = module.item_list() {
             self.walk_syntax_node(
                 workspace_root,
@@ -408,7 +406,20 @@ impl RaCollector {
                 cfg,
             )?;
         } else {
-            let file = resolve_module_file(current_file, &name)?;
+            let Some(file) = resolve_module_file(current_file, &name) else {
+                self.diagnostics.push(Diagnostic {
+                    level: DiagnosticLevel::Warning,
+                    code: "MODULE_FILE_NOT_FOUND".to_string(),
+                    message: format!(
+                        "Cannot resolve module file for '{}' in {:?}",
+                        name, current_file
+                    ),
+                    package_id: Some(package_id.to_string()),
+                    file: Some(current_file.to_string_lossy().to_string()),
+                    line: None,
+                });
+                return Ok(());
+            };
             self.walk_file(workspace_root, crate_root, package_id, &file, mod_path, cfg)?;
         }
 
@@ -444,9 +455,8 @@ impl RaCollector {
                             .map(|n| n.text().to_string())
                             .unwrap_or_else(|| "<anonymous>".into());
 
-                        let attrs = collect_attrs(func.syntax());
                         let item_cfg = and_cfg(cfg.clone(), parse_cfg_from_node(func.syntax()));
-                        let docs = extract_docs(&attrs);
+                        let docs = extract_docs(&func);
 
                         items.push(ImplItemDoc {
                             name,

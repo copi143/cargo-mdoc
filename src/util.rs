@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use ra_ap_syntax::ast::HasDocComments;
 use ra_ap_syntax::{AstNode as _, SyntaxKind, SyntaxNode, ast};
 use std::path::{Path, PathBuf};
 
@@ -19,28 +19,14 @@ pub fn collect_attrs(node: &SyntaxNode) -> Vec<String> {
     out
 }
 
-// Extracts doc text from #[doc = "..."] attributes.
-// The RA parser converts /// and //! comments into #[doc = "..."] form,
-// so this function handles both explicit and doc-comment attributes.
-// It uses simple string matching rather than AST traversal because
-// doc extraction is a hot path called for every item.
-pub fn extract_docs(attrs: &[String]) -> String {
-    let mut out = String::new();
-
-    for attr in attrs {
-        if attr.starts_with("#[doc") {
-            if let Some(start) = attr.find('"') {
-                if let Some(end) = attr.rfind('"') {
-                    if end > start {
-                        out.push_str(&attr[start + 1..end]);
-                        out.push('\n');
-                    }
-                }
-            }
-        }
-    }
-
-    out.trim().to_string()
+// Extracts doc text from any syntax node that may carry doc comments.
+// Uses ra_ap_syntax's HasDocComments trait, which properly handles
+// ///, //!, /** ... */, and #[doc = "..."] forms including escaped quotes.
+pub fn extract_docs<N: HasDocComments>(node: &N) -> String {
+    node.doc_comments()
+        .filter_map(|comment| comment.doc_comment().map(|(text, _)| text.to_string()))
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 // Resolves a Rust module declaration to its file path.
@@ -52,12 +38,9 @@ pub fn extract_docs(attrs: &[String]) -> String {
 //   4. <parent>/<stem>/<mod_name>/mod.rs
 // This is intentionally more permissive than rustc's resolution to handle
 // non-standard project layouts commonly found in real-world crates.
-pub fn resolve_module_file(current_file: &Path, mod_name: &str) -> Result<PathBuf> {
-    let parent = current_file.parent().context("Missing parent")?;
-    let stem = current_file
-        .file_stem()
-        .and_then(|value| value.to_str())
-        .context("Missing file stem")?;
+pub fn resolve_module_file(current_file: &Path, mod_name: &str) -> Option<PathBuf> {
+    let parent = current_file.parent()?;
+    let stem = current_file.file_stem()?.to_str()?;
 
     let direct = parent.join(format!("{}.rs", mod_name));
     let nested = parent.join(mod_name).join("mod.rs");
@@ -65,15 +48,15 @@ pub fn resolve_module_file(current_file: &Path, mod_name: &str) -> Result<PathBu
     let sibling_nested = parent.join(stem).join(mod_name).join("mod.rs");
 
     if direct.exists() {
-        Ok(direct)
+        Some(direct)
     } else if sibling.exists() {
-        Ok(sibling)
+        Some(sibling)
     } else if nested.exists() {
-        Ok(nested)
+        Some(nested)
     } else if sibling_nested.exists() {
-        Ok(sibling_nested)
+        Some(sibling_nested)
     } else {
-        anyhow::bail!("Cannot resolve module {}", mod_name)
+        None
     }
 }
 

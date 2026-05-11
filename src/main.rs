@@ -177,6 +177,7 @@ fn main() -> Result<()> {
     }
 
     collector.associate_impls();
+    diagnostics.append(&mut collector.diagnostics);
 
     let mut items = collector.items;
     // Deterministic ordering: package -> path -> line, so output is reproducible
