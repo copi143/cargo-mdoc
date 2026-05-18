@@ -17,6 +17,22 @@
     return `impl ${impl.target_path}`;
   };
 
+  let copied = false;
+
+  const copySource = async () => {
+    const text = selectedItem?.source_code;
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      copied = true;
+      setTimeout(() => {
+        copied = false;
+      }, 2000);
+    } catch {
+      // clipboard not available
+    }
+  };
+
   const splitDisplayPath = (
     path: string,
   ): { namespace: string; name: string } => {
@@ -121,15 +137,20 @@
     <div class="source-card">
       <div class="source-item">
         <div class="source-header">
-          <span>{selectedItem.source?.file ?? "Unknown file"}</span>
-          <span>
-            {#if selectedItem.source}
-              {selectedItem.source.line_start}
-              {#if selectedItem.source.line_end !== selectedItem.source.line_start}
-                - {selectedItem.source.line_end}
+          <span class="source-header-left">
+            <span>{selectedItem.source?.file ?? "Unknown file"}</span>
+            <span>
+              {#if selectedItem.source}
+                {selectedItem.source.line_start}
+                {#if selectedItem.source.line_end !== selectedItem.source.line_start}
+                  - {selectedItem.source.line_end}
+                {/if}
               {/if}
-            {/if}
+            </span>
           </span>
+          <button class="copy-btn" onclick={copySource}>
+            {copied ? "Copied!" : "Copy"}
+          </button>
         </div>
         <pre class="source-code"><code class="hljs language-rust"
             >{@html renderedSource}</code

@@ -862,10 +862,36 @@
   > .source-item {
     > .source-header {
       display: flex;
+      gap: 16px;
       align-items: center;
       justify-content: space-between;
       font-size: 0.8rem;
       color: var(--muted-2);
+
+      > .source-header-left {
+        display: flex;
+        flex: 1;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      > .copy-btn {
+        padding: 1px 8px;
+        color: var(--muted-2);
+        cursor: pointer;
+        outline: none;
+        background: none;
+        border: none;
+        transition:
+          background 0.15s,
+          color 0.15s;
+
+        &:hover {
+          color: #fff;
+          background: var(--accent);
+        }
+      }
     }
 
     > .source-code {
