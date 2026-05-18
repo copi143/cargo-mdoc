@@ -858,25 +858,28 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
 
-.source-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  color: var(--muted-2);
-}
+  > .source-item {
+    > .source-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--muted-2);
+    }
 
-.source-code {
-  padding: 16px;
-  overflow: auto;
-  line-height: 1.55;
-  background: #fff;
-  border: 1px solid var(--line);
+    > .source-code {
+      padding: 16px;
+      margin: 0;
+      overflow: auto;
+      line-height: 1.55;
+      background: #fff;
+      border: 1px solid var(--line);
 
-  code {
-    font-family: var(--mono);
+      code {
+        font-family: var(--mono);
+      }
+    }
   }
 }
 
@@ -914,17 +917,16 @@ pre > code.hljs {
 
 .detail-title {
   display: inline-flex;
-  flex-wrap: wrap;
   gap: 0;
   align-items: baseline;
-}
 
-.detail-title-namespace {
-  font-weight: 400;
-}
+  > .detail-title-namespace {
+    font-weight: 400;
+  }
 
-.detail-title-name {
-  font-weight: 700;
+  > .detail-title-name {
+    font-weight: 700;
+  }
 }
 
 .impls-section {
@@ -935,8 +937,8 @@ pre > code.hljs {
 }
 
 .impl-block {
-  border: 1px solid var(--line);
   background: #fff;
+  border: 1px solid var(--line);
 }
 
 .impl-header {
@@ -944,9 +946,9 @@ pre > code.hljs {
   gap: 10px;
   align-items: center;
   padding: 10px 14px;
+  font-size: 0.9rem;
   cursor: pointer;
   user-select: none;
-  font-size: 0.9rem;
   border-bottom: 1px solid transparent;
 }
 
@@ -1004,9 +1006,9 @@ pre > code.hljs {
 
 .impl-item-header {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  flex-wrap: wrap;
 }
 
 .impl-item-kind {

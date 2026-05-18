@@ -12,9 +12,9 @@
 
 .topbar {
   display: flex;
+  gap: 16px;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
   padding: 10px 20px;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
@@ -66,13 +66,13 @@
   gap: 8px;
   align-items: baseline;
   margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: var(--heading);
-  color: var(--ink);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: var(--heading);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
 }
 
 .brand-name {
@@ -174,20 +174,26 @@
 .detail {
   position: relative;
   min-height: 0;
-}
 
-.detail-header {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: flex-start;
-  justify-content: space-between;
-}
+  > .detail-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
 
-.detail-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+    > .left,
+    > .right {
+      display: inline-flex;
+      gap: 4px;
+    }
+  }
+
+  > .detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 
 .detail-empty {

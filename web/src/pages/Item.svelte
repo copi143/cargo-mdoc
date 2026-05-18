@@ -36,7 +36,7 @@
 {#if selectedItem}
   {@const displayPath = splitDisplayPath(selectedItem.path)}
   <div class="detail-header">
-    <div>
+    <div class="left">
       <p class={`kicker kind-badge kind-${selectedItem.kind.toLowerCase()}`}>
         {selectedItem.kind}
       </p>
@@ -47,9 +47,11 @@
         <span class="detail-title-name">{displayPath.name}</span>
       </h2>
     </div>
-    <div class="cfg">
-      <span class="cfg-label">cfg</span>
-      <code>{formatCfg(selectedItem.cfg)}</code>
+    <div class="right">
+      <div class="cfg">
+        <span class="cfg-label">cfg</span>
+        <code>{formatCfg(selectedItem.cfg)}</code>
+      </div>
     </div>
   </div>
   <div class="detail-body">
@@ -62,29 +64,50 @@
             <summary class="impl-header">
               <span class="impl-label">{implLabel(impl)}</span>
               {#if impl.cfg.kind !== "True"}
-                <span class="cfg"><span class="cfg-label">cfg</span><code>{formatCfg(impl.cfg)}</code></span>
+                <span class="cfg"
+                  ><span class="cfg-label">cfg</span><code
+                    >{formatCfg(impl.cfg)}</code
+                  ></span
+                >
               {/if}
               <span class="impl-toggle">▼</span>
             </summary>
             <div class="impl-body">
               <div class="impl-meta">
-                <span class="source-meta">{impl.source.file}:{impl.source.line_start}{#if impl.source.line_end !== impl.source.line_start}-{impl.source.line_end}{/if}</span>
+                <span class="source-meta"
+                  >{impl.source.file}:{impl.source
+                    .line_start}{#if impl.source.line_end !== impl.source.line_start}-{impl
+                      .source.line_end}{/if}</span
+                >
               </div>
-              <pre class="source-code"><code class="hljs language-rust">{@html renderRustSource(impl.source_code)}</code></pre>
+              <pre class="source-code"><code class="hljs language-rust"
+                  >{@html renderRustSource(impl.source_code)}</code
+                ></pre>
               {#if impl.items.length > 0}
                 <div class="impl-items">
                   <h4>Methods & Associated Items</h4>
                   {#each impl.items as item}
                     <div class="impl-item">
                       <div class="impl-item-header">
-                        <span class="impl-item-kind kind-badge kind-{item.kind.toLowerCase()}">{item.kind}</span>
+                        <span
+                          class="impl-item-kind kind-badge kind-{item.kind.toLowerCase()}"
+                          >{item.kind}</span
+                        >
                         <code class="impl-item-name">{item.name}</code>
                         {#if item.cfg.kind !== "True"}
-                          <span class="cfg"><span class="cfg-label">cfg</span><code>{formatCfg(item.cfg)}</code></span>
+                          <span class="cfg"
+                            ><span class="cfg-label">cfg</span><code
+                              >{formatCfg(item.cfg)}</code
+                            ></span
+                          >
                         {/if}
                       </div>
-                      <div class="markdown-body doc impl-item-doc">{@html renderMarkdown(item.docs || "_No docs_")}</div>
-                      <pre class="source-code"><code class="hljs language-rust">{@html renderRustSource(item.source_code)}</code></pre>
+                      <div class="markdown-body doc impl-item-doc">
+                        {@html renderMarkdown(item.docs || "_No docs_")}
+                      </div>
+                      <pre class="source-code"><code class="hljs language-rust"
+                          >{@html renderRustSource(item.source_code)}</code
+                        ></pre>
                     </div>
                   {/each}
                 </div>
@@ -96,20 +119,22 @@
     {/if}
     <h3>Source</h3>
     <div class="source-card">
-      <div class="source-header">
-        <span>{selectedItem.source?.file ?? "Unknown file"}</span>
-        <span>
-          {#if selectedItem.source}
-            {selectedItem.source.line_start}
-            {#if selectedItem.source.line_end !== selectedItem.source.line_start}
-              - {selectedItem.source.line_end}
+      <div class="source-item">
+        <div class="source-header">
+          <span>{selectedItem.source?.file ?? "Unknown file"}</span>
+          <span>
+            {#if selectedItem.source}
+              {selectedItem.source.line_start}
+              {#if selectedItem.source.line_end !== selectedItem.source.line_start}
+                - {selectedItem.source.line_end}
+              {/if}
             {/if}
-          {/if}
-        </span>
+          </span>
+        </div>
+        <pre class="source-code"><code class="hljs language-rust"
+            >{@html renderedSource}</code
+          ></pre>
       </div>
-      <pre class="source-code"><code class="hljs language-rust"
-          >{@html renderedSource}</code
-        ></pre>
     </div>
   </div>
 {:else}
