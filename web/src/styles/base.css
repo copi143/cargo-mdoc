@@ -25,16 +25,10 @@ body {
     var(--paper);
 }
 
-#app,
 html,
 body {
-  width: 100%;
-  height: 100%;
-}
-
-#app {
-  width: 100%;
-  min-height: 100dvh;
+  width: 100vw;
+  height: 100vh;
 }
 
 h1,

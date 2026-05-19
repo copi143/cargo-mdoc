@@ -1,9 +1,4 @@
 @media (max-width: 980px) {
-  .content {
-    grid-template-columns: 1fr;
-    overflow: auto;
-  }
-
   .panel {
     min-height: unset;
 

@@ -23,7 +23,7 @@
   let packages: PackageDoc[] = [];
   let resolveGraph: ResolveGraph | null = null;
   let query = "";
-  let kindFilter: "all" | ItemKind = "all";
+  let kindFilter: "All" | ItemKind = "All";
   let selectedPackageId = "";
   let enabledFeatures: Features = {};
   let selectedPath = "";
@@ -32,20 +32,27 @@
 
   const evaluateCfg = (cfg: CfgExpr, enabled: Features): boolean => {
     switch (cfg.kind) {
-      case "True": return true;
-      case "False": return false;
-      case "Feature": return enabled[cfg.value] !== undefined;
-      case "Flag": return true;
-      case "All": return cfg.value.every(c => evaluateCfg(c, enabled));
-      case "Any": return cfg.value.some(c => evaluateCfg(c, enabled));
-      case "Not": return !evaluateCfg(cfg.value, enabled);
+      case "True":
+        return true;
+      case "False":
+        return false;
+      case "Feature":
+        return enabled[cfg.value] !== undefined;
+      case "Flag":
+        return true;
+      case "All":
+        return cfg.value.every((c) => evaluateCfg(c, enabled));
+      case "Any":
+        return cfg.value.some((c) => evaluateCfg(c, enabled));
+      case "Not":
+        return !evaluateCfg(cfg.value, enabled);
     }
   };
 
   const selectPackage = (id: string) => {
     selectedPackageId = id;
     if (id) {
-      const pkg = packages.find(p => (p.id ?? p.name) === id);
+      const pkg = packages.find((p) => (p.id ?? p.name) === id);
       enabledFeatures = pkg?.features ? { ...pkg.features } : {};
     } else {
       enabledFeatures = {};
@@ -62,8 +69,8 @@
     }
   };
 
-  const kindOptions: Array<"all" | ItemKind> = [
-    "all",
+  const kindOptions: Array<"All" | ItemKind> = [
+    "All",
     "Function",
     "Struct",
     "Enum",
@@ -152,7 +159,10 @@
         } else {
           packageInfo = data.package || null;
           packages = Array.isArray(data.packages) ? data.packages : [];
-          if (packageInfo && !packages.find(p => p.name === packageInfo?.name)) {
+          if (
+            packageInfo &&
+            !packages.find((p) => p.name === packageInfo?.name)
+          ) {
             packages = [packageInfo as PackageDoc, ...packages];
           }
           resolveGraph = data.resolve_graph || data.lock_graph || null;
@@ -173,7 +183,9 @@
     return () => window.removeEventListener("hashchange", onHashChange);
   });
 
-  $: workspacePackages = packages.filter((p) => p.is_workspace_member !== false);
+  $: workspacePackages = packages.filter(
+    (p) => p.is_workspace_member !== false,
+  );
 
   $: selectedPackage = workspacePackages.find(
     (p) => (p.id ?? p.name) === selectedPackageId,
@@ -193,7 +205,7 @@
 
   $: filteredItems = cfgFiltered
     .filter((item) => {
-      if (kindFilter !== "all" && item.kind !== kindFilter) return false;
+      if (kindFilter !== "All" && item.kind !== kindFilter) return false;
       const q = normalize(query.trim());
       if (!q) return true;
       return (

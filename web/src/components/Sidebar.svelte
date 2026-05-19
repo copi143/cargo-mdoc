@@ -1,11 +1,17 @@
 <script lang="ts">
-  import type { Counts, Features, ItemDoc, ItemKind, PackageDoc } from "../types";
+  import type {
+    Counts,
+    Features,
+    ItemDoc,
+    ItemKind,
+    PackageDoc,
+  } from "../types";
 
   export let filteredItems: ItemDoc[] = [];
   export let counts: Counts = {};
-  export let kindOptions: Array<"all" | ItemKind> = [];
+  export let kindOptions: Array<"All" | ItemKind> = [];
   export let selectedPath = "";
-  export let kindFilter: "all" | ItemKind = "all";
+  export let kindFilter: "All" | ItemKind = "All";
   export let query = "";
   export let view: "home" | "item" = "home";
   export let packages: PackageDoc[] = [];
@@ -15,11 +21,24 @@
   export let onHome: () => void = () => {};
   export let onSelectItem: (item: ItemDoc) => void = () => {};
   export let onQueryChange: (value: string) => void = () => {};
-  export let onKindChange: (value: "all" | ItemKind) => void = () => {};
+  export let onKindChange: (value: "All" | ItemKind) => void = () => {};
   export let onPackageChange: (id: string) => void = () => {};
   export let onFeatureToggle: (feature: string) => void = () => {};
   export let selectedPackageName = "";
   export let featureNamesList: string[] = [];
+
+  let buttonRefs: HTMLButtonElement[] = [];
+  let sliderStyle = "";
+
+  $: {
+    const idx = kindOptions.indexOf(kindFilter);
+    if (idx >= 0 && buttonRefs[idx]) {
+      const btn = buttonRefs[idx];
+      sliderStyle = `transform: translateX(${btn.offsetLeft}px); width: ${btn.offsetWidth}px;`;
+    } else {
+      sliderStyle = "opacity: 0;";
+    }
+  }
 
   const formatSource = (item: ItemDoc): string => {
     if (!item.source) return "Source unavailable";
@@ -28,7 +47,6 @@
       line_start === line_end ? `${line_start}` : `${line_start}-${line_end}`;
     return `${file}:${range}`;
   };
-
 </script>
 
 <aside class="panel list">
@@ -49,8 +67,8 @@
         <button
           class="crate-pill"
           class:active={!selectedPackageId}
-          on:click={() => onPackageChange("")}
-        >All crates</button>
+          on:click={() => onPackageChange("")}>All crates</button
+        >
         {#each packages as pkg}
           <button
             class="crate-pill"
@@ -89,18 +107,22 @@
       on:input={(event) => onQueryChange(event.currentTarget.value)}
       aria-label="Search"
     />
-    <div class="filters">
-      {#each kindOptions as option}
-        <button
-          class:active={kindFilter === option}
-          on:click={() => onKindChange(option)}
-        >
-          {option}
-          {#if option !== "all"}
-            <span class="count">{counts[option] ?? 0}</span>
-          {/if}
-        </button>
-      {/each}
+    <div>
+      <div class="filters">
+        <div class="filter-slider" style={sliderStyle}></div>
+        {#each kindOptions as option, i}
+          <button
+            bind:this={buttonRefs[i]}
+            class:active={kindFilter === option}
+            on:click={() => onKindChange(option)}
+          >
+            {option}
+            {#if option !== "All"}
+              <span class="count">{counts[option] ?? 0}</span>
+            {/if}
+          </button>
+        {/each}
+      </div>
     </div>
   </div>
 
@@ -118,7 +140,8 @@
             <span class="path">{item.path}</span>
             <span class="source-line">{formatSource(item)}</span>
           </span>
-          <span class={`kind kind-${item.kind.toLowerCase()}`}>{item.kind}</span>
+          <span class={`kind kind-${item.kind.toLowerCase()}`}>{item.kind}</span
+          >
         </button>
       {/each}
     {/if}
