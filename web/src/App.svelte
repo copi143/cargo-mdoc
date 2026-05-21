@@ -143,7 +143,9 @@
   onMount(() => {
     const load = async (): Promise<void> => {
       try {
-        const response = await fetch("/mdoc.json", { cache: "no-store" });
+        const params = new URLSearchParams(window.location.search);
+        const dataUrl = params.get("data") || "/mdoc.json";
+        const response = await fetch(dataUrl, { cache: "no-store" });
 
         if (!response.ok) {
           throw new Error(`Failed to load mdoc.json (${response.status})`);

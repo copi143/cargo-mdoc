@@ -1,3 +1,4 @@
+/* 整个程序在 shell 壳子内 */
 .shell {
   display: flex;
   flex-direction: column;
@@ -19,93 +20,93 @@
   background: var(--panel);
   border-bottom: 1px solid var(--line);
   animation: rise 0.7s ease-out;
-}
 
-.brand {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  min-width: 0;
-}
+  & > .brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    min-width: 0;
 
-.brand-mark {
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--ink);
-  background: linear-gradient(
-    135deg,
-    rgba(31, 111, 235, 0.16),
-    rgba(59, 130, 246, 0.3)
-  );
-  border: 1px solid var(--line);
-  border-radius: 0;
-}
+    & > .brand-mark {
+      display: grid;
+      flex-shrink: 0;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--ink);
+      background: linear-gradient(
+        135deg,
+        rgba(31, 111, 235, 0.16),
+        rgba(59, 130, 246, 0.3)
+      );
+      border: 1px solid var(--line);
+      border-radius: 0;
+    }
 
-.brand-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  min-width: 0;
-}
+    & > .brand-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      min-width: 0;
 
-.kicker {
-  margin: 0;
-  font-size: 0.65rem;
-  color: var(--muted-2);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
+      & > .kicker {
+        margin: 0;
+        font-size: 0.65rem;
+        color: var(--muted-2);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
 
-.brand-title {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-family: var(--heading);
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--ink);
-  white-space: nowrap;
-}
+      & > .brand-title {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-family: var(--heading);
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--ink);
+        white-space: nowrap;
 
-.brand-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+        & > .brand-name {
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
 
-.brand-version {
-  flex-shrink: 0;
-  font-size: 0.8rem;
-  font-weight: 400;
-  color: var(--muted);
-}
+        & > .brand-version {
+          flex-shrink: 0;
+          font-size: 0.8rem;
+          font-weight: 400;
+          color: var(--muted);
+        }
+      }
 
-.brand-meta {
-  display: flex;
-  gap: 0;
-  align-items: center;
-  margin: 0;
-  font-size: 0.72rem;
-  color: var(--muted-2);
-}
+      & > .brand-meta {
+        display: flex;
+        gap: 0;
+        align-items: center;
+        margin: 0;
+        font-size: 0.72rem;
+        color: var(--muted-2);
 
-.dot {
-  margin: 0 6px;
-  color: var(--line);
-}
+        & > .dot {
+          margin: 0 6px;
+          color: var(--line);
+        }
+      }
+    }
+  }
 
-.meta {
-  display: flex;
-  flex-shrink: 0;
-  gap: 12px;
-  align-items: center;
+  & > .meta {
+    display: flex;
+    flex-shrink: 0;
+    gap: 12px;
+    align-items: center;
+  }
 }
 
 .meta-items {
