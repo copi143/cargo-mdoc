@@ -1,0 +1,3 @@
+[cargo-mdoc]
+en-us = "cargo-mdoc"
+fallback = true

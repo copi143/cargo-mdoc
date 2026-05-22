@@ -11,14 +11,18 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@types/dagre": "^0.7.54",
+    "@types/node": "^25.9.1",
+    "glob": "^13.0.6",
     "postcss": "^8.5.14",
     "postcss-nesting": "^14.0.0",
+    "smol-toml": "^1.6.1",
     "stylelint": "^17.11.0",
     "stylelint-config-recess-order": "^7.7.0",
     "stylelint-order": "^8.1.1",
     "svelte": "^5.55.4",
     "typescript": "^6.0.3",
-    "vite": "^8.0.10"
+    "vite": "^8.0.10",
+    "zod": "^4.4.3"
   },
   "dependencies": {
     "dagre": "^0.8.5",

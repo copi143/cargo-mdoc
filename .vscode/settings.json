@@ -1,5 +1,8 @@
 {
   "editor.codeActionsOnSave": {
     "source.fixAll.stylelint": "explicit"
+  },
+  "files.associations": {
+    "*.l10n": "toml"
   }
 }

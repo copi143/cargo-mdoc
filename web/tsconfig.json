@@ -8,14 +8,8 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "esModuleInterop": true,
-    "types": [
-      "vite/client"
-    ],
+    "types": ["node", "vite/client"],
     "skipLibCheck": true
   },
-  "include": [
-    "src/**/*.d.ts",
-    "src/**/*.ts",
-    "src/**/*.svelte"
-  ]
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte"]
 }

@@ -2,11 +2,14 @@
   import type { CfgExpr, ImplDoc, ItemDoc } from "../types";
   import { renderMarkdown } from "../lib/markdown";
   import { renderRustSource } from "../lib/highlight";
+  import { l10nDerive } from "../l10n";
 
   export let selectedItem: ItemDoc | null = null;
   export let formatCfg: (cfg?: CfgExpr | null) => string = () => "";
 
-  $: renderedDocs = renderMarkdown(selectedItem?.docs || "No docs provided.");
+  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
+
+  $: renderedDocs = renderMarkdown(selectedItem?.docs || l10n("nodoc"));
   $: renderedSource = renderRustSource(selectedItem?.source_code || "");
   $: impls = selectedItem?.impls ?? [];
 
@@ -65,7 +68,7 @@
     </div>
     <div class="right">
       <div class="cfg">
-        <span class="cfg-label">cfg</span>
+        <span class="cfg-label">{l10n("cfg_label")}</span>
         <code>{formatCfg(selectedItem.cfg)}</code>
       </div>
     </div>
@@ -74,34 +77,35 @@
     <div class="markdown-body doc">{@html renderedDocs}</div>
     {#if impls.length > 0}
       <section class="impls-section">
-        <h3>Impl Blocks ({impls.length})</h3>
+        <h3>{l10n("impl_blocks", { n: impls.length })}</h3>
         {#each impls as impl (impl.id)}
           <details class="impl-block">
             <summary class="impl-header">
               <span class="impl-label">{implLabel(impl)}</span>
               {#if impl.cfg.kind !== "True"}
-                <span class="cfg"
-                  ><span class="cfg-label">cfg</span><code
-                    >{formatCfg(impl.cfg)}</code
-                  ></span
-                >
+                <span class="cfg">
+                  <span class="cfg-label">{l10n("cfg_label")}</span>
+                  <code>{formatCfg(impl.cfg)}</code>
+                </span>
               {/if}
               <span class="impl-toggle">▼</span>
             </summary>
             <div class="impl-body">
               <div class="impl-meta">
-                <span class="source-meta"
-                  >{impl.source.file}:{impl.source
+                <span class="source-meta">
+                  {impl.source.file}:{impl.source
                     .line_start}{#if impl.source.line_end !== impl.source.line_start}-{impl
-                      .source.line_end}{/if}</span
-                >
+                      .source.line_end}{/if}
+                </span>
               </div>
-              <pre class="source-code"><code class="hljs language-rust"
-                  >{@html renderRustSource(impl.source_code)}</code
-                ></pre>
+              <pre class="source-code">
+                <code class="hljs language-rust">
+                  {@html renderRustSource(impl.source_code)}
+                </code>
+              </pre>
               {#if impl.items.length > 0}
                 <div class="impl-items">
-                  <h4>Methods & Associated Items</h4>
+                  <h4>{l10n("methods_and_items")}</h4>
                   {#each impl.items as item}
                     <div class="impl-item">
                       <div class="impl-item-header">
@@ -111,19 +115,20 @@
                         >
                         <code class="impl-item-name">{item.name}</code>
                         {#if item.cfg.kind !== "True"}
-                          <span class="cfg"
-                            ><span class="cfg-label">cfg</span><code
-                              >{formatCfg(item.cfg)}</code
-                            ></span
-                          >
+                          <span class="cfg">
+                            <span class="cfg-label">{l10n("cfg_label")}</span>
+                            <code>{formatCfg(item.cfg)}</code>
+                          </span>
                         {/if}
                       </div>
                       <div class="markdown-body doc impl-item-doc">
-                        {@html renderMarkdown(item.docs || "_No docs_")}
+                        {@html renderMarkdown(item.docs || l10n("nodoc"))}
                       </div>
-                      <pre class="source-code"><code class="hljs language-rust"
-                          >{@html renderRustSource(item.source_code)}</code
-                        ></pre>
+                      <pre class="source-code">
+                        <code class="hljs language-rust">
+                          {@html renderRustSource(item.source_code)}
+                        </code>
+                      </pre>
                     </div>
                   {/each}
                 </div>
@@ -133,12 +138,12 @@
         {/each}
       </section>
     {/if}
-    <h3>Source</h3>
+    <h3>{l10n("source")}</h3>
     <div class="source-card">
       <div class="source-item">
         <div class="source-header">
           <span class="source-header-left">
-            <span>{selectedItem.source?.file ?? "Unknown file"}</span>
+            <span>{selectedItem.source?.file ?? l10n("unknown_file")}</span>
             <span>
               {#if selectedItem.source}
                 {selectedItem.source.line_start}
@@ -149,7 +154,7 @@
             </span>
           </span>
           <button class="copy-btn" onclick={copySource}>
-            {copied ? "Copied!" : "Copy"}
+            {copied ? l10n("copied") : l10n("copy")}
           </button>
         </div>
         <pre class="source-code"><code class="hljs language-rust"
@@ -160,7 +165,6 @@
   </div>
 {:else}
   <div class="empty detail-empty">
-    Select an item from the index to inspect its docs, cfg gates, and source
-    location.
+    {l10n("empty_select")}
   </div>
 {/if}

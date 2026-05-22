@@ -6,6 +6,7 @@
     ItemKind,
     PackageDoc,
   } from "../types";
+  import { l10nDerive } from "../l10n";
 
   export let filteredItems: ItemDoc[] = [];
   export let counts: Counts = {};
@@ -30,6 +31,8 @@
   let buttonRefs: HTMLButtonElement[] = [];
   let sliderStyle = "";
 
+  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
+
   $: {
     const idx = kindOptions.indexOf(kindFilter);
     if (idx >= 0 && buttonRefs[idx]) {
@@ -41,7 +44,7 @@
   }
 
   const formatSource = (item: ItemDoc): string => {
-    if (!item.source) return "Source unavailable";
+    if (!item.source) return l10n("source_unavailable");
     const { file, line_start, line_end } = item.source;
     const range =
       line_start === line_end ? `${line_start}` : `${line_start}-${line_end}`;
@@ -52,22 +55,24 @@
 <aside class="panel list">
   <div class="panel-header">
     <div>
-      <h2>Index</h2>
-      <p class="panel-subtitle">{filteredItems.length} results</p>
+      <h2>{l10n("index")}</h2>
+      <p class="panel-subtitle">
+        {l10n("results", { n: filteredItems.length })}
+      </p>
     </div>
     <button class="ghost" on:click={onHome} disabled={view === "home"}>
-      Home
+      {l10n("home")}
     </button>
   </div>
 
   {#if packages.length > 0}
     <div class="crates">
-      <div class="section-label">Crate</div>
+      <div class="section-label">{l10n("crate")}</div>
       <div class="crate-pills">
         <button
           class="crate-pill"
           class:active={!selectedPackageId}
-          on:click={() => onPackageChange("")}>All crates</button
+          on:click={() => onPackageChange("")}>{l10n("all_crates")}</button
         >
         {#each packages as pkg}
           <button
@@ -84,7 +89,9 @@
 
   {#if featureNamesList.length > 0}
     <div class="features">
-      <div class="section-label">Features — {selectedPackageName}</div>
+      <div class="section-label">
+        {l10n("features_for", { name: selectedPackageName })}
+      </div>
       <div class="feature-pills">
         {#each featureNamesList as feat}
           <button
@@ -102,10 +109,10 @@
   <div class="search">
     <input
       type="search"
-      placeholder="Search paths or docs"
+      placeholder={l10n("search_placeholder")}
       value={query}
       on:input={(event) => onQueryChange(event.currentTarget.value)}
-      aria-label="Search"
+      aria-label={l10n("search_aria")}
     />
     <div>
       <div class="filters">
@@ -116,7 +123,7 @@
             class:active={kindFilter === option}
             on:click={() => onKindChange(option)}
           >
-            {option}
+            {l10n("kind_" + option.toLowerCase())}
             {#if option !== "All"}
               <span class="count">{counts[option] ?? 0}</span>
             {/if}
@@ -128,7 +135,7 @@
 
   <div class="list-items">
     {#if filteredItems.length === 0}
-      <div class="empty">No matches. Try a broader search.</div>
+      <div class="empty">{l10n("no_matches")}</div>
     {:else}
       {#each filteredItems as item, index}
         <button

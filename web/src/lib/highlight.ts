@@ -7,7 +7,7 @@ hljs.registerLanguage("rust", rust);
 export const renderRustSource = (source?: string | null): string => {
   const code = (source ?? "").trim();
 
-  if (!code) return "No source available.";
+  if (!code) return "";
 
   return hljs.highlight(code, { language: "rust" }).value;
 };

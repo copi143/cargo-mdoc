@@ -1,0 +1,11 @@
+default = "en-us"
+
+[en-us]
+name = "English (United States)"
+display = "English (United States)"
+fallback = "key"
+
+[zh-cn]
+name = "Chinese (Simplified)"
+display = "中文 (简体)"
+fallback = "en-us"

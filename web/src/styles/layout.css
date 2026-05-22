@@ -51,14 +51,6 @@
       gap: 0;
       min-width: 0;
 
-      & > .kicker {
-        margin: 0;
-        font-size: 0.65rem;
-        color: var(--muted-2);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
       & > .brand-title {
         display: flex;
         gap: 8px;
@@ -129,6 +121,23 @@
   font-size: 0.85rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.lang-switcher {
+  padding: 4px 8px;
+  margin-left: 8px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  cursor: pointer;
+  outline: none;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 0;
+
+  &:hover {
+    color: var(--ink);
+    border-color: var(--muted-2);
+  }
 }
 
 .content {
@@ -231,4 +240,12 @@
   gap: 16px;
   min-height: 0;
   overflow: auto;
+}
+
+.kicker {
+  margin: 0;
+  font-size: 0.65rem;
+  color: var(--muted-2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }

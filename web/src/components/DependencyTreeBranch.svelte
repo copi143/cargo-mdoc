@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ResolveGraph } from "../types";
+  import { l10nDerive } from "../l10n";
 
   export let resolveGraph: ResolveGraph;
   export let nodeId: string;
@@ -9,18 +10,7 @@
   export let edgeLabel = "";
   export let pathIds: string[] = [];
 
-  const edgeKindLabel = (kind: string): string => {
-    switch (kind) {
-      case "normal":
-        return "normal";
-      case "dev":
-        return "dev";
-      case "build":
-        return "build";
-      default:
-        return "unknown";
-    }
-  };
+  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
 
   const nodeById = new Map(resolveGraph.nodes.map((node) => [node.id, node]));
 
@@ -69,15 +59,17 @@
               <div class="graph-tree-node-subtitle">{node.version}</div>
             </div>
             {#if node.workspace_member}
-              <span class="graph-tree-tag">workspace</span>
+              <span class="graph-tree-tag">{l10n("workspace_tag")}</span>
             {/if}
           </div>
 
           <div class="graph-tree-node-meta">
             <span
-              >{direction === "downstream" ? "depends on" : "depended by"}</span
+              >{direction === "downstream"
+                ? l10n("depends_on")
+                : l10n("depended_by")}</span
             >
-            <span>{edgeLabel || edgeKindLabel("unknown")}</span>
+            <span>{edgeLabel || l10n("edge_unknown")}</span>
             {#if node.source}
               <span>{node.source}</span>
             {/if}

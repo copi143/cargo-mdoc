@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Counts, ItemDoc, PackageInfo, ResolveGraph } from "../types";
   import { renderMarkdown } from "../lib/markdown";
+  import { l10nDerive } from "../l10n";
 
   export let packageInfo: PackageInfo | null = null;
   export let items: ItemDoc[] = [];
@@ -10,16 +11,18 @@
   export let resolveGraph: ResolveGraph | null = null;
   export let onSelectItem: (item: ItemDoc) => void = () => {};
 
+  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
+
   let graphNodeById = new Map<string, ResolveGraph["nodes"][number]>();
   let graphIncoming: Record<string, number> | undefined;
   let graphOutgoing: Record<string, number> | undefined;
 
   $: renderedReadme = renderMarkdown(
-    packageInfo?.readme || "README not loaded.",
+    packageInfo?.readme || l10n("readme_not_loaded_err"),
   );
 
   const formatSource = (item: ItemDoc): string => {
-    if (!item.source) return "Source unavailable";
+    if (!item.source) return l10n("source_unavailable");
 
     const { file, line_start, line_end } = item.source;
     const range =
@@ -34,19 +37,6 @@
   const resolveNodeLabel = (nodeId: string): string => {
     const node = graphNodeById.get(nodeId);
     return node ? formatNodeLabel(node) : nodeId;
-  };
-
-  const edgeKindLabel = (kind: string): string => {
-    switch (kind) {
-      case "normal":
-        return "normal";
-      case "dev":
-        return "dev";
-      case "build":
-        return "build";
-      default:
-        return "unknown";
-    }
   };
 
   $: graphNodeById = new Map(
@@ -73,21 +63,21 @@
 <div class="home-page">
   <div class="detail-header">
     <div>
-      <p class="kicker">Overview</p>
-      <h2>Documentation Home</h2>
+      <p class="kicker">{l10n("overview")}</p>
+      <h2>{l10n("doc_home")}</h2>
     </div>
   </div>
   <div class="home-layout">
     <section class="home-card home-readme">
-      <h3>README</h3>
+      <h3>{l10n("readme")}</h3>
       {#if packageInfo?.readme}
         <div class="markdown-body home-markdown">{@html renderedReadme}</div>
         <div class="home-meta">
-          <span>Path</span>
-          <strong>{packageInfo.readme_path ?? "README.md"}</strong>
+          <span>{l10n("path")}</span>
+          <strong>{packageInfo.readme_path ?? l10n("readme_default")}</strong>
         </div>
       {:else}
-        <p class="home-body">README file not loaded into the export.</p>
+        <p class="home-body">{l10n("readme_not_loaded")}</p>
       {/if}
     </section>
 
@@ -95,9 +85,9 @@
       <section class="home-card home-graph">
         <div class="home-graph-header">
           <div>
-            <h3>Resolve Graph</h3>
+            <h3>{l10n("resolve_graph")}</h3>
             <p class="home-body">
-              Cargo metadata resolve graph exported from the workspace.
+              {l10n("resolve_graph_desc")}
             </p>
           </div>
           {#if resolveGraph?.generated_by}
@@ -108,19 +98,19 @@
         {#if resolveGraph}
           <div class="home-stats graph-stats">
             <div>
-              <span>Roots</span>
+              <span>{l10n("roots")}</span>
               <strong>{resolveGraph.roots.length}</strong>
             </div>
             <div>
-              <span>Nodes</span>
+              <span>{l10n("nodes")}</span>
               <strong>{resolveGraph.nodes.length}</strong>
             </div>
             <div>
-              <span>Edges</span>
+              <span>{l10n("edges")}</span>
               <strong>{resolveGraph.edges.length}</strong>
             </div>
             <div>
-              <span>Workspace</span>
+              <span>{l10n("workspace")}</span>
               <strong>
                 {resolveGraph.nodes.filter((node) => node.workspace_member)
                   .length}
@@ -129,7 +119,7 @@
           </div>
 
           <div class="graph-section">
-            <h4>Roots</h4>
+            <h4>{l10n("roots_section")}</h4>
             {#if resolveGraph.roots.length}
               <div class="graph-pills">
                 {#each resolveGraph.roots as rootId}
@@ -139,12 +129,12 @@
                 {/each}
               </div>
             {:else}
-              <p class="home-body">No resolve roots available.</p>
+              <p class="home-body">{l10n("no_roots")}</p>
             {/if}
           </div>
 
           <div class="graph-section">
-            <h4>Packages</h4>
+            <h4>{l10n("packages_section")}</h4>
             {#if resolveGraph.nodes.length}
               <div class="graph-list">
                 {#each resolveGraph.nodes.slice(0, 8) as node}
@@ -155,12 +145,20 @@
                         <div class="graph-node-subtitle">{node.version}</div>
                       </div>
                       {#if node.workspace_member}
-                        <span class="graph-tag">workspace</span>
+                        <span class="graph-tag">{l10n("workspace_tag")}</span>
                       {/if}
                     </div>
                     <div class="graph-node-meta">
-                      <span>in {graphIncoming?.[node.id] ?? 0}</span>
-                      <span>out {graphOutgoing?.[node.id] ?? 0}</span>
+                      <span
+                        >{l10n("incoming", {
+                          n: graphIncoming?.[node.id] ?? 0,
+                        })}</span
+                      >
+                      <span
+                        >{l10n("outgoing", {
+                          n: graphOutgoing?.[node.id] ?? 0,
+                        })}</span
+                      >
                       {#if node.source}
                         <span>{node.source}</span>
                       {/if}
@@ -171,7 +169,7 @@
                           .filter((edge) => edge.from === node.id)
                           .slice(0, 3) as edge}
                           <div class="graph-edge-row">
-                            <span>{edgeKindLabel(edge.kind)}</span>
+                            <span>{l10n("edge_" + edge.kind)}</span>
                             <span>{resolveNodeLabel(edge.to)}</span>
                           </div>
                         {/each}
@@ -181,29 +179,28 @@
                 {/each}
               </div>
             {:else}
-              <p class="home-body">No resolve graph nodes were exported.</p>
+              <p class="home-body">{l10n("no_graph_nodes")}</p>
             {/if}
           </div>
         {:else}
           <p class="home-body">
-            Resolve graph data is not available in this export.
+            {l10n("no_graph_data")}
           </p>
         {/if}
       </section>
 
       <section class="home-card">
-        <h3>Getting Started</h3>
+        <h3>{l10n("getting_started")}</h3>
         <p class="home-body">
-          Use the index to explore public items, or jump into a module to see
-          its docs and cfg gates.
+          {l10n("getting_started_desc")}
         </p>
         <div class="home-meta">
-          <span>Total items</span>
+          <span>{l10n("total_items")}</span>
           <strong>{items.length}</strong>
         </div>
       </section>
       <section class="home-card">
-        <h3>Top Modules</h3>
+        <h3>{l10n("top_modules")}</h3>
         {#if topModules.length}
           <ul>
             {#each topModules as item}
@@ -216,32 +213,32 @@
             {/each}
           </ul>
         {:else}
-          <p class="home-body">No top-level modules detected yet.</p>
+          <p class="home-body">{l10n("no_top_modules")}</p>
         {/if}
       </section>
       <section class="home-card">
-        <h3>API Surface</h3>
+        <h3>{l10n("api_surface")}</h3>
         <div class="home-stats">
           <div>
-            <span>Functions</span>
+            <span>{l10n("functions")}</span>
             <strong>{counts.Function ?? 0}</strong>
           </div>
           <div>
-            <span>Structs</span>
+            <span>{l10n("structs")}</span>
             <strong>{counts.Struct ?? 0}</strong>
           </div>
           <div>
-            <span>Enums</span>
+            <span>{l10n("enums")}</span>
             <strong>{counts.Enum ?? 0}</strong>
           </div>
           <div>
-            <span>Traits</span>
+            <span>{l10n("traits")}</span>
             <strong>{counts.Trait ?? 0}</strong>
           </div>
         </div>
       </section>
       <section class="home-card">
-        <h3>Highlights</h3>
+        <h3>{l10n("highlights")}</h3>
         {#if prominentItems.length}
           <ul>
             {#each prominentItems as item}
@@ -254,7 +251,7 @@
             {/each}
           </ul>
         {:else}
-          <p class="home-body">Generate docs to see highlighted items.</p>
+          <p class="home-body">{l10n("no_highlights")}</p>
         {/if}
       </section>
     </div>

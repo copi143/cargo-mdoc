@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { l10nDerive } from "./l10n";
   import DependencyGraph from "./components/DependencyGraph.svelte";
   import Topbar from "./components/Topbar.svelte";
   import Sidebar from "./components/Sidebar.svelte";
@@ -18,6 +19,9 @@
 
   let loading = true;
   let error = "";
+  let errorStatus = 0;
+
+  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   let items: ItemDoc[] = [];
   let packageInfo: PackageInfo | null = null;
   let packages: PackageDoc[] = [];
@@ -148,7 +152,8 @@
         const response = await fetch(dataUrl, { cache: "no-store" });
 
         if (!response.ok) {
-          throw new Error(`Failed to load mdoc.json (${response.status})`);
+          errorStatus = response.status;
+          throw new Error("failed_to_load");
         }
 
         const data = await response.json();
@@ -172,8 +177,8 @@
         }
 
         onHashChange();
-      } catch (err) {
-        error = err instanceof Error ? err.message : "Failed to load data";
+      } catch {
+        error = "failed_to_load";
       } finally {
         loading = false;
       }
@@ -246,9 +251,15 @@
   />
 
   {#if error}
-    <div class="state error">{error}</div>
+    <div class="state error">
+      {#if errorStatus}
+        {l10n("failed_to_load_status", { status: errorStatus })}
+      {:else}
+        {l10n("failed_to_load")}
+      {/if}
+    </div>
   {:else if loading}
-    <div class="state loading">Loading documentation index...</div>
+    <div class="state loading">{l10n("loading_docs")}</div>
   {/if}
 
   <main class="content" aria-busy={loading}>

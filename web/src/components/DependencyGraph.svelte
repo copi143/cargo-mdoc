@@ -1,9 +1,12 @@
 <script lang="ts">
   import type { ResolveGraph } from "../types";
   import dagre from "dagre";
+  import { l10nDerive } from "../l10n";
 
   export let resolveGraph: ResolveGraph | null = null;
   export let onClose: () => void = () => {};
+
+  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
 
   let mode: "list" | "graph" = "list";
   let selectedNodeId = "";
@@ -91,19 +94,6 @@
     scale = newScale;
   };
 
-  const edgeKindLabel = (kind: string): string => {
-    switch (kind) {
-      case "normal":
-        return "normal";
-      case "dev":
-        return "dev";
-      case "build":
-        return "build";
-      default:
-        return "unknown";
-    }
-  };
-
   const sortNodeIds = (left: string, right: string): number =>
     resolveNodeLabel(left).localeCompare(resolveNodeLabel(right));
 
@@ -189,7 +179,11 @@
   };
 
   const buildLayout = () => {
-    if (!resolveGraph || graphNodeById.size === 0 || resolveGraph.nodes.length === 0) {
+    if (
+      !resolveGraph ||
+      graphNodeById.size === 0 ||
+      resolveGraph.nodes.length === 0
+    ) {
       graphLayoutNodes = [];
       graphLayoutEdges = [];
       graphCanvasWidth = 0;
@@ -197,8 +191,10 @@
       return;
     }
 
-    const focusSet = selectedNodeId && graphNodeById.has(selectedNodeId)
-      ? collectFocusSet(selectedNodeId) : new Set<string>();
+    const focusSet =
+      selectedNodeId && graphNodeById.has(selectedNodeId)
+        ? collectFocusSet(selectedNodeId)
+        : new Set<string>();
 
     const g = new dagre.graphlib.Graph({ compound: focusSet.size > 0 });
     g.setGraph({
@@ -218,12 +214,16 @@
     for (const node of resolveGraph.nodes) {
       g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
       if (focusSet.size > 0) {
-        g.setParent(node.id, focusSet.has(node.id) ? "focus-cluster" : "other-cluster");
+        g.setParent(
+          node.id,
+          focusSet.has(node.id) ? "focus-cluster" : "other-cluster",
+        );
       }
     }
 
     for (const edge of resolveGraph.edges) {
-      const bothInFocus = focusSet.size > 0 && focusSet.has(edge.from) && focusSet.has(edge.to);
+      const bothInFocus =
+        focusSet.size > 0 && focusSet.has(edge.from) && focusSet.has(edge.to);
       g.setEdge(edge.from, edge.to, { weight: bothInFocus ? 10 : 1 });
     }
 
@@ -245,7 +245,9 @@
       })
       .filter((n): n is NonNullable<typeof n> => n !== null);
 
-    const uniqueXs = [...new Set(nodeEntries.map(n => Math.round(n.x)))].sort((a, b) => a - b);
+    const uniqueXs = [...new Set(nodeEntries.map((n) => Math.round(n.x)))].sort(
+      (a, b) => a - b,
+    );
     const xToLayer = new Map(uniqueXs.map((x, i) => [x, i]));
     for (const n of nodeEntries) {
       n.layer = xToLayer.get(Math.round(n.x)) ?? 0;
@@ -277,8 +279,8 @@
       return;
     }
 
-    const maxX = Math.max(...nodeEntries.map(n => n.x + NODE_WIDTH), 0);
-    const maxY = Math.max(...nodeEntries.map(n => n.y + NODE_HEIGHT), 0);
+    const maxX = Math.max(...nodeEntries.map((n) => n.x + NODE_WIDTH), 0);
+    const maxY = Math.max(...nodeEntries.map((n) => n.y + NODE_HEIGHT), 0);
     graphCanvasWidth = maxX + MARGIN_X;
     graphCanvasHeight = Math.max(maxY + MARGIN_X, 400);
   };
@@ -372,7 +374,10 @@
     if (!isPanning) return;
     const dx = event.clientX - dragStartX;
     const dy = event.clientY - dragStartY;
-    if (!didDrag && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
+    if (
+      !didDrag &&
+      (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)
+    ) {
       didDrag = true;
     }
     if (didDrag) {
@@ -421,35 +426,35 @@
     class="graph-overlay"
     role="dialog"
     aria-modal="true"
-    aria-label="Dependency graph"
+    aria-label={l10n("dep_graph_aria")}
   >
     <button
       class="graph-backdrop"
       type="button"
-      aria-label="Close dependency graph"
+      aria-label={l10n("close_graph_aria")}
       on:click={onClose}
     ></button>
     <section class="graph-modal panel">
       <div class="graph-modal-header">
         <div>
-          <p class="kicker">Dependency Graph</p>
-          <h2>Resolve Graph</h2>
+          <p class="kicker">{l10n("dep_graph_header")}</p>
+          <h2>{l10n("resolve_graph_header")}</h2>
           <p class="home-body">
-            Cargo metadata resolve graph exported from the workspace.
+            {l10n("graph_desc")}
           </p>
         </div>
         <div class="graph-modal-actions">
           <div
             class="graph-mode-switch"
             role="tablist"
-            aria-label="Graph view mode"
+            aria-label={l10n("graph_view_mode")}
           >
             <button
               class:active={mode === "list"}
               type="button"
               on:click={() => setMode("list")}
             >
-              列表式
+              {l10n("list_mode")}
             </button>
             <button
               class:active={mode === "graph"}
@@ -459,34 +464,42 @@
                 resetPan();
               }}
             >
-              图谱式
+              {l10n("graph_mode")}
             </button>
           </div>
           {#if mode === "graph"}
-            <button class="ghost" type="button" on:click={zoomIn}>放大</button>
-            <button class="ghost" type="button" on:click={zoomOut}>缩小</button>
+            <button class="ghost" type="button" on:click={zoomIn}
+              >{l10n("zoom_in")}</button
+            >
+            <button class="ghost" type="button" on:click={zoomOut}
+              >{l10n("zoom_out")}</button
+            >
             <span class="graph-zoom-level">{Math.round(scale * 100)}%</span>
-            <button class="ghost" type="button" on:click={resetPan}>重置</button>
+            <button class="ghost" type="button" on:click={resetPan}
+              >{l10n("reset_view")}</button
+            >
           {/if}
-          <button class="ghost" type="button" on:click={onClose}>Close</button>
+          <button class="ghost" type="button" on:click={onClose}
+            >{l10n("close")}</button
+          >
         </div>
       </div>
 
       <div class="graph-modal-stats home-stats graph-stats">
         <div>
-          <span>Roots</span>
+          <span>{l10n("roots")}</span>
           <strong>{resolveGraph.roots.length}</strong>
         </div>
         <div>
-          <span>Nodes</span>
+          <span>{l10n("nodes")}</span>
           <strong>{resolveGraph.nodes.length}</strong>
         </div>
         <div>
-          <span>Edges</span>
+          <span>{l10n("edges")}</span>
           <strong>{resolveGraph.edges.length}</strong>
         </div>
         <div>
-          <span>Workspace</span>
+          <span>{l10n("workspace")}</span>
           <strong>
             {resolveGraph.nodes.filter((node) => node.workspace_member).length}
           </strong>
@@ -496,7 +509,7 @@
       {#if mode === "list"}
         <div class="graph-modal-body">
           <section class="graph-section">
-            <h3>Roots</h3>
+            <h3>{l10n("roots_section")}</h3>
             {#if resolveGraph.roots.length}
               <div class="graph-pills">
                 {#each resolveGraph.roots as rootId}
@@ -511,12 +524,12 @@
                 {/each}
               </div>
             {:else}
-              <p class="home-body">No resolve roots available.</p>
+              <p class="home-body">{l10n("no_roots_graph")}</p>
             {/if}
           </section>
 
           <section class="graph-section graph-section-wide">
-            <h3>Packages</h3>
+            <h3>{l10n("packages_section")}</h3>
             {#if resolveGraph.nodes.length}
               <div class="graph-list graph-list-modal">
                 {#each resolveGraph.nodes as node}
@@ -532,12 +545,20 @@
                         <div class="graph-node-subtitle">{node.version}</div>
                       </div>
                       {#if node.workspace_member}
-                        <span class="graph-tag">workspace</span>
+                        <span class="graph-tag">{l10n("workspace_tag")}</span>
                       {/if}
                     </div>
                     <div class="graph-node-meta">
-                      <span>in {graphIncoming?.[node.id] ?? 0}</span>
-                      <span>out {graphOutgoing?.[node.id] ?? 0}</span>
+                      <span
+                        >{l10n("incoming", {
+                          n: graphIncoming?.[node.id] ?? 0,
+                        })}</span
+                      >
+                      <span
+                        >{l10n("outgoing", {
+                          n: graphOutgoing?.[node.id] ?? 0,
+                        })}</span
+                      >
                       {#if node.source}
                         <span>{node.source}</span>
                       {/if}
@@ -548,7 +569,7 @@
                           .filter((edge) => edge.from === node.id)
                           .slice(0, 6) as edge}
                           <div class="graph-edge-row">
-                            <span>{edgeKindLabel(edge.kind)}</span>
+                            <span>{l10n("edge_" + edge.kind)}</span>
                             <span>{resolveNodeLabel(edge.to)}</span>
                           </div>
                         {/each}
@@ -558,7 +579,7 @@
                 {/each}
               </div>
             {:else}
-              <p class="home-body">No resolve graph nodes were exported.</p>
+              <p class="home-body">{l10n("no_packages_graph")}</p>
             {/if}
           </section>
         </div>
@@ -566,7 +587,7 @@
         <div
           class={`graph-viewport ${isPanning ? "graph-viewport--dragging" : ""}`}
           role="application"
-          aria-label="Dependency graph canvas"
+          aria-label={l10n("dep_graph_aria")}
           on:pointerdown={onGraphPointerDown}
           on:pointermove={onGraphPointerMove}
           on:pointerup={onGraphPointerEnd}
@@ -607,13 +628,13 @@
                     </div>
                   </div>
                   {#if layoutNode.node.workspace_member}
-                    <span class="graph-node-tag">workspace</span>
+                    <span class="graph-node-tag">{l10n("workspace_tag")}</span>
                   {/if}
                 </div>
                 <div class="graph-node-card-meta">
-                  <span>layer {layoutNode.layer}</span>
-                  <span>in {layoutNode.incoming}</span>
-                  <span>out {layoutNode.outgoing}</span>
+                  <span>{l10n("layer_prefix", { n: layoutNode.layer })}</span>
+                  <span>{l10n("incoming", { n: layoutNode.incoming })}</span>
+                  <span>{l10n("outgoing", { n: layoutNode.outgoing })}</span>
                 </div>
                 {#if layoutNode.node.source}
                   <div class="graph-node-card-source">
@@ -628,7 +649,7 @@
                 class="graph-hint"
                 style={`left: ${MARGIN_X}px; top: ${graphCanvasHeight - 44}px;`}
               >
-                Selected: {resolveNodeLabel(selectedNodeId)}
+                {l10n("selected_label")}{resolveNodeLabel(selectedNodeId)}
               </div>
             {/if}
           </div>
