@@ -48,6 +48,7 @@ pub struct GeneratorInfo {
     // intentionally omitted in MVP to avoid running external tooling
     pub rustc_version: Option<String>,
     pub cargo_version: Option<String>,
+    pub commit_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]

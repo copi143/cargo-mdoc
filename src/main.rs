@@ -213,6 +213,20 @@ fn main() -> Result<()> {
         default_members,
     };
 
+    let commit_id = (|| -> Option<String> {
+        let mut dir = workspace_root.clone();
+        loop {
+            if let Ok(repo) = gix::open(&dir) {
+                if let Ok(id) = repo.head_id() {
+                    return Some(id.to_string());
+                }
+            }
+            if !dir.pop() {
+                return None;
+            }
+        }
+    })();
+
     let output = InternalDoc {
         format: "cargo-mdoc-internal/1.0".to_string(),
         generated_at: Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true),
@@ -223,6 +237,7 @@ fn main() -> Result<()> {
             // these fields are placeholders for future enhancement
             rustc_version: None,
             cargo_version: None,
+            commit_id,
         },
         workspace,
         packages,

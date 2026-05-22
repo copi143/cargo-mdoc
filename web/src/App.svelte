@@ -10,6 +10,7 @@
     CfgExpr,
     Counts,
     Features,
+    GeneratorInfo,
     ItemDoc,
     ItemKind,
     PackageDoc,
@@ -26,6 +27,7 @@
   let packageInfo: PackageInfo | null = null;
   let packages: PackageDoc[] = [];
   let resolveGraph: ResolveGraph | null = null;
+  let generator: GeneratorInfo | null = null;
   let query = "";
   let kindFilter: "All" | ItemKind = "All";
   let selectedPackageId = "";
@@ -172,6 +174,7 @@
           ) {
             packages = [packageInfo as PackageDoc, ...packages];
           }
+          generator = data.generator || null;
           resolveGraph = data.resolve_graph || data.lock_graph || null;
           items = Array.isArray(data.items) ? data.items : [];
         }
@@ -245,6 +248,7 @@
   <Topbar
     {packageInfo}
     {items}
+    {generator}
     onOpenGraph={openGraph}
     graphAvailable={Boolean(resolveGraph)}
   />

@@ -20,7 +20,7 @@ zh-cn = "函数"
 
 [kind_struct]
 en-us = "Struct"
-zh-cn = "结构体"
+zh-cn = "结构"
 
 [kind_enum]
 en-us = "Enum"
@@ -28,7 +28,7 @@ zh-cn = "枚举"
 
 [kind_trait]
 en-us = "Trait"
-zh-cn = "特征"
+zh-cn = "特质"
 
 [kind_module]
 en-us = "Module"

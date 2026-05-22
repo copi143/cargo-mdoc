@@ -61,6 +61,14 @@ export type PackageDoc = {
   is_workspace_member?: boolean;
 };
 
+export type GeneratorInfo = {
+  name: string;
+  version: string;
+  rustc_version?: string | null;
+  cargo_version?: string | null;
+  commit_id?: string | null;
+};
+
 export type PackageInfo = PackageDoc;
 
 export type Counts = Partial<Record<ItemKind, number>>;

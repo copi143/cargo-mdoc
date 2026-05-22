@@ -1,9 +1,10 @@
 <script lang="ts">
-  import type { ItemDoc, PackageInfo } from "../types";
+  import type { GeneratorInfo, ItemDoc, PackageInfo } from "../types";
   import { locale, langs, l10nDerive } from "../l10n";
 
   export let packageInfo: PackageInfo | null = null;
   export let items: ItemDoc[] = [];
+  export let generator: GeneratorInfo | null = null;
   export let onOpenGraph: () => void = () => {};
   export let graphAvailable = false;
 
@@ -50,6 +51,11 @@
     <button class="ghost" on:click={onOpenGraph} disabled={!graphAvailable}>
       {l10n("dep_graph")}
     </button>
+    {#if generator?.commit_id}
+      <span class="commit-badge" title={generator.commit_id}>
+        {generator.commit_id.slice(0, 7)}
+      </span>
+    {/if}
     <select
       class="lang-switcher"
       value={currentLocale}

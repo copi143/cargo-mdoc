@@ -57,7 +57,7 @@
   <div class="detail-header">
     <div class="left">
       <p class={`kicker kind-badge kind-${selectedItem.kind.toLowerCase()}`}>
-        {selectedItem.kind}
+        {l10n(":kind_" + selectedItem.kind.toLowerCase())}
       </p>
       <h2 class="detail-title">
         {#if displayPath.namespace}
@@ -111,7 +111,7 @@
                       <div class="impl-item-header">
                         <span
                           class="impl-item-kind kind-badge kind-{item.kind.toLowerCase()}"
-                          >{item.kind}</span
+                          >{l10n(":kind_" + item.kind.toLowerCase())}</span
                         >
                         <code class="impl-item-name">{item.name}</code>
                         {#if item.cfg.kind !== "True"}

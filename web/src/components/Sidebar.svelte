@@ -147,7 +147,7 @@
             <span class="path">{item.path}</span>
             <span class="source-line">{formatSource(item)}</span>
           </span>
-          <span class={`kind kind-${item.kind.toLowerCase()}`}>{item.kind}</span
+          <span class={`kind kind-${item.kind.toLowerCase()}`}>{l10n(":kind_" + item.kind.toLowerCase())}</span
           >
         </button>
       {/each}
