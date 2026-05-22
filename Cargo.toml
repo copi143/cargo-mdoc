@@ -24,3 +24,5 @@ ra_ap_parser = "0.0.333"
 ra_ap_tt = "0.0.333"
 ra_ap_cfg = { version = "0.0.333", features = ["syntax"] }
 ra_ap_mbe = "0.0.333"
+
+gix = "0.83.0"
