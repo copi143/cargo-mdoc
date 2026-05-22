@@ -1,0 +1,11 @@
+[depends_on]
+en-us = "depends on"
+zh-cn = "依赖"
+
+[depended_by]
+en-us = "depended by"
+zh-cn = "被依赖"
+
+[edge_unknown]
+en-us = "unknown"
+zh-cn = "未知"

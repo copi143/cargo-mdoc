@@ -1,0 +1,83 @@
+[readme_not_loaded_err]
+en-us = "README not loaded."
+zh-cn = "说明文档未加载"
+
+[overview]
+en-us = "Overview"
+zh-cn = "概览"
+
+[doc_home]
+en-us = "Documentation Home"
+zh-cn = "文档首页"
+
+[readme]
+en-us = "README"
+zh-cn = "说明文档"
+
+[path]
+en-us = "Path"
+zh-cn = "路径"
+
+[readme_default]
+en-us = "README.md"
+zh-cn = "README.md"
+
+[readme_not_loaded]
+en-us = "README file not loaded into the export."
+zh-cn = "导出中未加载说明文档"
+
+[resolve_graph]
+en-us = "Resolve Graph"
+zh-cn = "解析图"
+
+[no_graph_data]
+en-us = "Resolve graph data is not available in this export."
+zh-cn = "此导出中不包含解析图数据"
+
+[getting_started]
+en-us = "Getting Started"
+zh-cn = "快速开始"
+
+[getting_started_desc]
+en-us = "Use the index to explore public items, or jump into a module to see its docs and cfg gates."
+zh-cn = "使用索引浏览公共条目，或跳转到模块查看其文档和条件编译门控"
+
+[total_items]
+en-us = "Total items"
+zh-cn = "总计条目"
+
+[top_modules]
+en-us = "Top Modules"
+zh-cn = "顶级模块"
+
+[no_top_modules]
+en-us = "No top-level modules detected yet."
+zh-cn = "暂未检测到顶级模块"
+
+[api_surface]
+en-us = "API Surface"
+zh-cn = "API 概览"
+
+[functions]
+en-us = "Functions"
+zh-cn = "函数"
+
+[structs]
+en-us = "Structs"
+zh-cn = "结构体"
+
+[enums]
+en-us = "Enums"
+zh-cn = "枚举"
+
+[traits]
+en-us = "Traits"
+zh-cn = "特征"
+
+[highlights]
+en-us = "Highlights"
+zh-cn = "亮点"
+
+[no_highlights]
+en-us = "Generate docs to see highlighted items."
+zh-cn = "生成文档以查看亮点条目"

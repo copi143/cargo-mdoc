@@ -1,0 +1,31 @@
+[index]
+en-us = "Index"
+zh-cn = "索引"
+
+[results]
+en-us = "{n} results"
+zh-cn = "{n} 个结果"
+
+[home]
+en-us = "Home"
+zh-cn = "首页"
+
+[all_crates]
+en-us = "All crates"
+zh-cn = "所有包"
+
+[features_for]
+en-us = "Features — {name}"
+zh-cn = "功能 — {name}"
+
+[search_placeholder]
+en-us = "Search paths or docs"
+zh-cn = "搜索路径或文档"
+
+[search_aria]
+en-us = "Search"
+zh-cn = "搜索"
+
+[no_matches]
+en-us = "No matches. Try a broader search."
+zh-cn = "没有匹配结果，请尝试更宽泛的搜索"

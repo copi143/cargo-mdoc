@@ -440,7 +440,7 @@
           <p class="kicker">{l10n("dep_graph_header")}</p>
           <h2>{l10n("resolve_graph_header")}</h2>
           <p class="home-body">
-            {l10n("graph_desc")}
+            {l10n(":graph_desc")}
           </p>
         </div>
         <div class="graph-modal-actions">
@@ -487,19 +487,19 @@
 
       <div class="graph-modal-stats home-stats graph-stats">
         <div>
-          <span>{l10n("roots")}</span>
+          <span>{l10n(":roots")}</span>
           <strong>{resolveGraph.roots.length}</strong>
         </div>
         <div>
-          <span>{l10n("nodes")}</span>
+          <span>{l10n(":nodes")}</span>
           <strong>{resolveGraph.nodes.length}</strong>
         </div>
         <div>
-          <span>{l10n("edges")}</span>
+          <span>{l10n(":edges")}</span>
           <strong>{resolveGraph.edges.length}</strong>
         </div>
         <div>
-          <span>{l10n("workspace")}</span>
+          <span>{l10n(":workspace")}</span>
           <strong>
             {resolveGraph.nodes.filter((node) => node.workspace_member).length}
           </strong>
@@ -509,7 +509,7 @@
       {#if mode === "list"}
         <div class="graph-modal-body">
           <section class="graph-section">
-            <h3>{l10n("roots_section")}</h3>
+            <h3>{l10n(":roots_section")}</h3>
             {#if resolveGraph.roots.length}
               <div class="graph-pills">
                 {#each resolveGraph.roots as rootId}
@@ -524,12 +524,12 @@
                 {/each}
               </div>
             {:else}
-              <p class="home-body">{l10n("no_roots_graph")}</p>
+              <p class="home-body">{l10n(":no_roots_graph")}</p>
             {/if}
           </section>
 
           <section class="graph-section graph-section-wide">
-            <h3>{l10n("packages_section")}</h3>
+            <h3>{l10n(":packages_section")}</h3>
             {#if resolveGraph.nodes.length}
               <div class="graph-list graph-list-modal">
                 {#each resolveGraph.nodes as node}
@@ -545,17 +545,17 @@
                         <div class="graph-node-subtitle">{node.version}</div>
                       </div>
                       {#if node.workspace_member}
-                        <span class="graph-tag">{l10n("workspace_tag")}</span>
+                        <span class="graph-tag">{l10n(":workspace_tag")}</span>
                       {/if}
                     </div>
                     <div class="graph-node-meta">
                       <span
-                        >{l10n("incoming", {
+                        >{l10n(":incoming", {
                           n: graphIncoming?.[node.id] ?? 0,
                         })}</span
                       >
                       <span
-                        >{l10n("outgoing", {
+                        >{l10n(":outgoing", {
                           n: graphOutgoing?.[node.id] ?? 0,
                         })}</span
                       >
@@ -579,7 +579,7 @@
                 {/each}
               </div>
             {:else}
-              <p class="home-body">{l10n("no_packages_graph")}</p>
+              <p class="home-body">{l10n(":no_packages_graph")}</p>
             {/if}
           </section>
         </div>
@@ -628,13 +628,13 @@
                     </div>
                   </div>
                   {#if layoutNode.node.workspace_member}
-                    <span class="graph-node-tag">{l10n("workspace_tag")}</span>
+                    <span class="graph-node-tag">{l10n(":workspace_tag")}</span>
                   {/if}
                 </div>
                 <div class="graph-node-card-meta">
                   <span>{l10n("layer_prefix", { n: layoutNode.layer })}</span>
-                  <span>{l10n("incoming", { n: layoutNode.incoming })}</span>
-                  <span>{l10n("outgoing", { n: layoutNode.outgoing })}</span>
+                  <span>{l10n(":incoming", { n: layoutNode.incoming })}</span>
+                  <span>{l10n(":outgoing", { n: layoutNode.outgoing })}</span>
                 </div>
                 {#if layoutNode.node.source}
                   <div class="graph-node-card-source">

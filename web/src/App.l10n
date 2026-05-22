@@ -1,0 +1,11 @@
+[loading_docs]
+en-us = "Loading documentation index…"
+zh-cn = "正在加载文档索引…"
+
+[failed_to_load]
+en-us = "Failed to load data"
+zh-cn = "加载数据失败"
+
+[failed_to_load_status]
+en-us = "Failed to load mdoc.json ({status})"
+zh-cn = "加载 mdoc.json 失败（{status}）"

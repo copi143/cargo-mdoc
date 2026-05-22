@@ -1,0 +1,35 @@
+[nodoc]
+en-us = "No docs provided."
+zh-cn = "未提供文档"
+
+[cfg_label]
+en-us = "cfg"
+zh-cn = "cfg"
+
+[impl_blocks]
+en-us = "Impl Blocks ({n})"
+zh-cn = "实现块（{n}）"
+
+[methods_and_items]
+en-us = "Methods & Associated Items"
+zh-cn = "方法与关联项"
+
+[source]
+en-us = "Source"
+zh-cn = "源码"
+
+[unknown_file]
+en-us = "Unknown file"
+zh-cn = "未知文件"
+
+[copied]
+en-us = "Copied!"
+zh-cn = "已复制！"
+
+[copy]
+en-us = "Copy"
+zh-cn = "复制"
+
+[empty_select]
+en-us = "Select an item from the index to inspect its docs, cfg gates, and source location."
+zh-cn = "从索引中选择一个条目，查看其文档、条件编译门控和源码位置"

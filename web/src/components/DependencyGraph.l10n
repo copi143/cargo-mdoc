@@ -1,0 +1,67 @@
+[dep_graph_aria]
+en-us = "Dependency graph"
+zh-cn = "依赖图"
+
+[close_graph_aria]
+en-us = "Close dependency graph"
+zh-cn = "关闭依赖图"
+
+[dep_graph_header]
+en-us = "Dependency Graph"
+zh-cn = "依赖图"
+
+[resolve_graph_header]
+en-us = "Resolve Graph"
+zh-cn = "解析图"
+
+[graph_view_mode]
+en-us = "Graph view mode"
+zh-cn = "图视图模式"
+
+[list_mode]
+en-us = "List"
+zh-cn = "列表"
+
+[graph_mode]
+en-us = "Graph"
+zh-cn = "图谱"
+
+[zoom_in]
+en-us = "Zoom in"
+zh-cn = "放大"
+
+[zoom_out]
+en-us = "Zoom out"
+zh-cn = "缩小"
+
+[reset_view]
+en-us = "Reset"
+zh-cn = "重置"
+
+[close]
+en-us = "Close"
+zh-cn = "关闭"
+
+[edge_normal]
+en-us = "normal"
+zh-cn = "正常"
+
+[edge_dev]
+en-us = "dev"
+zh-cn = "开发"
+
+[edge_build]
+en-us = "build"
+zh-cn = "构建"
+
+[edge_unknown]
+en-us = "unknown"
+zh-cn = "未知"
+
+[selected_label]
+en-us = "Selected: "
+zh-cn = "已选择："
+
+[layer_prefix]
+en-us = "layer {n}"
+zh-cn = "层级 {n}"

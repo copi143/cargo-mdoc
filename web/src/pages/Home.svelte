@@ -22,7 +22,7 @@
   );
 
   const formatSource = (item: ItemDoc): string => {
-    if (!item.source) return l10n("source_unavailable");
+    if (!item.source) return l10n(":source_unavailable");
 
     const { file, line_start, line_end } = item.source;
     const range =
@@ -87,7 +87,7 @@
           <div>
             <h3>{l10n("resolve_graph")}</h3>
             <p class="home-body">
-              {l10n("resolve_graph_desc")}
+              {l10n(":graph_desc")}
             </p>
           </div>
           {#if resolveGraph?.generated_by}
@@ -98,19 +98,19 @@
         {#if resolveGraph}
           <div class="home-stats graph-stats">
             <div>
-              <span>{l10n("roots")}</span>
+              <span>{l10n(":roots")}</span>
               <strong>{resolveGraph.roots.length}</strong>
             </div>
             <div>
-              <span>{l10n("nodes")}</span>
+              <span>{l10n(":nodes")}</span>
               <strong>{resolveGraph.nodes.length}</strong>
             </div>
             <div>
-              <span>{l10n("edges")}</span>
+              <span>{l10n(":edges")}</span>
               <strong>{resolveGraph.edges.length}</strong>
             </div>
             <div>
-              <span>{l10n("workspace")}</span>
+              <span>{l10n(":workspace")}</span>
               <strong>
                 {resolveGraph.nodes.filter((node) => node.workspace_member)
                   .length}
@@ -119,7 +119,7 @@
           </div>
 
           <div class="graph-section">
-            <h4>{l10n("roots_section")}</h4>
+            <h4>{l10n(":roots_section")}</h4>
             {#if resolveGraph.roots.length}
               <div class="graph-pills">
                 {#each resolveGraph.roots as rootId}
@@ -129,12 +129,12 @@
                 {/each}
               </div>
             {:else}
-              <p class="home-body">{l10n("no_roots")}</p>
+              <p class="home-body">{l10n(":no_roots_graph")}</p>
             {/if}
           </div>
 
           <div class="graph-section">
-            <h4>{l10n("packages_section")}</h4>
+            <h4>{l10n(":packages_section")}</h4>
             {#if resolveGraph.nodes.length}
               <div class="graph-list">
                 {#each resolveGraph.nodes.slice(0, 8) as node}
@@ -145,17 +145,17 @@
                         <div class="graph-node-subtitle">{node.version}</div>
                       </div>
                       {#if node.workspace_member}
-                        <span class="graph-tag">{l10n("workspace_tag")}</span>
+                        <span class="graph-tag">{l10n(":workspace_tag")}</span>
                       {/if}
                     </div>
                     <div class="graph-node-meta">
                       <span
-                        >{l10n("incoming", {
+                        >{l10n(":incoming", {
                           n: graphIncoming?.[node.id] ?? 0,
                         })}</span
                       >
                       <span
-                        >{l10n("outgoing", {
+                        >{l10n(":outgoing", {
                           n: graphOutgoing?.[node.id] ?? 0,
                         })}</span
                       >
@@ -179,7 +179,7 @@
                 {/each}
               </div>
             {:else}
-              <p class="home-body">{l10n("no_graph_nodes")}</p>
+              <p class="home-body">{l10n(":no_packages_graph")}</p>
             {/if}
           </div>
         {:else}

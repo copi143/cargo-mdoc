@@ -1,3 +1,83 @@
 [cargo-mdoc]
 en-us = "cargo-mdoc"
 fallback = true
+
+[crate]
+en-us = "Crate"
+zh-cn = "包"
+
+[source_unavailable]
+en-us = "Source unavailable"
+zh-cn = "源码不可用"
+
+[kind_all]
+en-us = "All"
+zh-cn = "全部"
+
+[kind_function]
+en-us = "Function"
+zh-cn = "函数"
+
+[kind_struct]
+en-us = "Struct"
+zh-cn = "结构体"
+
+[kind_enum]
+en-us = "Enum"
+zh-cn = "枚举"
+
+[kind_trait]
+en-us = "Trait"
+zh-cn = "特征"
+
+[kind_module]
+en-us = "Module"
+zh-cn = "模块"
+
+[roots]
+en-us = "Roots"
+zh-cn = "根节点"
+
+[nodes]
+en-us = "Nodes"
+zh-cn = "节点"
+
+[edges]
+en-us = "Edges"
+zh-cn = "边"
+
+[workspace]
+en-us = "Workspace"
+zh-cn = "工作区"
+
+[roots_section]
+en-us = "Roots"
+zh-cn = "根节点"
+
+[packages_section]
+en-us = "Packages"
+zh-cn = "包"
+
+[workspace_tag]
+en-us = "workspace"
+zh-cn = "工作区"
+
+[incoming]
+en-us = "in {n}"
+zh-cn = "入 {n}"
+
+[outgoing]
+en-us = "out {n}"
+zh-cn = "出 {n}"
+
+[graph_desc]
+en-us = "Cargo metadata resolve graph exported from the workspace."
+zh-cn = "从工作区导出的 Cargo 元数据解析图"
+
+[no_roots_graph]
+en-us = "No resolve roots available."
+zh-cn = "没有可用的解析根节点"
+
+[no_packages_graph]
+en-us = "No resolve graph nodes were exported."
+zh-cn = "未导出解析图节点"

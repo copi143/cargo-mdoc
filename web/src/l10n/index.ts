@@ -31,7 +31,8 @@ export const locale = (() => {
 export const l10nDerive = derived(locale, ($locale) => {
   const trans = l10nData.trans[$locale] ?? {};
   const indexMap = trans["l10n/index"] ?? {};
-  return (ns: string) => {
+  return (path: string) => {
+    let ns = path.replace(/\.[^.]+$/, "");
     const nsMap = trans[ns] ?? {};
     return (key: string, params?: Record<string, string | number>): string => {
       let text = key.startsWith(":")

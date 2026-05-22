@@ -11,7 +11,7 @@
   $: currentLocale = $locale;
 
   const locales = Object.entries(langs).map(
-    ([code, data]) => [code, data.name] as const,
+    ([code, data]) => [code, `${data.name} / ${data.display}`] as const,
   );
 </script>
 

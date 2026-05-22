@@ -44,7 +44,7 @@
   }
 
   const formatSource = (item: ItemDoc): string => {
-    if (!item.source) return l10n("source_unavailable");
+    if (!item.source) return l10n(":source_unavailable");
     const { file, line_start, line_end } = item.source;
     const range =
       line_start === line_end ? `${line_start}` : `${line_start}-${line_end}`;
@@ -67,7 +67,7 @@
 
   {#if packages.length > 0}
     <div class="crates">
-      <div class="section-label">{l10n("crate")}</div>
+      <div class="section-label">{l10n(":crate")}</div>
       <div class="crate-pills">
         <button
           class="crate-pill"
@@ -123,7 +123,7 @@
             class:active={kindFilter === option}
             on:click={() => onKindChange(option)}
           >
-            {l10n("kind_" + option.toLowerCase())}
+            {l10n(":kind_" + option.toLowerCase())}
             {#if option !== "All"}
               <span class="count">{counts[option] ?? 0}</span>
             {/if}

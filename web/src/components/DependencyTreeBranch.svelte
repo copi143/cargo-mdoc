@@ -59,7 +59,7 @@
               <div class="graph-tree-node-subtitle">{node.version}</div>
             </div>
             {#if node.workspace_member}
-              <span class="graph-tree-tag">{l10n("workspace_tag")}</span>
+              <span class="graph-tree-tag">{l10n(":workspace_tag")}</span>
             {/if}
           </div>
 

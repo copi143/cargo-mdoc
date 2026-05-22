@@ -1,0 +1,35 @@
+[brand]
+en-us = "mdoc"
+zh-cn = "mdoc"
+
+[subtitle]
+en-us = "Rust module surface"
+zh-cn = "Rust 模块预览"
+
+[doc_index]
+en-us = "Documentation Index"
+zh-cn = "文档索引"
+
+[version_unknown]
+en-us = "0.0.0"
+zh-cn = "0.0.0"
+
+[edition]
+en-us = "Edition "
+zh-cn = "版本 "
+
+[edition_unknown]
+en-us = "unknown"
+zh-cn = "未知"
+
+[separator]
+en-us = "•"
+zh-cn = "•"
+
+[items_label]
+en-us = "Items"
+zh-cn = "条目"
+
+[dep_graph]
+en-us = "Dependency graph"
+zh-cn = "依赖图"
