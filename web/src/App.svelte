@@ -245,7 +245,6 @@
   <Topbar
     {packageInfo}
     {items}
-    {counts}
     onOpenGraph={openGraph}
     graphAvailable={Boolean(resolveGraph)}
   />

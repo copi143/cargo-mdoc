@@ -12,13 +12,24 @@ export default defineConfig({
     {
       name: "toml-l10n",
       transform(code, id) {
-        if (id.endsWith("src/l10n/config.ts")) {
+        if (id === path.join(projSrcDir, "l10n/config.ts")) {
           console.log("Injecting l10n config data:", l10nData);
           return {
             code: `export default ${JSON.stringify(l10nData)}`,
             map: null,
           };
         }
+      },
+    },
+    {
+      name: "l10n-watch",
+      configureServer(server) {
+        server.watcher.add(path.join(projSrcDir, "**/*.l10n"));
+        server.watcher.on("change", (file) => {
+          if (file.endsWith(".l10n")) {
+            server.restart();
+          }
+        });
       },
     },
     {
