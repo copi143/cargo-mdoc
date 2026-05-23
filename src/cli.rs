@@ -5,12 +5,14 @@ pub struct CliOptions {
     pub crate_root: PathBuf,
     pub output: Option<PathBuf>,
     pub stdout: bool,
+    pub include_deps: bool,
 }
 
 pub fn parse_args() -> Result<CliOptions> {
     let mut crate_root = None;
     let mut output = None;
     let mut stdout = false;
+    let mut include_deps = false;
 
     let mut args = std::env::args().skip(1);
 
@@ -30,6 +32,9 @@ pub fn parse_args() -> Result<CliOptions> {
             }
             "--stdout" => {
                 stdout = true;
+            }
+            "--include-deps" => {
+                include_deps = true;
             }
             value if value.starts_with('-') => {
                 anyhow::bail!("Unknown argument: {}", value);
@@ -69,10 +74,11 @@ pub fn parse_args() -> Result<CliOptions> {
         crate_root,
         output,
         stdout,
+        include_deps,
     })
 }
 
 pub fn print_usage() {
-    eprintln!("Usage: cargo-mdoc [crate-root] [--output PATH] [--stdout]");
-    eprintln!("       cargo-mdoc --crate-root PATH [--output PATH] [--stdout]");
+    eprintln!("Usage: cargo-mdoc [crate-root] [--output PATH] [--stdout] [--include-deps]");
+    eprintln!("       cargo-mdoc --crate-root PATH [--output PATH] [--stdout] [--include-deps]");
 }

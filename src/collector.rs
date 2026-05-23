@@ -254,7 +254,7 @@ impl RaCollector {
             visibility_from_ast(func.visibility()),
             &mod_path,
             source_location(workspace_root, current_file, source, func.syntax()),
-            source_snippet(source, func.syntax()),
+            source_snippet( func.syntax()),
             Some(attrs),
         );
 
@@ -287,7 +287,7 @@ impl RaCollector {
             visibility_from_ast(st.visibility()),
             &mod_path,
             source_location(workspace_root, current_file, source, st.syntax()),
-            source_snippet(source, st.syntax()),
+            source_snippet( st.syntax()),
             Some(attrs),
         );
 
@@ -320,7 +320,7 @@ impl RaCollector {
             visibility_from_ast(en.visibility()),
             &mod_path,
             source_location(workspace_root, current_file, source, en.syntax()),
-            source_snippet(source, en.syntax()),
+            source_snippet( en.syntax()),
             Some(attrs),
         );
 
@@ -353,7 +353,7 @@ impl RaCollector {
             visibility_from_ast(tr.visibility()),
             &mod_path,
             source_location(workspace_root, current_file, source, tr.syntax()),
-            source_snippet(source, tr.syntax()),
+            source_snippet( tr.syntax()),
             Some(attrs),
         );
 
@@ -388,7 +388,7 @@ impl RaCollector {
             visibility_from_ast(module.visibility()),
             &mod_path,
             source_location(workspace_root, current_file, source, module.syntax()),
-            source_snippet(source, module.syntax()),
+            source_snippet( module.syntax()),
             Some(attrs.clone()),
         );
 
@@ -470,7 +470,7 @@ impl RaCollector {
                                 source,
                                 func.syntax(),
                             ),
-                            source_code: source_snippet(source, func.syntax()),
+                            source_code: source_snippet( func.syntax()),
                         });
                     }
                     _ => {}
@@ -488,7 +488,7 @@ impl RaCollector {
             trait_name,
             cfg,
             source: source_loc,
-            source_code: source_snippet(source, imp.syntax()),
+            source_code: source_snippet( imp.syntax()),
             items,
         });
 

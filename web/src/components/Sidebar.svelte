@@ -30,8 +30,16 @@
 
   let buttonRefs: HTMLButtonElement[] = [];
   let sliderStyle = "";
+  let currentPage = 0;
+  const pageSize = 100;
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
+  $: totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  // Reset to first page when filter/search results change
+  $: if (filteredItems) currentPage = 0;
+  $: clampedPage = Math.min(currentPage, totalPages - 1);
+  $: pageOffset = clampedPage * pageSize;
+  $: pageItems = filteredItems.slice(pageOffset, pageOffset + pageSize);
 
   $: {
     const idx = kindOptions.indexOf(kindFilter);
@@ -137,10 +145,10 @@
     {#if filteredItems.length === 0}
       <div class="empty">{l10n("no_matches")}</div>
     {:else}
-      {#each filteredItems as item, index}
+      {#each pageItems as item, i}
         <button
           class:selected={item.path === selectedPath}
-          style={`--i: ${index}`}
+          style={`--i: ${i}`}
           on:click={() => onSelectItem(item)}
         >
           <span class="row-main">
@@ -151,6 +159,27 @@
           >
         </button>
       {/each}
+    {/if}
+    {#if totalPages > 1}
+      <div class="pagination">
+        <button
+          class="page-btn"
+          disabled={clampedPage === 0}
+          on:click={() => (currentPage = clampedPage - 1)}
+        >&lsaquo;</button>
+        {#each Array(totalPages) as _, p}
+          <button
+            class="page-btn"
+            class:active={p === clampedPage}
+            on:click={() => (currentPage = p)}
+          >{p + 1}</button>
+        {/each}
+        <button
+          class="page-btn"
+          disabled={clampedPage >= totalPages - 1}
+          on:click={() => (currentPage = clampedPage + 1)}
+        >&rsaquo;</button>
+      </div>
     {/if}
   </div>
 </aside>

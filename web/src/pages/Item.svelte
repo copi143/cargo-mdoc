@@ -98,11 +98,9 @@
                       .source.line_end}{/if}
                 </span>
               </div>
-              <pre class="source-code">
-                <code class="hljs language-rust">
-                  {@html renderRustSource(impl.source_code)}
-                </code>
-              </pre>
+              <pre class="source-code"><code class="hljs language-rust"
+                  >{@html renderRustSource(impl.source_code)}</code
+                ></pre>
               {#if impl.items.length > 0}
                 <div class="impl-items">
                   <h4>{l10n("methods_and_items")}</h4>
@@ -124,11 +122,9 @@
                       <div class="markdown-body doc impl-item-doc">
                         {@html renderMarkdown(item.docs || l10n("nodoc"))}
                       </div>
-                      <pre class="source-code">
-                        <code class="hljs language-rust">
-                          {@html renderRustSource(item.source_code)}
-                        </code>
-                      </pre>
+                      <pre class="source-code"><code class="hljs language-rust"
+                          >{@html renderRustSource(item.source_code)}</code
+                        ></pre>
                     </div>
                   {/each}
                 </div>

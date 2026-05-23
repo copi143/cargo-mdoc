@@ -36,7 +36,7 @@
   let selectedDownstreamNodeIds = new Set<string>();
   let panX = 40;
   let panY = 40;
-  let scale = 1;
+  let scale_step = 0;
   let dragStartX = 0;
   let dragStartY = 0;
   let dragOriginX = 0;
@@ -44,10 +44,11 @@
   let isPanning = false;
   let didDrag = false;
 
+  $: scale = Math.pow(1.1, scale_step);
+
   const DRAG_THRESHOLD = 5;
-  const MIN_SCALE = 0.1;
-  const MAX_SCALE = 5;
-  const ZOOM_STEP = 0.1;
+  const MIN_SCALE = -25;
+  const MAX_SCALE = +25;
 
   const NODE_WIDTH = 240;
   const NODE_HEIGHT = 86;
@@ -77,21 +78,23 @@
   };
 
   const zoomIn = () => {
-    const newScale = Math.min(MAX_SCALE, scale + ZOOM_STEP);
+    if (scale_step >= MAX_SCALE) return;
+    scale_step += 1;
     const cx = graphCanvasWidth / 2;
     const cy = graphCanvasHeight / 2;
+    const newScale = Math.pow(1.1, scale_step);
     panX = cx - (cx - panX) * (newScale / scale);
     panY = cy - (cy - panY) * (newScale / scale);
-    scale = newScale;
   };
 
   const zoomOut = () => {
-    const newScale = Math.max(MIN_SCALE, scale - ZOOM_STEP);
+    if (scale_step <= MIN_SCALE) return;
+    scale_step -= 1;
     const cx = graphCanvasWidth / 2;
     const cy = graphCanvasHeight / 2;
+    const newScale = Math.pow(1.1, scale_step);
     panX = cx - (cx - panX) * (newScale / scale);
     panY = cy - (cy - panY) * (newScale / scale);
-    scale = newScale;
   };
 
   const sortNodeIds = (left: string, right: string): number =>
@@ -408,16 +411,17 @@
 
   const onGraphWheel = (event: WheelEvent): void => {
     event.preventDefault();
-    const delta = event.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
-    const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale + delta));
-
+    const delta = Math.sign(-event.deltaY);
+    if (delta === 0) return;
+    if (delta > 0 && scale_step >= MAX_SCALE) return;
+    if (delta < 0 && scale_step <= MIN_SCALE) return;
+    scale_step += delta;
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
     const mx = event.clientX - rect.left;
     const my = event.clientY - rect.top;
-
+    const newScale = Math.pow(1.1, scale_step);
     panX = mx - (mx - panX) * (newScale / scale);
     panY = my - (my - panY) * (newScale / scale);
-    scale = newScale;
   };
 </script>
 

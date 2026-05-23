@@ -139,15 +139,17 @@ fn main() -> Result<()> {
         let source_string = package.source.as_ref().map(|value| value.to_string());
         let source_kind = package_source_kind(source_string.as_deref(), is_workspace_member);
 
-        // Only workspace members and local path dependencies have local source;
-        // registry/git packages cannot be analyzed statically without fetching
-        let is_local = matches!(
-            source_kind,
-            PackageSourceKind::WorkspaceMember | PackageSourceKind::Path
-        );
+        // Without --include-deps, skip non-local packages (registry/git);
+        // with the flag, analyze any package whose source is available on disk
+        if !cli.include_deps {
+            let is_local = matches!(
+                source_kind,
+                PackageSourceKind::WorkspaceMember | PackageSourceKind::Path
+            );
 
-        if !is_local {
-            continue;
+            if !is_local {
+                continue;
+            }
         }
 
         let package_id = match package_id_by_metadata.get(&package.id.to_string()) {

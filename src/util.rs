@@ -117,42 +117,23 @@ pub fn source_location(
     }
 }
 
-// Extracts the source code text for a syntax node.
-// The RA SyntaxNode's text_range starts at the first token of the node,
-// which may be mid-line (e.g., at `fn` rather than the line start).
+// Reconstructs source code from the AST by walking children_with_tokens,
+// skipping doc comments (///, //!, /** , /*!, #[doc = ...]) since they
+// are already presented in the separate `docs` field.
 //
-// To produce clean indented output, we:
-//  1. Extend the range to the beginning of the line if the gap is
-//     entirely whitespace (indentation). This preserves the original
-//     indentation of the first line instead of starting at column 0.
-//  2. Compute the common leading whitespace across all lines and strip
-//     it, mimicking Python's textwrap.dedent semantics.
-//
-// This ensures that a function like:
-//     fn foo() {
-//         bar();
-//     }
-// produces "fn foo() {\n    bar();\n}" not "fn foo() {\n        bar();\n    }".
-pub fn source_snippet(source: &str, node: &SyntaxNode) -> String {
-    let range = node.text_range();
-    let end: usize = range.end().into();
-    let mut start: usize = range.start().into();
+// Token text is emitted as-is to preserve original formatting, then
+// dedented consistently so all items share the same base indentation.
+pub fn source_snippet(node: &SyntaxNode) -> String {
+    let mut raw = String::new();
 
-    let line_start = source[..start]
-        .rfind('\n')
-        .map(|i| i + 1)
-        .unwrap_or(0);
-
-    // Only extend to line start if the gap is pure whitespace;
-    // if there's non-whitespace before the token (e.g. mid-line expression),
-    // we keep the original range to avoid capturing unrelated code
-    if source[line_start..start].chars().all(|c| c == ' ' || c == '\t') {
-        start = line_start;
+    for child in node.children_with_tokens() {
+        if is_doc_element(&child) {
+            continue;
+        }
+        raw.push_str(&child.to_string());
     }
 
-    let raw = source.get(start..end).unwrap_or("");
     let lines: Vec<&str> = raw.lines().collect();
-
     if lines.is_empty() {
         return String::new();
     }
@@ -165,18 +146,45 @@ pub fn source_snippet(source: &str, node: &SyntaxNode) -> String {
         .min()
         .unwrap_or(0);
 
-    // Strip the common indentation from every line
+    // Strip the common indentation from every line,
+    // then collapse runs of empty lines to at most one
+    let mut prev_empty = false;
     lines
         .iter()
-        .map(|line| {
-            if line.len() >= common_indent {
+        .filter_map(|line| {
+            let stripped = if line.len() >= common_indent {
                 &line[common_indent..]
             } else {
                 line.trim_start()
+            };
+            let empty = stripped.trim().is_empty();
+            if empty && prev_empty {
+                None
+            } else {
+                prev_empty = empty;
+                Some(stripped)
             }
         })
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+// Checks whether a SyntaxElement (node or token) is a doc comment.
+fn is_doc_element(element: &ra_ap_syntax::SyntaxElement) -> bool {
+    let text = element.to_string();
+    let kind = element.kind();
+    if kind == SyntaxKind::ATTR {
+        text.trim_start().starts_with("#[doc")
+    } else if kind == SyntaxKind::COMMENT {
+        let trimmed = text.trim_start();
+        !(trimmed.starts_with("////") || trimmed.starts_with("/***"))
+            && (trimmed.starts_with("///")
+                || trimmed.starts_with("//!")
+                || trimmed.starts_with("/**")
+                || trimmed.starts_with("/*!"))
+    } else {
+        false
+    }
 }
 
 // Extract the string representation of a type from an AST type node.

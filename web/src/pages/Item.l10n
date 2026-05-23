@@ -7,8 +7,8 @@ en-us = "cfg"
 zh-cn = "cfg"
 
 [impl_blocks]
-en-us = "Impl Blocks ({n})"
-zh-cn = "实现块（{n}）"
+en-us = "Impls ({n})"
+zh-cn = "实现 ({n})"
 
 [methods_and_items]
 en-us = "Methods & Associated Items"
