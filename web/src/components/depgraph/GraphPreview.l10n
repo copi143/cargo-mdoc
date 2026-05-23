@@ -1,0 +1,7 @@
+[resolve_graph]
+en-us = "Resolve Graph"
+zh-cn = "解析图"
+
+[no_graph_data]
+en-us = "Resolve graph data is not available in this export."
+zh-cn = "此导出中不包含解析图数据"

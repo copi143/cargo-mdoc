@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { l10nDerive } from "./l10n";
+  import { locale, l10nDerive } from "./l10n";
   import DependencyGraph from "./components/depgraph/DependencyGraph.svelte";
   import Topbar from "./components/layout/Topbar.svelte";
   import Sidebar from "./components/layout/Sidebar.svelte";
@@ -23,6 +23,7 @@
   let errorStatus = 0;
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
+  $: document.documentElement.lang = $locale;
   let items: ItemDoc[] = [];
   let packageInfo: PackageInfo | null = null;
   let packages: PackageDoc[] = [];

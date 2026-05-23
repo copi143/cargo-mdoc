@@ -26,14 +26,6 @@ zh-cn = "README.md"
 en-us = "README file not loaded into the export."
 zh-cn = "导出中未加载说明文档"
 
-[resolve_graph]
-en-us = "Resolve Graph"
-zh-cn = "解析图"
-
-[no_graph_data]
-en-us = "Resolve graph data is not available in this export."
-zh-cn = "此导出中不包含解析图数据"
-
 [getting_started]
 en-us = "Getting Started"
 zh-cn = "快速开始"
