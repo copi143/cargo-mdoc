@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { ResolveGraph } from "../types";
-  import { l10nDerive } from "../l10n";
+  import type { ResolveGraph } from "../../types";
+  import { l10nDerive } from "../../l10n";
 
   export let resolveGraph: ResolveGraph;
   export let nodeId: string;

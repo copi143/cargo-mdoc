@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { l10nDerive } from "./l10n";
-  import DependencyGraph from "./components/DependencyGraph.svelte";
-  import Topbar from "./components/Topbar.svelte";
-  import Sidebar from "./components/Sidebar.svelte";
+  import DependencyGraph from "./components/depgraph/DependencyGraph.svelte";
+  import Topbar from "./components/layout/Topbar.svelte";
+  import Sidebar from "./components/layout/Sidebar.svelte";
   import Home from "./pages/Home.svelte";
   import Item from "./pages/Item.svelte";
   import type {

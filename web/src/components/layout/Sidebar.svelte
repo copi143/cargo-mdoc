@@ -5,8 +5,8 @@
     ItemDoc,
     ItemKind,
     PackageDoc,
-  } from "../types";
-  import { l10nDerive } from "../l10n";
+  } from "../../types";
+  import { l10nDerive } from "../../l10n";
 
   export let filteredItems: ItemDoc[] = [];
   export let counts: Counts = {};

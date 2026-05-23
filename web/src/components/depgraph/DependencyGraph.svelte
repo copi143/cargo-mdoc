@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { ResolveGraph } from "../types";
+  import type { ResolveGraph } from "../../types";
   import dagre from "dagre";
-  import { l10nDerive } from "../l10n";
+  import { l10nDerive } from "../../l10n";
 
   export let resolveGraph: ResolveGraph | null = null;
   export let onClose: () => void = () => {};

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { GeneratorInfo, ItemDoc, PackageInfo } from "../types";
-  import { locale, langs, l10nDerive } from "../l10n";
+  import type { GeneratorInfo, ItemDoc, PackageInfo } from "../../types";
+  import { locale, langs, l10nDerive } from "../../l10n";
 
   export let packageInfo: PackageInfo | null = null;
   export let items: ItemDoc[] = [];
