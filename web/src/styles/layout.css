@@ -256,3 +256,17 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+
+@supports (-moz-user-select: none) {
+  * {
+    scrollbar-color: #888 transparent;
+    scrollbar-width: thin;
+  }
+}
+
+@supports not (-moz-user-select: none) {
+  * {
+    scrollbar-color: #888 transparent;
+    scrollbar-width: auto;
+  }
+}

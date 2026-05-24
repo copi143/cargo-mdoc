@@ -106,7 +106,8 @@ fn map_syntax_kind(kind: SyntaxKind, text: &str) -> HighlightKind {
         | SyntaxKind::AT
         | SyntaxKind::POUND
         | SyntaxKind::UNDERSCORE
-        | SyntaxKind::DOT => HighlightKind::Punctuation,
+        | SyntaxKind::DOT
+        | SyntaxKind::COLON2 => HighlightKind::Punctuation,
 
         SyntaxKind::PLUS
         | SyntaxKind::MINUS
@@ -126,7 +127,6 @@ fn map_syntax_kind(kind: SyntaxKind, text: &str) -> HighlightKind {
         | SyntaxKind::DOT2
         | SyntaxKind::DOT3
         | SyntaxKind::DOT2EQ
-        | SyntaxKind::COLON2
         | SyntaxKind::FAT_ARROW
         | SyntaxKind::THIN_ARROW
         | SyntaxKind::LTEQ
