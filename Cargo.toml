@@ -1,3 +1,7 @@
+[workspace]
+members = ["highlight"]
+resolver = "3"
+
 [package]
 name = "cargo-mdoc"
 version = "0.1.0"
@@ -26,3 +30,5 @@ ra_ap_cfg = { version = "0.0.333", features = ["syntax"] }
 ra_ap_mbe = "0.0.333"
 
 gix = "0.83.0"
+
+highlight = { path = "highlight" }

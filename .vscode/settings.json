@@ -4,5 +4,8 @@
   },
   "files.associations": {
     "*.l10n": "toml"
+  },
+  "emmet.includeLanguages": {
+    "postcss": "css"
   }
 }

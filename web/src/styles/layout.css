@@ -19,7 +19,7 @@
   padding: 10px 20px;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
-  animation: rise 0.7s ease-out;
+  animation: rise 0.6s ease-out;
 
   & > .brand {
     display: flex;
@@ -125,11 +125,11 @@
 
 .commit-badge {
   padding: 2px 8px;
-  font-size: 0.75rem;
   font-family: var(--mono);
+  font-size: 0.75rem;
   color: var(--muted);
-  border: 1px solid var(--line);
   cursor: help;
+  border: 1px solid var(--line);
 }
 
 .lang-switcher {
@@ -153,11 +153,9 @@
   display: flex;
   flex: 1;
   flex-direction: row;
-  flex-wrap: wrap;
   gap: 0;
   align-items: stretch;
-  min-height: 0;
-  overflow: scroll;
+  overflow: hidden;
 }
 
 .panel {
@@ -169,7 +167,7 @@
   min-height: 0;
   padding: 20px;
   overflow: hidden;
-  background: var(--panel);
+  /* background: var(--panel); */
   border: 1px solid var(--line);
   border-radius: 0;
   box-shadow: var(--shadow);

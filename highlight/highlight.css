@@ -1,0 +1,55 @@
+@define-mixin dark {
+  --foreground: #abb2bf;
+  --background: #23272e;
+}
+
+@define-mixin light {
+  --foreground: #383a42;
+  --background: #ffffff;
+}
+
+:root {
+  @mixin dark;
+}
+
+.highlight-css-container {
+  color: var(--foreground);
+  background-color: var(--background);
+  font-weight: 400;
+
+  &.dark {
+    @mixin dark;
+  }
+
+  &.light {
+    @mixin light;
+  }
+
+  & .keyword {
+    color: #d55fde;
+  }
+
+  & .enum-field {
+    color: #2bbac5;
+  }
+
+  & .type {
+    color: #e5c07b;
+  }
+
+  & .function {
+    color: #61afef;
+  }
+
+  & .markup {
+    &.section {
+      color: #ef596f;
+      font-weight: 700;
+    }
+
+    &.bold {
+      color: #d19a66;
+      font-weight: 700;
+    }
+  }
+}

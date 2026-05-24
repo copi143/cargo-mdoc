@@ -183,13 +183,13 @@
 }
 
 .pagination {
+  position: sticky;
+  bottom: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   justify-content: center;
   padding: 12px 0;
-  position: sticky;
-  bottom: 0;
   background: var(--paper);
   border-top: 1px solid var(--line);
 }
@@ -218,8 +218,8 @@
   }
 
   &.active {
-    color: var(--accent);
     font-weight: 600;
+    color: var(--accent);
     border-color: var(--accent);
   }
 }
@@ -914,8 +914,8 @@
   flex-direction: column;
   gap: 10px;
 
-  > .source-item {
-    > .source-header {
+  & > .source-item {
+    & > .source-header {
       display: flex;
       gap: 16px;
       align-items: center;
@@ -923,7 +923,7 @@
       font-size: 0.8rem;
       color: var(--muted-2);
 
-      > .source-header-left {
+      & > .source-header-left {
         display: flex;
         flex: 1;
         gap: 8px;
@@ -931,7 +931,7 @@
         justify-content: space-between;
       }
 
-      > .copy-btn {
+      & > .copy-btn {
         padding: 1px 8px;
         color: var(--muted-2);
         cursor: pointer;
@@ -949,35 +949,31 @@
       }
     }
 
-    > .source-code {
-      padding: 16px;
+    & > .source-code {
       margin: 0;
       overflow: auto;
       line-height: 1.55;
       background: #fff;
       border: 1px solid var(--line);
 
-      code {
+      & code {
+        padding: 1em;
         font-family: var(--mono);
       }
     }
   }
 }
 
-pre > code.hljs {
-  padding: 0 !important;
-}
-
 .home-markdown {
   max-height: 360px;
   line-height: 1.6;
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6 {
     font-size: 1rem;
     letter-spacing: 0.02em;
   }

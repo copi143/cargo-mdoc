@@ -254,7 +254,7 @@ impl RaCollector {
             visibility_from_ast(func.visibility()),
             &mod_path,
             source_location(workspace_root, current_file, source, func.syntax()),
-            source_snippet( func.syntax()),
+            source_snippet(func.syntax()),
             Some(attrs),
         );
 
@@ -287,7 +287,7 @@ impl RaCollector {
             visibility_from_ast(st.visibility()),
             &mod_path,
             source_location(workspace_root, current_file, source, st.syntax()),
-            source_snippet( st.syntax()),
+            source_snippet(st.syntax()),
             Some(attrs),
         );
 
@@ -320,7 +320,7 @@ impl RaCollector {
             visibility_from_ast(en.visibility()),
             &mod_path,
             source_location(workspace_root, current_file, source, en.syntax()),
-            source_snippet( en.syntax()),
+            source_snippet(en.syntax()),
             Some(attrs),
         );
 
@@ -353,7 +353,7 @@ impl RaCollector {
             visibility_from_ast(tr.visibility()),
             &mod_path,
             source_location(workspace_root, current_file, source, tr.syntax()),
-            source_snippet( tr.syntax()),
+            source_snippet(tr.syntax()),
             Some(attrs),
         );
 
@@ -388,7 +388,7 @@ impl RaCollector {
             visibility_from_ast(module.visibility()),
             &mod_path,
             source_location(workspace_root, current_file, source, module.syntax()),
-            source_snippet( module.syntax()),
+            source_snippet(module.syntax()),
             Some(attrs.clone()),
         );
 
@@ -470,7 +470,7 @@ impl RaCollector {
                                 source,
                                 func.syntax(),
                             ),
-                            source_code: source_snippet( func.syntax()),
+                            source_code: source_snippet(func.syntax()),
                         });
                     }
                     _ => {}
@@ -479,7 +479,10 @@ impl RaCollector {
         }
 
         let source_loc = source_location(workspace_root, current_file, source, imp.syntax());
-        let id = format!("impl:{}:{}:{}", package_id, target_path, source_loc.line_start);
+        let id = format!(
+            "impl:{}:{}:{}",
+            package_id, target_path, source_loc.line_start
+        );
 
         self.impls.push(ImplDoc {
             id,
@@ -488,7 +491,7 @@ impl RaCollector {
             trait_name,
             cfg,
             source: source_loc,
-            source_code: source_snippet( imp.syntax()),
+            source_code: source_snippet(imp.syntax()),
             items,
         });
 
@@ -500,10 +503,17 @@ impl RaCollector {
     pub fn associate_impls(&mut self) {
         let impls = std::mem::take(&mut self.impls);
         for imp in impls {
-            let base = imp.target_path.split('<').next().unwrap_or(&imp.target_path).trim();
-            if let Some(item) = self.items.iter_mut().find(|item| {
-                item.package_id == imp.package_id && item.path == base
-            }) {
+            let base = imp
+                .target_path
+                .split('<')
+                .next()
+                .unwrap_or(&imp.target_path)
+                .trim();
+            if let Some(item) = self
+                .items
+                .iter_mut()
+                .find(|item| item.package_id == imp.package_id && item.path == base)
+            {
                 item.impls.push(imp);
             }
         }

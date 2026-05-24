@@ -1,0 +1,8 @@
+[package]
+name = "highlight"
+version = "0.1.0"
+edition = "2024"
+description = "Compact code highlighting format: extract, encode, and decode"
+
+[dependencies]
+ra_ap_syntax = "0.0.333"

@@ -43,8 +43,7 @@ pub fn parse_cfg_from_node(node: &SyntaxNode) -> CfgExpr {
                     for inner_meta in cfg_attr_meta.metas() {
                         if let ast::Meta::CfgMeta(inner_cfg) = inner_meta {
                             if let Some(inner_pred) = inner_cfg.cfg_predicate() {
-                                let inner_expr =
-                                    ra_to_model(RaCfgExpr::parse_from_ast(inner_pred));
+                                let inner_expr = ra_to_model(RaCfgExpr::parse_from_ast(inner_pred));
                                 combined = and_cfg(combined, inner_expr);
                             }
                         }
