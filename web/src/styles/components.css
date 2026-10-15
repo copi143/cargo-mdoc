@@ -155,6 +155,7 @@
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
+    text-wrap: nowrap;
   }
 }
 
@@ -931,15 +932,9 @@
       }
 
       & > .copy-btn {
-        padding: 1px 8px;
+        @mixin button;
         color: var(--muted-2);
-        cursor: pointer;
-        outline: none;
         background: none;
-        border: none;
-        transition:
-          background 0.15s,
-          color 0.15s;
 
         &:hover {
           color: #fff;
@@ -1129,7 +1124,7 @@
   padding: 3px 8px;
   font-size: 0.78rem;
   cursor: pointer;
-  background: #fff;
+  background: var(--card-soft);
   border: 1px solid var(--line);
   transition: all 0.15s ease;
 

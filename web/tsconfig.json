@@ -11,5 +11,10 @@
     "types": ["node", "vite/client"],
     "skipLibCheck": true
   },
-  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte"]
+  "include": [
+    "src/**/*.d.ts",
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    "postcss.config.ts"
+  ]
 }

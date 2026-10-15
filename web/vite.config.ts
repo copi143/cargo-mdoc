@@ -5,7 +5,6 @@ import l10nData from "./src/l10n/config.ts";
 
 const projSrcDir = path.join(import.meta.dirname, "src");
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     svelte(),
