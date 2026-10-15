@@ -6,6 +6,7 @@
   import { splitDisplayPath } from "../lib/path";
   import { l10nDerive } from "../l10n";
   import ImplBlock from "../components/detail/ImplBlock.svelte";
+  import CopyButton from "../components/detail/CopyButton.svelte";
   import { selectedItem as selectedItemStore } from "../lib/derived";
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
@@ -14,22 +15,6 @@
   $: renderedDocs = renderMarkdown(selectedItem?.docs || l10n("nodoc"));
   $: renderedSource = renderRustSource(selectedItem?.source_code || "");
   $: impls = selectedItem?.impls ?? [];
-
-  let copied = false;
-
-  const copySource = async () => {
-    const text = selectedItem?.source_code;
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      copied = true;
-      setTimeout(() => {
-        copied = false;
-      }, 2000);
-    } catch {
-      // clipboard not available
-    }
-  };
 </script>
 
 {#if selectedItem}
@@ -78,9 +63,7 @@
               {/if}
             </span>
           </span>
-          <button class="copy-btn" onclick={copySource}>
-            {copied ? l10n("copied") : l10n("copy")}
-          </button>
+          <CopyButton text={selectedItem?.source_code ?? ""} />
         </div>
         <pre class="source-code"><code class="hljs language-rust">{@html renderedSource}</code></pre>
       </div>

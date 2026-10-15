@@ -930,17 +930,6 @@
         align-items: center;
         justify-content: space-between;
       }
-
-      & > .copy-btn {
-        @mixin button;
-        color: var(--muted-2);
-        background: none;
-
-        &:hover {
-          color: #fff;
-          background: var(--accent);
-        }
-      }
     }
 
     & > .source-code {
