@@ -1,4 +1,4 @@
-use ra_ap_syntax::ast::HasDocComments;
+use ra_ap_syntax::ast::HasAttrs;
 use ra_ap_syntax::{AstNode as _, SyntaxKind, SyntaxNode, ast};
 use std::path::{Path, PathBuf};
 
@@ -20,11 +20,11 @@ pub fn collect_attrs(node: &SyntaxNode) -> Vec<String> {
 }
 
 // Extracts doc text from any syntax node that may carry doc comments.
-// Uses ra_ap_syntax's HasDocComments trait, which properly handles
+// Uses ra_ap_syntax's HasAttrs trait, which properly handles
 // ///, //!, /** ... */, and #[doc = "..."] forms including escaped quotes.
-pub fn extract_docs<N: HasDocComments>(node: &N) -> String {
+pub fn extract_docs<N: HasAttrs>(node: &N) -> String {
     node.doc_comments()
-        .filter_map(|comment| comment.doc_comment().map(|(text, _)| text.to_string()))
+        .map(|comment| comment.text().to_string())
         .collect::<Vec<_>>()
         .join("\n")
 }

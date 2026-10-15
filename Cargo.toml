@@ -15,20 +15,20 @@ keywords = ["rust", "cfg", "documentation", "analysis"]
 categories = ["development-tools", "command-line-utilities"]
 
 [dependencies]
-anyhow = "1.0.102"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
+anyhow = "1.0.104"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
 walkdir = "2.5.0"
-toml = "1.1.2"
+toml = "1.1.8"
 cargo_metadata = "0.23.1"
-chrono = "0.4.44"
+chrono = "0.4.45"
 
-ra_ap_syntax = "0.0.333"
-ra_ap_parser = "0.0.333"
-ra_ap_tt = "0.0.333"
-ra_ap_cfg = { version = "0.0.333", features = ["syntax"] }
-ra_ap_mbe = "0.0.333"
+ra_ap_syntax = "0.0.358"
+ra_ap_parser = "0.0.358"
+ra_ap_tt = "0.0.358"
+ra_ap_cfg = { version = "0.0.358", features = ["syntax"] }
+ra_ap_mbe = "0.0.358"
 
-gix = "0.83.0"
+gix = "0.89.0"
 
 highlight = { path = "highlight" }
