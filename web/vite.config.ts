@@ -1,9 +1,9 @@
 import path from "path";
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
-import l10nData from "./src/l10n/config";
+import l10nData from "./src/l10n/config.ts";
 
-const projSrcDir = path.join(__dirname, "src");
+const projSrcDir = path.join(import.meta.dirname, "src");
 
 // https://vite.dev/config/
 export default defineConfig({

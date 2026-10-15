@@ -20,7 +20,7 @@ export type L10nConfig = z.infer<typeof L10nConfigSchema>;
 
 export const l10nConfig = (() => {
   const configToml = fs.readFileSync(
-    path.join(__dirname, "config.toml"),
+    path.join(import.meta.dirname, "config.toml"),
     "utf-8",
   );
   const config = parse(configToml);
@@ -40,7 +40,7 @@ export const L10nFileSchema = z.record(
 export type L10nFile = z.infer<typeof L10nFileSchema>;
 
 export const l10nFile = (() => {
-  const projSrcDir = path.join(__dirname, "..");
+  const projSrcDir = path.join(import.meta.dirname, "..");
   const files = globSync(path.join(projSrcDir, "**/*.l10n"), { nodir: true });
   const l10nFiles = {} as Record<string, L10nFile>;
   let hasError = false;
