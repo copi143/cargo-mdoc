@@ -1,6 +1,17 @@
 <script lang="ts">
   import type { ResolveGraph } from "../../types";
-  import dagre from "dagre";
+  import {
+    buildLayout,
+    collectReachable,
+    formatNodeLabel,
+    resolveNodeLabel,
+    NODE_WIDTH,
+    NODE_HEIGHT,
+    MARGIN_X,
+    DRAG_THRESHOLD,
+    MIN_SCALE,
+    MAX_SCALE,
+  } from "../../lib/graph";
   import { l10nDerive } from "../../l10n";
 
   export let resolveGraph: ResolveGraph | null = null;
@@ -10,30 +21,10 @@
 
   let mode: "list" | "graph" = "list";
   let selectedNodeId = "";
-  let graphNodeById = new Map<string, ResolveGraph["nodes"][number]>();
-  let graphIncoming: Record<string, number> | undefined;
-  let graphOutgoing: Record<string, number> | undefined;
-  let incomingMap = new Map<string, string[]>();
-  let outgoingMap = new Map<string, string[]>();
-  let graphLayoutNodes: Array<{
-    id: string;
-    node: ResolveGraph["nodes"][number];
-    x: number;
-    y: number;
-    layer: number;
-    incoming: number;
-    outgoing: number;
-  }> = [];
-  let graphLayoutEdges: Array<{
-    from: string;
-    to: string;
-    kind: string;
-    path: string;
-  }> = [];
-  let graphCanvasWidth = 0;
-  let graphCanvasHeight = 0;
-  let selectedUpstreamNodeIds = new Set<string>();
-  let selectedDownstreamNodeIds = new Set<string>();
+  let layout: ReturnType<typeof buildLayout> | null = null;
+  let incomingMap: Map<string, string[]> = new Map();
+  let outgoingMap: Map<string, string[]> = new Map();
+
   let panX = 40;
   let panY = 40;
   let scale_step = 0;
@@ -45,22 +36,6 @@
   let didDrag = false;
 
   $: scale = Math.pow(1.1, scale_step);
-
-  const DRAG_THRESHOLD = 5;
-  const MIN_SCALE = -25;
-  const MAX_SCALE = +25;
-
-  const NODE_WIDTH = 240;
-  const NODE_HEIGHT = 86;
-  const MARGIN_X = 80;
-
-  const formatNodeLabel = (node: ResolveGraph["nodes"][number]): string =>
-    `${node.name} ${node.version}`;
-
-  const resolveNodeLabel = (nodeId: string): string => {
-    const node = graphNodeById.get(nodeId);
-    return node ? formatNodeLabel(node) : nodeId;
-  };
 
   const selectNode = (nodeId: string): void => {
     selectedNodeId = nodeId;
@@ -74,14 +49,14 @@
   const resetPan = (): void => {
     panX = 40;
     panY = 40;
-    scale = 1;
+    scale_step = 0;
   };
 
   const zoomIn = () => {
     if (scale_step >= MAX_SCALE) return;
     scale_step += 1;
-    const cx = graphCanvasWidth / 2;
-    const cy = graphCanvasHeight / 2;
+    const cx = layoutCanvasWidth / 2;
+    const cy = layoutCanvasHeight / 2;
     const newScale = Math.pow(1.1, scale_step);
     panX = cx - (cx - panX) * (newScale / scale);
     panY = cy - (cy - panY) * (newScale / scale);
@@ -90,229 +65,16 @@
   const zoomOut = () => {
     if (scale_step <= MIN_SCALE) return;
     scale_step -= 1;
-    const cx = graphCanvasWidth / 2;
-    const cy = graphCanvasHeight / 2;
+    const cx = layoutCanvasWidth / 2;
+    const cy = layoutCanvasHeight / 2;
     const newScale = Math.pow(1.1, scale_step);
     panX = cx - (cx - panX) * (newScale / scale);
     panY = cy - (cy - panY) * (newScale / scale);
   };
 
-  const sortNodeIds = (left: string, right: string): number =>
-    resolveNodeLabel(left).localeCompare(resolveNodeLabel(right));
-
-  const uniqueSorted = (values: string[]): string[] =>
-    Array.from(new Set(values)).sort(sortNodeIds);
-
-  const buildLayers = (
-    startNodeId: string,
-    direction: "upstream" | "downstream",
-  ): string[][] => {
-    if (!startNodeId) return [];
-
-    const visited = new Set<string>([startNodeId]);
-    let frontier = [startNodeId];
-    const layers: string[][] = [];
-
-    while (frontier.length > 0) {
-      const nextLayer: string[] = [];
-
-      for (const nodeId of frontier) {
-        const neighbors = uniqueSorted(
-          (direction === "downstream"
-            ? outgoingMap.get(nodeId)
-            : incomingMap.get(nodeId)) ?? [],
-        );
-
-        for (const neighborId of neighbors) {
-          if (visited.has(neighborId)) continue;
-          visited.add(neighborId);
-          nextLayer.push(neighborId);
-        }
-      }
-
-      if (nextLayer.length === 0) break;
-
-      layers.push(uniqueSorted(nextLayer));
-      frontier = nextLayer;
-    }
-
-    return layers;
-  };
-
-  const collectReachable = (
-    startNodeId: string,
-    direction: "upstream" | "downstream",
-  ): Set<string> => {
-    const visited = new Set<string>([startNodeId]);
-    const collected = new Set<string>();
-    const queue = [startNodeId];
-
-    while (queue.length > 0) {
-      const currentNodeId = queue.shift();
-      if (!currentNodeId) continue;
-
-      const neighbors =
-        direction === "downstream"
-          ? (outgoingMap.get(currentNodeId) ?? [])
-          : (incomingMap.get(currentNodeId) ?? []);
-
-      for (const neighborId of uniqueSorted(neighbors)) {
-        if (visited.has(neighborId)) continue;
-        visited.add(neighborId);
-        collected.add(neighborId);
-        queue.push(neighborId);
-      }
-    }
-
-    return collected;
-  };
-
-  const collectFocusSet = (startNodeId: string): Set<string> => {
-    const focus = new Set<string>([startNodeId]);
-    const upLayers = buildLayers(startNodeId, "upstream");
-    const downLayers = buildLayers(startNodeId, "downstream");
-    const MAX_FOCUS_DEPTH = 2;
-    for (let i = 0; i < Math.min(upLayers.length, MAX_FOCUS_DEPTH); i++) {
-      for (const id of upLayers[i]) focus.add(id);
-    }
-    for (let i = 0; i < Math.min(downLayers.length, MAX_FOCUS_DEPTH); i++) {
-      for (const id of downLayers[i]) focus.add(id);
-    }
-    return focus;
-  };
-
-  const buildLayout = () => {
-    if (
-      !resolveGraph ||
-      graphNodeById.size === 0 ||
-      resolveGraph.nodes.length === 0
-    ) {
-      graphLayoutNodes = [];
-      graphLayoutEdges = [];
-      graphCanvasWidth = 0;
-      graphCanvasHeight = 0;
-      return;
-    }
-
-    const focusSet =
-      selectedNodeId && graphNodeById.has(selectedNodeId)
-        ? collectFocusSet(selectedNodeId)
-        : new Set<string>();
-
-    const g = new dagre.graphlib.Graph({ compound: false });
-    g.setGraph({
-      rankdir: "LR",
-      nodesep: 40,
-      ranksep: 120,
-      marginx: 40,
-      marginy: 40,
-    });
-    g.setDefaultEdgeLabel(() => ({}));
-
-    for (const node of resolveGraph.nodes) {
-      g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
-    }
-
-    for (const edge of resolveGraph.edges) {
-      const bothInFocus =
-        focusSet.size > 0 && focusSet.has(edge.from) && focusSet.has(edge.to);
-      g.setEdge(edge.from, edge.to, { weight: bothInFocus ? 2 : 1 });
-    }
-
-    dagre.layout(g);
-
-    const nodeEntries = resolveGraph.nodes
-      .map((node) => {
-        const pos = g.node(node.id);
-        if (!pos) return null;
-        return {
-          id: node.id,
-          node,
-          x: pos.x - NODE_WIDTH / 2,
-          y: pos.y - NODE_HEIGHT / 2,
-          layer: 0,
-          incoming: graphIncoming?.[node.id] ?? 0,
-          outgoing: graphOutgoing?.[node.id] ?? 0,
-        };
-      })
-      .filter((n): n is NonNullable<typeof n> => n !== null);
-
-    const uniqueXs = [...new Set(nodeEntries.map((n) => Math.round(n.x)))].sort(
-      (a, b) => a - b,
-    );
-    const xToLayer = new Map(uniqueXs.map((x, i) => [x, i]));
-    for (const n of nodeEntries) {
-      n.layer = xToLayer.get(Math.round(n.x)) ?? 0;
-    }
-
-    graphLayoutNodes = nodeEntries.sort((a, b) => {
-      if (a.layer !== b.layer) return a.layer - b.layer;
-      return sortNodeIds(a.id, b.id);
-    });
-
-    graphLayoutEdges = resolveGraph.edges
-      .map((edge) => {
-        const edgeData = g.edge(edge.from, edge.to);
-        if (!edgeData?.points || edgeData.points.length < 2) return null;
-
-        const pts = edgeData.points;
-        let path = `M ${pts[0].x} ${pts[0].y}`;
-        for (let i = 1; i < pts.length; i++) {
-          path += ` L ${pts[i].x} ${pts[i].y}`;
-        }
-
-        return { from: edge.from, to: edge.to, kind: edge.kind, path };
-      })
-      .filter((edge): edge is NonNullable<typeof edge> => Boolean(edge));
-
-    if (nodeEntries.length === 0) {
-      graphCanvasWidth = 0;
-      graphCanvasHeight = 0;
-      return;
-    }
-
-    const maxX = Math.max(...nodeEntries.map((n) => n.x + NODE_WIDTH), 0);
-    const maxY = Math.max(...nodeEntries.map((n) => n.y + NODE_HEIGHT), 0);
-    graphCanvasWidth = maxX + MARGIN_X;
-    graphCanvasHeight = Math.max(maxY + MARGIN_X, 400);
-  };
-
-  $: graphNodeById = new Map(
+  $: nodeById = new Map(
     resolveGraph?.nodes.map((node) => [node.id, node]) ?? [],
   );
-
-  $: graphIncoming = resolveGraph?.edges.reduce<Record<string, number>>(
-    (acc, edge) => {
-      acc[edge.to] = (acc[edge.to] ?? 0) + 1;
-      return acc;
-    },
-    {},
-  );
-
-  $: graphOutgoing = resolveGraph?.edges.reduce<Record<string, number>>(
-    (acc, edge) => {
-      acc[edge.from] = (acc[edge.from] ?? 0) + 1;
-      return acc;
-    },
-    {},
-  );
-
-  $: if (resolveGraph && mode === "graph") {
-    const nodeId =
-      selectedNodeId ||
-      resolveGraph.roots[0] ||
-      resolveGraph.nodes[0]?.id ||
-      "";
-    selectedUpstreamNodeIds = nodeId
-      ? collectReachable(nodeId, "upstream")
-      : new Set<string>();
-    selectedDownstreamNodeIds = nodeId
-      ? collectReachable(nodeId, "downstream")
-      : new Set<string>();
-  } else {
-    selectedUpstreamNodeIds = new Set<string>();
-    selectedDownstreamNodeIds = new Set<string>();
-  }
 
   $: {
     const nextIncoming = new Map<string, string[]>();
@@ -335,20 +97,22 @@
   $: if (resolveGraph) {
     const fallbackNodeId =
       resolveGraph.roots[0] ?? resolveGraph.nodes[0]?.id ?? "";
-    if (!selectedNodeId || !graphNodeById.has(selectedNodeId)) {
+    if (!selectedNodeId || !nodeById.has(selectedNodeId)) {
       selectedNodeId = fallbackNodeId;
     }
   }
 
-  $: if (resolveGraph && mode === "graph") {
-    selectedNodeId;
-    buildLayout();
-  } else {
-    graphLayoutNodes = [];
-    graphLayoutEdges = [];
-    graphCanvasWidth = 0;
-    graphCanvasHeight = 0;
-  }
+  $: layout = resolveGraph && mode === "graph" ? buildLayout(resolveGraph, selectedNodeId, nodeById, incomingMap, outgoingMap) : null;
+
+  $: selectedUpstreamNodeIds = layout && selectedNodeId
+    ? collectReachable(selectedNodeId, "upstream", outgoingMap, incomingMap)
+    : new Set<string>();
+  $: selectedDownstreamNodeIds = layout && selectedNodeId
+    ? collectReachable(selectedNodeId, "downstream", outgoingMap, incomingMap)
+    : new Set<string>();
+
+  $: layoutCanvasWidth = layout?.width ?? 0;
+  $: layoutCanvasHeight = layout?.height ?? 0;
 
   const onGraphPointerDown = (event: PointerEvent): void => {
     if (event.button !== 0) return;
@@ -512,7 +276,7 @@
                     on:click={() => selectNode(rootId)}
                     title={rootId}
                   >
-                    {resolveNodeLabel(rootId)}
+                    {resolveNodeLabel(rootId, nodeById)}
                   </button>
                 {/each}
               </div>
@@ -544,12 +308,12 @@
                     <div class="graph-node-meta">
                       <span
                         >{l10n(":incoming", {
-                          n: graphIncoming?.[node.id] ?? 0,
+                          n: (incomingMap.get(node.id) ?? []).length,
                         })}</span
                       >
                       <span
                         >{l10n(":outgoing", {
-                          n: graphOutgoing?.[node.id] ?? 0,
+                          n: (outgoingMap.get(node.id) ?? []).length,
                         })}</span
                       >
                       {#if node.source}
@@ -563,7 +327,7 @@
                           .slice(0, 6) as edge}
                           <div class="graph-edge-row">
                             <span>{l10n("edge_" + edge.kind)}</span>
-                            <span>{resolveNodeLabel(edge.to)}</span>
+                            <span>{resolveNodeLabel(edge.to, nodeById)}</span>
                           </div>
                         {/each}
                       </div>
@@ -577,76 +341,78 @@
           </section>
         </div>
       {:else}
-        <div
-          class={`graph-viewport ${isPanning ? "graph-viewport--dragging" : ""}`}
-          role="application"
-          aria-label={l10n("dep_graph_aria")}
-          on:pointerdown={onGraphPointerDown}
-          on:pointermove={onGraphPointerMove}
-          on:pointerup={onGraphPointerEnd}
-          on:pointercancel={onGraphPointerEnd}
-          on:wheel|nonpassive={onGraphWheel}
-        >
+        {#if layout}
           <div
-            class="graph-surface"
-            style={`width: ${graphCanvasWidth}px; height: ${graphCanvasHeight}px; transform: translate(${panX}px, ${panY}px) scale(${scale}); transform-origin: 0 0;`}
+            class={`graph-viewport ${isPanning ? "graph-viewport--dragging" : ""}`}
+            role="application"
+            aria-label={l10n("dep_graph_aria")}
+            on:pointerdown={onGraphPointerDown}
+            on:pointermove={onGraphPointerMove}
+            on:pointerup={onGraphPointerEnd}
+            on:pointercancel={onGraphPointerEnd}
+            on:wheel|nonpassive={onGraphWheel}
           >
-            <svg
-              class="graph-links"
-              width={graphCanvasWidth}
-              height={graphCanvasHeight}
-              aria-hidden="true"
+            <div
+              class="graph-surface"
+              style={`width: ${layout.width}px; height: ${layout.height}px; transform: translate(${panX}px, ${panY}px) scale(${scale}); transform-origin: 0 0;`}
             >
-              {#each graphLayoutEdges as edge}
-                <path
-                  class={`graph-edge ${selectedUpstreamNodeIds.has(edge.from) ? "graph-edge--upstream" : selectedDownstreamNodeIds.has(edge.from) || edge.from === selectedNodeId ? "graph-edge--downstream" : "graph-edge--neutral"}`}
-                  d={edge.path}
-                ></path>
-              {/each}
-            </svg>
-
-            {#each graphLayoutNodes as layoutNode}
-              <button
-                class={`graph-node-card ${selectedNodeId === layoutNode.id ? "graph-node-card--selected" : ""} ${selectedUpstreamNodeIds.has(layoutNode.id) ? "graph-node-card--upstream" : ""} ${selectedDownstreamNodeIds.has(layoutNode.id) ? "graph-node-card--downstream" : ""}`}
-                type="button"
-                style={`left: ${layoutNode.x}px; top: ${layoutNode.y}px; width: ${NODE_WIDTH}px; min-height: ${NODE_HEIGHT}px;`}
-                data-node-id={layoutNode.id}
-                on:click={() => selectNode(layoutNode.id)}
+              <svg
+                class="graph-links"
+                width={layout.width}
+                height={layout.height}
+                aria-hidden="true"
               >
-                <div class="graph-node-card-head">
-                  <div>
-                    <strong>{layoutNode.node.name}</strong>
-                    <div class="graph-node-card-subtitle">
-                      {layoutNode.node.version}
+                {#each layout.edges as edge}
+                  <path
+                    class={`graph-edge ${selectedUpstreamNodeIds.has(edge.from) ? "graph-edge--upstream" : selectedDownstreamNodeIds.has(edge.from) || edge.from === selectedNodeId ? "graph-edge--downstream" : "graph-edge--neutral"}`}
+                    d={edge.path}
+                  ></path>
+                {/each}
+              </svg>
+
+              {#each layout.nodes as layoutNode}
+                <button
+                  class={`graph-node-card ${selectedNodeId === layoutNode.id ? "graph-node-card--selected" : ""} ${selectedUpstreamNodeIds.has(layoutNode.id) ? "graph-node-card--upstream" : ""} ${selectedDownstreamNodeIds.has(layoutNode.id) ? "graph-node-card--downstream" : ""}`}
+                  type="button"
+                  style={`left: ${layoutNode.x}px; top: ${layoutNode.y}px; width: ${NODE_WIDTH}px; min-height: ${NODE_HEIGHT}px;`}
+                  data-node-id={layoutNode.id}
+                  on:click={() => selectNode(layoutNode.id)}
+                >
+                  <div class="graph-node-card-head">
+                    <div>
+                      <strong>{layoutNode.node.name}</strong>
+                      <div class="graph-node-card-subtitle">
+                        {layoutNode.node.version}
+                      </div>
                     </div>
+                    {#if layoutNode.node.workspace_member}
+                      <span class="graph-node-tag">{l10n(":workspace_tag")}</span>
+                    {/if}
                   </div>
-                  {#if layoutNode.node.workspace_member}
-                    <span class="graph-node-tag">{l10n(":workspace_tag")}</span>
+                  <div class="graph-node-card-meta">
+                    <span>{l10n("layer_prefix", { n: layoutNode.layer })}</span>
+                    <span>{l10n(":incoming", { n: layoutNode.incoming })}</span>
+                    <span>{l10n(":outgoing", { n: layoutNode.outgoing })}</span>
+                  </div>
+                  {#if layoutNode.node.source}
+                    <div class="graph-node-card-source">
+                      {layoutNode.node.source}
+                    </div>
                   {/if}
-                </div>
-                <div class="graph-node-card-meta">
-                  <span>{l10n("layer_prefix", { n: layoutNode.layer })}</span>
-                  <span>{l10n(":incoming", { n: layoutNode.incoming })}</span>
-                  <span>{l10n(":outgoing", { n: layoutNode.outgoing })}</span>
-                </div>
-                {#if layoutNode.node.source}
-                  <div class="graph-node-card-source">
-                    {layoutNode.node.source}
-                  </div>
-                {/if}
-              </button>
-            {/each}
+                </button>
+              {/each}
 
-            {#if selectedNodeId}
-              <div
-                class="graph-hint"
-                style={`left: ${MARGIN_X}px; top: ${graphCanvasHeight - 44}px;`}
-              >
-                {l10n("selected_label")}{resolveNodeLabel(selectedNodeId)}
-              </div>
-            {/if}
+              {#if selectedNodeId}
+                <div
+                  class="graph-hint"
+                  style={`left: ${MARGIN_X}px; top: ${layout.height - 44}px;`}
+                >
+                  {l10n("selected_label")}{resolveNodeLabel(selectedNodeId, nodeById)}
+                </div>
+              {/if}
+            </div>
           </div>
-        </div>
+        {/if}
       {/if}
     </section>
   </div>
