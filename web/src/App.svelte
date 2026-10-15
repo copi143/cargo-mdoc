@@ -7,7 +7,6 @@
   import Home from "./pages/Home.svelte";
   import Item from "./pages/Item.svelte";
   import type {
-    CfgExpr,
     Counts,
     Features,
     GeneratorInfo,
@@ -17,6 +16,9 @@
     PackageInfo,
     ResolveGraph,
   } from "./types";
+  import { filterItems } from "./lib/filter";
+  import { formatCfg } from "./lib/cfg";
+  import { moduleDepth } from "./lib/path";
 
   let loading = true;
   let error = "";
@@ -36,25 +38,6 @@
   let selectedPath = "";
   let view: "home" | "item" = "home";
   let graphOpen = false;
-
-  const evaluateCfg = (cfg: CfgExpr, enabled: Features): boolean => {
-    switch (cfg.kind) {
-      case "True":
-        return true;
-      case "False":
-        return false;
-      case "Feature":
-        return enabled[cfg.value] !== undefined;
-      case "Flag":
-        return true;
-      case "All":
-        return cfg.value.every((c) => evaluateCfg(c, enabled));
-      case "Any":
-        return cfg.value.some((c) => evaluateCfg(c, enabled));
-      case "Not":
-        return !evaluateCfg(cfg.value, enabled);
-    }
-  };
 
   const selectPackage = (id: string) => {
     selectedPackageId = id;
@@ -84,31 +67,6 @@
     "Trait",
     "Module",
   ];
-
-  const normalize = (value: string) => (value || "").toLowerCase();
-
-  const formatCfg = (cfg?: CfgExpr | null): string => {
-    if (!cfg) return "true";
-
-    switch (cfg.kind) {
-      case "True":
-        return "true";
-      case "False":
-        return "false";
-      case "Feature":
-        return `feature="${cfg.value}"`;
-      case "Flag":
-        return cfg.value;
-      case "All":
-        return `all(${(cfg.value || []).map(formatCfg).join(", ")})`;
-      case "Any":
-        return `any(${(cfg.value || []).map(formatCfg).join(", ")})`;
-      case "Not":
-        return `not(${formatCfg(cfg.value)})`;
-      default:
-        return "unknown";
-    }
-  };
 
   const onHashChange = () => {
     const hash = window.location.hash;
@@ -210,20 +168,16 @@
     ? items
     : items.filter((item) => item.package_id === selectedPackageId);
 
-  $: cfgFiltered = selectedPackageId
-    ? crateItems.filter((item) => evaluateCfg(item.cfg, enabledFeatures))
-    : crateItems;
-
-  $: filteredItems = cfgFiltered
-    .filter((item) => {
-      if (kindFilter !== "All" && item.kind !== kindFilter) return false;
-      const q = normalize(query.trim());
-      if (!q) return true;
-      return (
-        normalize(item.path).includes(q) || normalize(item.docs).includes(q)
-      );
-    })
-    .sort((a, b) => a.path.localeCompare(b.path));
+  $: filteredItems = filterItems(
+    items,
+    {
+      query,
+      kindFilter,
+      selectedPackageId,
+      enabledFeatures,
+    },
+    items,
+  );
 
   $: selectedItem = items.find((item) => item.path === selectedPath) || null;
 
@@ -231,8 +185,6 @@
     acc[item.kind] = (acc[item.kind] || 0) + 1;
     return acc;
   }, {} as Counts);
-
-  const moduleDepth = (path: string) => path.split("::").length;
 
   $: topModules = items
     .filter((item) => item.kind === "Module" && moduleDepth(item.path) === 1)
@@ -300,7 +252,7 @@
           onSelectItem={selectItem}
         />
       {:else}
-        <Item {selectedItem} {formatCfg} />
+        <Item {selectedItem} />
       {/if}
     </section>
   </main>

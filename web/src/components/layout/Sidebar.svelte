@@ -7,6 +7,7 @@
     PackageDoc,
   } from "../../types";
   import { l10nDerive } from "../../l10n";
+  import { formatSource } from "../../lib/path";
 
   export let filteredItems: ItemDoc[] = [];
   export let counts: Counts = {};
@@ -51,13 +52,6 @@
     }
   }
 
-  const formatSource = (item: ItemDoc): string => {
-    if (!item.source) return l10n(":source_unavailable");
-    const { file, line_start, line_end } = item.source;
-    const range =
-      line_start === line_end ? `${line_start}` : `${line_start}-${line_end}`;
-    return `${file}:${range}`;
-  };
 </script>
 
 <aside class="panel list">

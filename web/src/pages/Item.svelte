@@ -1,12 +1,13 @@
 <script lang="ts">
-  import type { CfgExpr, ItemDoc } from "../types";
+  import type { ItemDoc } from "../types";
   import { renderMarkdown } from "../lib/markdown";
   import { renderRustSource } from "../lib/highlight";
+  import { formatCfg } from "../lib/cfg";
+  import { splitDisplayPath } from "../lib/path";
   import { l10nDerive } from "../l10n";
   import ImplBlock from "../components/detail/ImplBlock.svelte";
 
   export let selectedItem: ItemDoc | null = null;
-  export let formatCfg: (cfg?: CfgExpr | null) => string = () => "";
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
 
@@ -28,21 +29,6 @@
     } catch {
       // clipboard not available
     }
-  };
-
-  const splitDisplayPath = (
-    path: string,
-  ): { namespace: string; name: string } => {
-    const separatorIndex = path.lastIndexOf("::");
-
-    if (separatorIndex === -1) {
-      return { namespace: "", name: path };
-    }
-
-    return {
-      namespace: path.slice(0, separatorIndex + 2),
-      name: path.slice(separatorIndex + 2),
-    };
   };
 </script>
 
@@ -96,7 +82,9 @@
             {copied ? l10n("copied") : l10n("copy")}
           </button>
         </div>
-        <pre class="source-code"><code class="hljs language-rust">{@html renderedSource}</code></pre>
+        <pre class="source-code"><code class="hljs language-rust"
+            >{@html renderedSource}</code
+          ></pre>
       </div>
     </div>
   </div>
