@@ -199,35 +199,24 @@
         ? collectFocusSet(selectedNodeId)
         : new Set<string>();
 
-    const g = new dagre.graphlib.Graph({ compound: focusSet.size > 0 });
+    const g = new dagre.graphlib.Graph({ compound: false });
     g.setGraph({
       rankdir: "LR",
-      nodesep: 60,
-      ranksep: 280,
-      marginx: 80,
-      marginy: 80,
+      nodesep: 40,
+      ranksep: 120,
+      marginx: 40,
+      marginy: 40,
     });
     g.setDefaultEdgeLabel(() => ({}));
 
-    if (focusSet.size > 0) {
-      g.setNode("focus-cluster", { label: "" });
-      g.setNode("other-cluster", { label: "" });
-    }
-
     for (const node of resolveGraph.nodes) {
       g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
-      if (focusSet.size > 0) {
-        g.setParent(
-          node.id,
-          focusSet.has(node.id) ? "focus-cluster" : "other-cluster",
-        );
-      }
     }
 
     for (const edge of resolveGraph.edges) {
       const bothInFocus =
         focusSet.size > 0 && focusSet.has(edge.from) && focusSet.has(edge.to);
-      g.setEdge(edge.from, edge.to, { weight: bothInFocus ? 10 : 1 });
+      g.setEdge(edge.from, edge.to, { weight: bothInFocus ? 2 : 1 });
     }
 
     dagre.layout(g);

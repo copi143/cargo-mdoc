@@ -138,21 +138,30 @@ pub fn source_snippet(node: &SyntaxNode) -> String {
         return String::new();
     }
 
-    // Find the minimum indentation across non-empty lines
+    // Find the minimum indentation across non-empty lines,
+    // skipping the first line (signature) since it often has no leading
+    // whitespace and would otherwise force common_indent to 0,
+    // preventing dedent of the indented body lines below it.
     let common_indent = lines
         .iter()
+        .skip(1)
         .filter(|line| !line.trim().is_empty())
         .map(|line| line.len() - line.trim_start().len())
         .min()
         .unwrap_or(0);
 
     // Strip the common indentation from every line,
-    // then collapse runs of empty lines to at most one
+    // then collapse runs of empty lines to at most one.
+    // The first line (signature) is trimmed of all leading whitespace
+    // since it carries no relative indentation.
     let mut prev_empty = false;
     lines
         .iter()
-        .filter_map(|line| {
-            let stripped = if line.len() >= common_indent {
+        .enumerate()
+        .filter_map(|(i, line)| {
+            let stripped = if i == 0 {
+                line.trim_start()
+            } else if line.len() >= common_indent {
                 &line[common_indent..]
             } else {
                 line.trim_start()
