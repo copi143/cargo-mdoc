@@ -1,4 +1,6 @@
 .kind {
+  color: var(--kind-default);
+
   &.kind-function {
     color: var(--kind-function);
   }
@@ -26,31 +28,26 @@
   align-items: center;
   padding: 4px 8px;
   font-size: 0.75rem;
+  background: rgb(from var(--kind-default) r g b / var(--kind-bg-opacity));
   border: 1px solid currentColor;
 
   &.kind-function {
-    background: rgba(37, 99, 235, var(--kind-bg-opacity));
+    background: rgb(from var(--kind-function) r g b / var(--kind-bg-opacity));
   }
 
   &.kind-struct {
-    background: rgba(14, 165, 233, var(--kind-bg-opacity));
+    background: rgb(from var(--kind-struct) r g b / var(--kind-bg-opacity));
   }
 
   &.kind-enum {
-    background: rgba(139, 92, 246, var(--kind-bg-opacity));
+    background: rgb(from var(--kind-enum) r g b / var(--kind-bg-opacity));
   }
 
   &.kind-trait {
-    background: rgba(249, 115, 22, var(--kind-bg-opacity));
+    background: rgb(from var(--kind-trait) r g b / var(--kind-bg-opacity));
   }
 
   &.kind-module {
-    background: rgba(16, 185, 129, var(--kind-bg-opacity));
-  }
-
-  &:not(.kind-function):not(.kind-struct):not(.kind-enum):not(.kind-trait):not(
-      .kind-module
-    ) {
-    color: var(--kind-default);
+    background: rgb(from var(--kind-module) r g b / var(--kind-bg-opacity));
   }
 }

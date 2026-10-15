@@ -16,9 +16,11 @@
   --cool: #3b82f6;
   --shadow: none;
   --shadow-soft: none;
+
   --sans: "Source Sans 3", system-ui, sans-serif;
   --heading: "Space Grotesk", system-ui, sans-serif;
   --mono: "Source Code Pro", ui-monospace, monospace;
+
   --kind-function: #2563eb;
   --kind-struct: #0ea5e9;
   --kind-enum: #8b5cf6;
