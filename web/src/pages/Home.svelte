@@ -1,22 +1,26 @@
 <script lang="ts">
-  import type { Counts, ItemDoc, PackageInfo, ResolveGraph } from "../types";
+  import type { ItemDoc, PackageInfo, ResolveGraph } from "../types";
   import { renderMarkdown } from "../lib/markdown";
   import { l10nDerive } from "../l10n";
   import GraphPreview from "../components/depgraph/GraphPreview.svelte";
   import ItemList from "../components/detail/ItemList.svelte";
+  import {
+    packageInfoStore,
+    itemsStore,
+    resolveGraphStore,
+  } from "../lib/store";
+  import {
+    counts as countsStore,
+    topModules as topModulesStore,
+    prominentItems as prominentItemsStore,
+  } from "../lib/derived";
 
-  export let packageInfo: PackageInfo | null = null;
-  export let items: ItemDoc[] = [];
-  export let counts: Counts = {};
-  export let topModules: ItemDoc[] = [];
-  export let prominentItems: ItemDoc[] = [];
-  export let resolveGraph: ResolveGraph | null = null;
   export let onSelectItem: (item: ItemDoc) => void = () => {};
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
 
   $: renderedReadme = renderMarkdown(
-    packageInfo?.readme || l10n("readme_not_loaded_err"),
+    $packageInfoStore?.readme || l10n("readme_not_loaded_err"),
   );
 </script>
 
@@ -30,11 +34,11 @@
   <div class="home-layout">
     <section class="home-card home-readme">
       <h3>{l10n("readme")}</h3>
-      {#if packageInfo?.readme}
+      {#if $packageInfoStore?.readme}
         <div class="markdown-body home-markdown">{@html renderedReadme}</div>
         <div class="home-meta">
           <span>{l10n("path")}</span>
-          <strong>{packageInfo.readme_path ?? l10n("readme_default")}</strong>
+          <strong>{$packageInfoStore.readme_path ?? l10n("readme_default")}</strong>
         </div>
       {:else}
         <p class="home-body">{l10n("readme_not_loaded")}</p>
@@ -42,7 +46,7 @@
     </section>
 
     <div class="home-side">
-      <GraphPreview {resolveGraph} />
+      <GraphPreview {resolveGraphStore} />
 
       <section class="home-card">
         <h3>{l10n("getting_started")}</h3>
@@ -51,13 +55,13 @@
         </p>
         <div class="home-meta">
           <span>{l10n("total_items")}</span>
-          <strong>{items.length}</strong>
+          <strong>{$itemsStore.length}</strong>
         </div>
       </section>
 
       <section class="home-card">
         <h3>{l10n("top_modules")}</h3>
-        <ItemList items={topModules} {onSelectItem} emptyMessage={l10n("no_top_modules")} />
+        <ItemList items={$topModulesStore} {onSelectItem} emptyMessage={l10n("no_top_modules")} />
       </section>
 
       <section class="home-card">
@@ -65,26 +69,26 @@
         <div class="home-stats">
           <div>
             <span>{l10n("functions")}</span>
-            <strong>{counts.Function ?? 0}</strong>
+            <strong>{$countsStore.Function ?? 0}</strong>
           </div>
           <div>
             <span>{l10n("structs")}</span>
-            <strong>{counts.Struct ?? 0}</strong>
+            <strong>{$countsStore.Struct ?? 0}</strong>
           </div>
           <div>
             <span>{l10n("enums")}</span>
-            <strong>{counts.Enum ?? 0}</strong>
+            <strong>{$countsStore.Enum ?? 0}</strong>
           </div>
           <div>
             <span>{l10n("traits")}</span>
-            <strong>{counts.Trait ?? 0}</strong>
+            <strong>{$countsStore.Trait ?? 0}</strong>
           </div>
         </div>
       </section>
 
       <section class="home-card">
         <h3>{l10n("highlights")}</h3>
-        <ItemList items={prominentItems} {onSelectItem} emptyMessage={l10n("no_highlights")} />
+        <ItemList items={$prominentItemsStore} {onSelectItem} emptyMessage={l10n("no_highlights")} />
       </section>
     </div>
   </div>

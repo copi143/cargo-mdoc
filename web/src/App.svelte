@@ -1,62 +1,57 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { locale, l10nDerive } from "./l10n";
-  import DependencyGraph from "./components/depgraph/DependencyGraph.svelte";
   import Topbar from "./components/layout/Topbar.svelte";
   import Sidebar from "./components/layout/Sidebar.svelte";
   import Home from "./pages/Home.svelte";
   import Item from "./pages/Item.svelte";
+  import DependencyGraph from "./components/depgraph/DependencyGraph.svelte";
+  import {
+    itemsStore,
+    packagesStore,
+    resolveGraphStore,
+    generatorStore,
+    packageInfoStore,
+    queryStore,
+    kindFilterStore,
+    selectedPackageIdStore,
+    enabledFeaturesStore,
+    selectedPathStore,
+    viewStore,
+    graphOpenStore,
+    loadingStore,
+    errorStore,
+  } from "./lib/store";
   import type {
-    Counts,
-    Features,
-    GeneratorInfo,
-    ItemDoc,
-    ItemKind,
-    PackageDoc,
-    PackageInfo,
-    ResolveGraph,
-  } from "./types";
-  import { filterItems } from "./lib/filter";
-  import { formatCfg } from "./lib/cfg";
-  import { moduleDepth } from "./lib/path";
-
-  let loading = true;
-  let error = "";
-  let errorStatus = 0;
+  GeneratorInfo,
+  ItemDoc,
+  ItemKind,
+  PackageDoc,
+  ResolveGraph,
+} from "./types";
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: document.documentElement.lang = $locale;
-  let items: ItemDoc[] = [];
-  let packageInfo: PackageInfo | null = null;
-  let packages: PackageDoc[] = [];
-  let resolveGraph: ResolveGraph | null = null;
-  let generator: GeneratorInfo | null = null;
-  let query = "";
-  let kindFilter: "All" | ItemKind = "All";
-  let selectedPackageId = "";
-  let enabledFeatures: Features = {};
-  let selectedPath = "";
-  let view: "home" | "item" = "home";
-  let graphOpen = false;
 
   const selectPackage = (id: string) => {
-    selectedPackageId = id;
+    selectedPackageIdStore.set(id);
     if (id) {
-      const pkg = packages.find((p) => (p.id ?? p.name) === id);
-      enabledFeatures = pkg?.features ? { ...pkg.features } : {};
+      const pkg = $packagesStore.find((p) => (p.id ?? p.name) === id);
+      enabledFeaturesStore.set(pkg?.features ? { ...pkg.features } : {});
     } else {
-      enabledFeatures = {};
+      enabledFeaturesStore.set({});
     }
   };
 
   const toggleFeature = (feature: string) => {
-    if (enabledFeatures[feature] !== undefined) {
-      const next = { ...enabledFeatures };
-      delete next[feature];
-      enabledFeatures = next;
-    } else {
-      enabledFeatures = { ...enabledFeatures, [feature]: [] };
-    }
+    enabledFeaturesStore.update((next) => {
+      if (next[feature] !== undefined) {
+        const copy = { ...next };
+        delete copy[feature];
+        return copy;
+      }
+      return { ...next, [feature]: [] };
+    });
   };
 
   const kindOptions: Array<"All" | ItemKind> = [
@@ -70,39 +65,38 @@
 
   const onHashChange = () => {
     const hash = window.location.hash;
-
     if (hash.startsWith("#/item/")) {
-      selectedPath = decodeURIComponent(hash.slice(7));
-      view = "item";
+      selectedPathStore.set(decodeURIComponent(hash.slice(7)));
+      viewStore.set("item");
     } else if (hash.startsWith("#/home")) {
-      selectedPath = "";
-      view = "home";
+      selectedPathStore.set("");
+      viewStore.set("home");
     } else {
-      selectedPath = "";
-      view = "home";
+      selectedPathStore.set("");
+      viewStore.set("home");
     }
   };
 
   const selectItem = (item?: ItemDoc | null) => {
     if (!item) return;
-    selectedPath = item.path;
-    view = "item";
+    selectedPathStore.set(item.path);
+    viewStore.set("item");
     window.location.hash = `#/item/${encodeURIComponent(item.path)}`;
   };
 
   const goHome = () => {
     window.location.hash = "#/home";
-    selectedPath = "";
-    view = "home";
+    selectedPathStore.set("");
+    viewStore.set("home");
   };
 
   const openGraph = () => {
-    if (!resolveGraph) return;
-    graphOpen = true;
+    if (!$resolveGraphStore) return;
+    graphOpenStore.set(true);
   };
 
   const closeGraph = () => {
-    graphOpen = false;
+    graphOpenStore.set(false);
   };
 
   onMount(() => {
@@ -113,36 +107,47 @@
         const response = await fetch(dataUrl, { cache: "no-store" });
 
         if (!response.ok) {
-          errorStatus = response.status;
+          errorStore.set({ message: "failed_to_load", status: response.status });
           throw new Error("failed_to_load");
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as {
+          package?: PackageDoc | null;
+          packages?: PackageDoc[];
+          generator?: GeneratorInfo | null;
+          resolve_graph?: ResolveGraph | null;
+          lock_graph?: ResolveGraph | null;
+          items?: ItemDoc[];
+        };
 
         if (Array.isArray(data)) {
-          packageInfo = null;
-          packages = [];
-          resolveGraph = null;
-          items = data;
+          packageInfoStore.set(null);
+          packagesStore.set([]);
+          resolveGraphStore.set(null);
+          itemsStore.set(data);
         } else {
-          packageInfo = data.package || null;
-          packages = Array.isArray(data.packages) ? data.packages : [];
+          packageInfoStore.set(data.package ?? null);
+          const pkgs = Array.isArray(data.packages) ? data.packages : [];
           if (
-            packageInfo &&
-            !packages.find((p) => p.name === packageInfo?.name)
+            data.package &&
+            !pkgs.find((p) => p.name === data.package?.name)
           ) {
-            packages = [packageInfo as PackageDoc, ...packages];
+            packagesStore.set([data.package as PackageDoc, ...pkgs]);
+          } else {
+            packagesStore.set(pkgs);
           }
-          generator = data.generator || null;
-          resolveGraph = data.resolve_graph || data.lock_graph || null;
-          items = Array.isArray(data.items) ? data.items : [];
+          generatorStore.set(data.generator ?? null);
+          resolveGraphStore.set(
+            data.resolve_graph || data.lock_graph || null,
+          );
+          itemsStore.set(Array.isArray(data.items) ? data.items : []);
         }
 
         onHashChange();
       } catch {
-        error = "failed_to_load";
+        errorStore.set({ message: "failed_to_load", status: 0 });
       } finally {
-        loading = false;
+        loadingStore.set(false);
       }
     };
 
@@ -151,113 +156,43 @@
 
     return () => window.removeEventListener("hashchange", onHashChange);
   });
-
-  $: workspacePackages = packages.filter(
-    (p) => p.is_workspace_member !== false,
-  );
-
-  $: selectedPackage = workspacePackages.find(
-    (p) => (p.id ?? p.name) === selectedPackageId,
-  );
-  $: featureNamesList = selectedPackage?.features
-    ? Object.keys(selectedPackage.features).sort()
-    : [];
-  $: selectedPackageName = selectedPackage?.name ?? "";
-
-  $: crateItems = !selectedPackageId
-    ? items
-    : items.filter((item) => item.package_id === selectedPackageId);
-
-  $: filteredItems = filterItems(
-    items,
-    {
-      query,
-      kindFilter,
-      selectedPackageId,
-      enabledFeatures,
-    },
-    items,
-  );
-
-  $: selectedItem = items.find((item) => item.path === selectedPath) || null;
-
-  $: counts = crateItems.reduce<Counts>((acc, item) => {
-    acc[item.kind] = (acc[item.kind] || 0) + 1;
-    return acc;
-  }, {} as Counts);
-
-  $: topModules = items
-    .filter((item) => item.kind === "Module" && moduleDepth(item.path) === 1)
-    .sort((a, b) => a.path.localeCompare(b.path))
-    .slice(0, 8);
-
-  $: prominentItems = items
-    .filter((item) => item.kind !== "Module")
-    .sort((a, b) => a.path.localeCompare(b.path))
-    .slice(0, 8);
 </script>
 
 <div class="shell">
-  <Topbar
-    {packageInfo}
-    {items}
-    {generator}
-    onOpenGraph={openGraph}
-    graphAvailable={Boolean(resolveGraph)}
-  />
+  <Topbar onOpenGraph={openGraph} />
 
-  {#if error}
+  {#if $errorStore.message}
     <div class="state error">
-      {#if errorStatus}
-        {l10n("failed_to_load_status", { status: errorStatus })}
+      {#if $errorStore.status}
+        {l10n("failed_to_load_status", { status: $errorStore.status })}
       {:else}
         {l10n("failed_to_load")}
       {/if}
     </div>
-  {:else if loading}
+  {:else if $loadingStore}
     <div class="state loading">{l10n("loading_docs")}</div>
   {/if}
 
-  <main class="content" aria-busy={loading}>
+  <main class="content" aria-busy={$loadingStore}>
     <Sidebar
-      {filteredItems}
-      {counts}
-      {kindOptions}
-      {selectedPath}
-      {kindFilter}
-      {query}
-      {view}
-      packages={workspacePackages}
-      {selectedPackageId}
-      {enabledFeatures}
-      {selectedPackageName}
-      {featureNamesList}
       onHome={goHome}
       onSelectItem={selectItem}
-      onQueryChange={(value) => (query = value)}
-      onKindChange={(value) => (kindFilter = value)}
-      onPackageChange={(id) => selectPackage(id)}
-      onFeatureToggle={(feat) => toggleFeature(feat)}
+      onQueryChange={(value) => queryStore.set(value)}
+      onKindChange={(value) => kindFilterStore.set(value)}
+      onPackageChange={selectPackage}
+      onFeatureToggle={toggleFeature}
     />
 
     <section class="panel detail">
-      {#if view === "home"}
-        <Home
-          {packageInfo}
-          {items}
-          {counts}
-          {topModules}
-          {prominentItems}
-          {resolveGraph}
-          onSelectItem={selectItem}
-        />
+      {#if $viewStore === "home"}
+        <Home onSelectItem={selectItem} />
       {:else}
-        <Item {selectedItem} />
+        <Item />
       {/if}
     </section>
   </main>
 
-  {#if graphOpen}
-    <DependencyGraph {resolveGraph} onClose={closeGraph} />
+  {#if $graphOpenStore}
+    <DependencyGraph resolveGraph={$resolveGraphStore} onClose={closeGraph} />
   {/if}
 </div>

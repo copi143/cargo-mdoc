@@ -1,24 +1,21 @@
 <script lang="ts">
-  import type {
-    Counts,
-    Features,
-    ItemDoc,
-    ItemKind,
-    PackageDoc,
-  } from "../../types";
+  import type { ItemDoc, ItemKind, PackageDoc } from "../../types";
   import { l10nDerive } from "../../l10n";
-  import { formatSource } from "../../lib/path";
-
-  export let filteredItems: ItemDoc[] = [];
-  export let counts: Counts = {};
-  export let kindOptions: Array<"All" | ItemKind> = [];
-  export let selectedPath = "";
-  export let kindFilter: "All" | ItemKind = "All";
-  export let query = "";
-  export let view: "home" | "item" = "home";
-  export let packages: PackageDoc[] = [];
-  export let selectedPackageId = "";
-  export let enabledFeatures: Features = {};
+  import {
+    selectedPathStore,
+    kindFilterStore,
+    queryStore,
+    viewStore,
+    selectedPackageIdStore,
+    enabledFeaturesStore,
+  } from "../../lib/store";
+  import {
+    filteredItems as filteredItemsStore,
+    counts as countsStore,
+    workspacePackages as workspacePackagesStore,
+    selectedPackageName as selectedPackageNameStore,
+    featureNamesList as featureNamesListStore,
+  } from "../../lib/derived";
 
   export let onHome: () => void = () => {};
   export let onSelectItem: (item: ItemDoc) => void = () => {};
@@ -26,32 +23,45 @@
   export let onKindChange: (value: "All" | ItemKind) => void = () => {};
   export let onPackageChange: (id: string) => void = () => {};
   export let onFeatureToggle: (feature: string) => void = () => {};
-  export let selectedPackageName = "";
-  export let featureNamesList: string[] = [];
 
   let buttonRefs: HTMLButtonElement[] = [];
   let sliderStyle = "";
   let currentPage = 0;
   const pageSize = 100;
 
+  const kindOptions: Array<"All" | ItemKind> = [
+    "All",
+    "Function",
+    "Struct",
+    "Enum",
+    "Trait",
+    "Module",
+  ];
+
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
-  $: totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
-  // Reset to first page when filter/search results change
-  $: if (filteredItems) currentPage = 0;
+  $: totalPages = Math.max(1, Math.ceil($filteredItemsStore.length / pageSize));
+  $: if ($filteredItemsStore) currentPage = 0;
   $: clampedPage = Math.min(currentPage, totalPages - 1);
   $: pageOffset = clampedPage * pageSize;
-  $: pageItems = filteredItems.slice(pageOffset, pageOffset + pageSize);
+  $: pageItems = $filteredItemsStore.slice(pageOffset, pageOffset + pageSize);
 
   $: {
-    const idx = kindOptions.indexOf(kindFilter);
+    const idx = kindOptions.indexOf($kindFilterStore);
     if (idx >= 0 && buttonRefs[idx]) {
       const btn = buttonRefs[idx];
       sliderStyle = `transform: translateX(${btn.offsetLeft}px); width: ${btn.offsetWidth}px;`;
     } else {
       sliderStyle = "opacity: 0;";
     }
-  }
+  };
 
+  const formatSource = (item: ItemDoc): string => {
+    if (!item.source) return l10n(":source_unavailable");
+    const { file, line_start, line_end } = item.source;
+    const range =
+      line_start === line_end ? `${line_start}` : `${line_start}-${line_end}`;
+    return `${file}:${range}`;
+  };
 </script>
 
 <aside class="panel list">
@@ -59,27 +69,27 @@
     <div>
       <h2>{l10n("index")}</h2>
       <p class="panel-subtitle">
-        {l10n("results", { n: filteredItems.length })}
+        {l10n("results", { n: $filteredItemsStore.length })}
       </p>
     </div>
-    <button class="ghost" on:click={onHome} disabled={view === "home"}>
+    <button class="ghost" on:click={onHome} disabled={$viewStore === "home"}>
       {l10n("home")}
     </button>
   </div>
 
-  {#if packages.length > 0}
+  {#if $workspacePackagesStore.length > 0}
     <div class="crates">
       <div class="section-label">{l10n(":crate")}</div>
       <div class="crate-pills">
         <button
           class="crate-pill"
-          class:active={!selectedPackageId}
+          class:active={!$selectedPackageIdStore}
           on:click={() => onPackageChange("")}>{l10n("all_crates")}</button
         >
-        {#each packages as pkg}
+        {#each $workspacePackagesStore as pkg}
           <button
             class="crate-pill"
-            class:active={(pkg.id ?? pkg.name) === selectedPackageId}
+            class:active={(pkg.id ?? pkg.name) === $selectedPackageIdStore}
             on:click={() => onPackageChange(pkg.id ?? pkg.name)}
           >
             {pkg.name}
@@ -89,16 +99,16 @@
     </div>
   {/if}
 
-  {#if featureNamesList.length > 0}
+  {#if $featureNamesListStore.length > 0}
     <div class="features">
       <div class="section-label">
-        {l10n("features_for", { name: selectedPackageName })}
+        {l10n("features_for", { name: $selectedPackageNameStore })}
       </div>
       <div class="feature-pills">
-        {#each featureNamesList as feat}
+        {#each $featureNamesListStore as feat}
           <button
             class="feature-pill"
-            class:on={enabledFeatures[feat] !== undefined}
+            class:on={$enabledFeaturesStore[feat] !== undefined}
             on:click={() => onFeatureToggle(feat)}
           >
             {feat}
@@ -112,7 +122,7 @@
     <input
       type="search"
       placeholder={l10n("search_placeholder")}
-      value={query}
+      value={$queryStore}
       on:input={(event) => onQueryChange(event.currentTarget.value)}
       aria-label={l10n("search_aria")}
     />
@@ -122,12 +132,12 @@
         {#each kindOptions as option, i}
           <button
             bind:this={buttonRefs[i]}
-            class:active={kindFilter === option}
+            class:active={$kindFilterStore === option}
             on:click={() => onKindChange(option)}
           >
             {l10n(":kind_" + option.toLowerCase())}
             {#if option !== "All"}
-              <span class="count">{counts[option] ?? 0}</span>
+              <span class="count">{$countsStore[option] ?? 0}</span>
             {/if}
           </button>
         {/each}
@@ -136,12 +146,12 @@
   </div>
 
   <div class="list-items">
-    {#if filteredItems.length === 0}
+    {#if $filteredItemsStore.length === 0}
       <div class="empty">{l10n("no_matches")}</div>
     {:else}
       {#each pageItems as item, i}
         <button
-          class:selected={item.path === selectedPath}
+          class:selected={item.path === $selectedPathStore}
           style={`--i: ${i}`}
           on:click={() => onSelectItem(item)}
         >

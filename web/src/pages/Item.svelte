@@ -6,10 +6,10 @@
   import { splitDisplayPath } from "../lib/path";
   import { l10nDerive } from "../l10n";
   import ImplBlock from "../components/detail/ImplBlock.svelte";
-
-  export let selectedItem: ItemDoc | null = null;
+  import { selectedItem as selectedItemStore } from "../lib/derived";
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
+  $: selectedItem = $selectedItemStore;
 
   $: renderedDocs = renderMarkdown(selectedItem?.docs || l10n("nodoc"));
   $: renderedSource = renderRustSource(selectedItem?.source_code || "");
@@ -30,10 +30,25 @@
       // clipboard not available
     }
   };
+
+  const splitDisplayPathLocal = (
+    path: string,
+  ): { namespace: string; name: string } => {
+    const separatorIndex = path.lastIndexOf("::");
+
+    if (separatorIndex === -1) {
+      return { namespace: "", name: path };
+    }
+
+    return {
+      namespace: path.slice(0, separatorIndex + 2),
+      name: path.slice(separatorIndex + 2),
+    };
+  };
 </script>
 
 {#if selectedItem}
-  {@const displayPath = splitDisplayPath(selectedItem.path)}
+  {@const displayPath = splitDisplayPathLocal(selectedItem.path)}
   <div class="detail-header">
     <div class="left">
       <p class={`kicker kind-badge kind-${selectedItem.kind.toLowerCase()}`}>
@@ -82,9 +97,7 @@
             {copied ? l10n("copied") : l10n("copy")}
           </button>
         </div>
-        <pre class="source-code"><code class="hljs language-rust"
-            >{@html renderedSource}</code
-          ></pre>
+        <pre class="source-code"><code class="hljs language-rust">{@html renderedSource}</code></pre>
       </div>
     </div>
   </div>
