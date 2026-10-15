@@ -30,25 +30,10 @@
       // clipboard not available
     }
   };
-
-  const splitDisplayPathLocal = (
-    path: string,
-  ): { namespace: string; name: string } => {
-    const separatorIndex = path.lastIndexOf("::");
-
-    if (separatorIndex === -1) {
-      return { namespace: "", name: path };
-    }
-
-    return {
-      namespace: path.slice(0, separatorIndex + 2),
-      name: path.slice(separatorIndex + 2),
-    };
-  };
 </script>
 
 {#if selectedItem}
-  {@const displayPath = splitDisplayPathLocal(selectedItem.path)}
+  {@const displayPath = splitDisplayPath(selectedItem.path)}
   <div class="detail-header">
     <div class="left">
       <p class={`kicker kind-badge kind-${selectedItem.kind.toLowerCase()}`}>

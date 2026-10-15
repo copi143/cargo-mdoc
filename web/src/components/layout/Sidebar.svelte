@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ItemDoc, ItemKind, PackageDoc } from "../../types";
   import { l10nDerive } from "../../l10n";
+  import { formatSource } from "../../lib/path";
   import {
     selectedPathStore,
     kindFilterStore,
@@ -55,13 +56,7 @@
     }
   };
 
-  const formatSource = (item: ItemDoc): string => {
-    if (!item.source) return l10n(":source_unavailable");
-    const { file, line_start, line_end } = item.source;
-    const range =
-      line_start === line_end ? `${line_start}` : `${line_start}-${line_end}`;
-    return `${file}:${range}`;
-  };
+
 </script>
 
 <aside class="panel list">
@@ -157,7 +152,7 @@
         >
           <span class="row-main">
             <span class="path">{item.path}</span>
-            <span class="source-line">{formatSource(item)}</span>
+            <span class="source-line">{formatSource(item, l10n)}</span>
           </span>
           <span class={`kind kind-${item.kind.toLowerCase()}`}>{l10n(":kind_" + item.kind.toLowerCase())}</span
           >
