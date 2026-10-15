@@ -1,3 +1,23 @@
+body {
+  background:
+    linear-gradient(0deg, rgba(31, 111, 235, 0.05) 0%, transparent 20%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(31, 111, 235, 0.05) 0,
+      rgba(31, 111, 235, 0.05) 1px,
+      transparent 1px,
+      transparent 120px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(31, 111, 235, 0.04) 0,
+      rgba(31, 111, 235, 0.04) 1px,
+      transparent 1px,
+      transparent 120px
+    ),
+    var(--paper);
+}
+
 .kind {
   color: var(--kind-default);
 
