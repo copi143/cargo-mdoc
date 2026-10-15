@@ -1,462 +1,592 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>cargo-mdoc 紧凑高亮格式 · Demo</title>
-<style>
-  :root {
-    --ink: #0b1324;
-    --muted: #41516b;
-    --paper: #f2f6fb;
-    --panel: #ffffff;
-    --line: #d6deeb;
-    --accent: #1f6feb;
-    --sans: "Source Sans 3", system-ui, sans-serif;
-    --mono: "Source Code Pro", ui-monospace, monospace;
-
-    --hl-keyword: #d73a49;
-    --hl-type: #6f42c1;
-    --hl-function: #6f42c1;
-    --hl-variable: #24292e;
-    --hl-string: #032f62;
-    --hl-number: #005cc5;
-    --hl-comment: #6a737d;
-    --hl-lifetime: #e36209;
-    --hl-operator: #d73a49;
-    --hl-punctuation: #24292e;
-    --hl-attribute: #005cc5;
-    --hl-macro: #8250df;
-    --hl-default: #24292e;
-  }
-
-  @media (prefers-color-scheme: dark) {
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cargo-mdoc 紧凑高亮格式 · Demo</title>
+  <style>
     :root {
-      --ink: #e6edf3;
-      --muted: #8b949e;
-      --paper: #0d1117;
-      --panel: #161b22;
-      --line: #30363d;
-      --accent: #58a6ff;
+      --ink: #0b1324;
+      --muted: #41516b;
+      --paper: #f2f6fb;
+      --panel: #ffffff;
+      --line: #d6deeb;
+      --accent: #1f6feb;
+      --sans: "Source Sans 3", system-ui, sans-serif;
+      --mono: "Source Code Pro", ui-monospace, monospace;
 
-      --hl-keyword: #ff7b72;
-      --hl-type: #d2a8ff;
-      --hl-function: #d2a8ff;
-      --hl-variable: #e6edf3;
-      --hl-string: #a5d6ff;
-      --hl-number: #79c0ff;
-      --hl-comment: #8b949e;
-      --hl-lifetime: #ffa657;
-      --hl-operator: #ff7b72;
-      --hl-punctuation: #e6edf3;
-      --hl-attribute: #79c0ff;
-      --hl-macro: #ffa657;
-      --hl-default: #e6edf3;
+      --hl-keyword: #d73a49;
+      --hl-type: #6f42c1;
+      --hl-function: #6f42c1;
+      --hl-variable: #24292e;
+      --hl-string: #032f62;
+      --hl-number: #005cc5;
+      --hl-comment: #6a737d;
+      --hl-lifetime: #e36209;
+      --hl-operator: #d73a49;
+      --hl-punctuation: #24292e;
+      --hl-attribute: #005cc5;
+      --hl-macro: #8250df;
+      --hl-default: #24292e;
     }
-  }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #e6edf3;
+        --muted: #8b949e;
+        --paper: #0d1117;
+        --panel: #161b22;
+        --line: #30363d;
+        --accent: #58a6ff;
 
-  body {
-    font: 16px/1.6 var(--sans);
-    color: var(--ink);
-    background: var(--paper);
-    padding: 32px 24px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
+        --hl-keyword: #ff7b72;
+        --hl-type: #d2a8ff;
+        --hl-function: #d2a8ff;
+        --hl-variable: #e6edf3;
+        --hl-string: #a5d6ff;
+        --hl-number: #79c0ff;
+        --hl-comment: #8b949e;
+        --hl-lifetime: #ffa657;
+        --hl-operator: #ff7b72;
+        --hl-punctuation: #e6edf3;
+        --hl-attribute: #79c0ff;
+        --hl-macro: #ffa657;
+        --hl-default: #e6edf3;
+      }
+    }
 
-  h1 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    margin-bottom: 4px;
-  }
-  h1 small {
-    font-size: 1rem;
-    font-weight: 400;
-    color: var(--muted);
-  }
-  p.sub {
-    color: var(--muted);
-    margin-bottom: 24px;
-  }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  .toolbar {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-  .toolbar label {
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-  .toolbar select, .toolbar button {
-    font: inherit;
-    font-size: 0.85rem;
-    padding: 6px 12px;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    background: var(--panel);
-    color: var(--ink);
-    cursor: pointer;
-  }
-  .toolbar button:hover {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
+    body {
+      font: 16px/1.6 var(--sans);
+      color: var(--ink);
+      background: var(--paper);
+      padding: 32px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
 
-  .panes {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-  @media (max-width: 768px) {
-    .panes { grid-template-columns: 1fr; }
-  }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
 
-  .pane {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .pane-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 14px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    border-bottom: 1px solid var(--line);
-    background: color-mix(in srgb, var(--paper) 50%, transparent);
-  }
-  .pane-header .stats {
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
-    font-size: 0.75rem;
-  }
+    h1 small {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--muted);
+    }
 
-  .pane-body {
-    padding: 14px;
-  }
+    p.sub {
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
 
-  textarea {
-    width: 100%;
-    min-height: 260px;
-    font: 0.82rem/1.5 var(--mono);
-    color: var(--ink);
-    background: transparent;
-    border: none;
-    resize: vertical;
-    outline: none;
-    tab-size: 2;
-  }
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
 
-  pre.code-output {
-    margin: 0;
-    font: 0.82rem/1.5 var(--mono);
-    white-space: pre;
-    overflow-x: auto;
-    tab-size: 4;
-  }
-  pre.code-output .hl-line {
-    display: block;
-  }
+    .toolbar label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
 
-  .hl-k { color: var(--hl-keyword); }
-  .hl-t { color: var(--hl-type); }
-  .hl-f { color: var(--hl-function); }
-  .hl-v { color: var(--hl-variable); }
-  .hl-s { color: var(--hl-string); }
-  .hl-n { color: var(--hl-number); }
-  .hl-c { color: var(--hl-comment); font-style: italic; }
-  .hl-l { color: var(--hl-lifetime); font-style: italic; }
-  .hl-o { color: var(--hl-operator); }
-  .hl-p { color: var(--hl-punctuation); }
-  .hl-a { color: var(--hl-attribute); }
-  .hl-m { color: var(--hl-macro); }
-  .hl-_ { color: var(--hl-default); }
+    .toolbar select,
+    .toolbar button {
+      font: inherit;
+      font-size: 0.85rem;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--ink);
+      cursor: pointer;
+    }
 
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  .legend span {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font: 0.75rem var(--mono);
-    color: var(--muted);
-  }
-  .legend .swatch {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-  }
+    .toolbar button:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
 
-  .about-format {
-    margin-top: 32px;
-    padding: 16px 20px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    font-size: 0.85rem;
-    line-height: 1.7;
-  }
-  .about-format code {
-    font-family: var(--mono);
-    font-size: 0.82rem;
-    background: color-mix(in srgb, var(--ink) 8%, transparent);
-    padding: 1px 5px;
-    border-radius: 3px;
-  }
-  .about-format table {
-    border-collapse: collapse;
-    margin: 8px 0;
-    width: 100%;
-    font-size: 0.82rem;
-  }
-  .about-format th, .about-format td {
-    padding: 4px 10px;
-    text-align: left;
-    border-bottom: 1px solid var(--line);
-  }
-  .about-format th {
-    color: var(--muted);
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.72rem;
-    letter-spacing: 0.05em;
-  }
-</style>
+    .panes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .panes {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pane {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .pane-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 50%, transparent);
+    }
+
+    .pane-header .stats {
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.75rem;
+    }
+
+    .pane-body {
+      padding: 14px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 260px;
+      font: 0.82rem/1.5 var(--mono);
+      color: var(--ink);
+      background: transparent;
+      border: none;
+      resize: vertical;
+      outline: none;
+      tab-size: 2;
+    }
+
+    pre.code-output {
+      margin: 0;
+      font: 0.82rem/1.5 var(--mono);
+      white-space: pre;
+      overflow-x: auto;
+      tab-size: 4;
+    }
+
+    pre.code-output .hl-line {
+      display: block;
+    }
+
+    .hl-k {
+      color: var(--hl-keyword);
+    }
+
+    .hl-t {
+      color: var(--hl-type);
+    }
+
+    .hl-f {
+      color: var(--hl-function);
+    }
+
+    .hl-v {
+      color: var(--hl-variable);
+    }
+
+    .hl-s {
+      color: var(--hl-string);
+    }
+
+    .hl-n {
+      color: var(--hl-number);
+    }
+
+    .hl-c {
+      color: var(--hl-comment);
+      font-style: italic;
+    }
+
+    .hl-l {
+      color: var(--hl-lifetime);
+      font-style: italic;
+    }
+
+    .hl-o {
+      color: var(--hl-operator);
+    }
+
+    .hl-p {
+      color: var(--hl-punctuation);
+    }
+
+    .hl-a {
+      color: var(--hl-attribute);
+    }
+
+    .hl-m {
+      color: var(--hl-macro);
+    }
+
+    .hl-_ {
+      color: var(--hl-default);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font: 0.75rem var(--mono);
+      color: var(--muted);
+    }
+
+    .legend .swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .about-format {
+      margin-top: 32px;
+      padding: 16px 20px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    .about-format code {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      background: color-mix(in srgb, var(--ink) 8%, transparent);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    .about-format table {
+      border-collapse: collapse;
+      margin: 8px 0;
+      width: 100%;
+      font-size: 0.82rem;
+    }
+
+    .about-format th,
+    .about-format td {
+      padding: 4px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .about-format th {
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+  </style>
 </head>
+
 <body>
 
-<h1>cargo-mdoc <small>紧凑高亮格式 · 在线 Demo</small></h1>
-<p class="sub">解析内联长度前缀编码的 Rust 源码高亮格式，实时渲染语法着色</p>
+  <h1>cargo-mdoc <small>紧凑高亮格式 · 在线 Demo</small></h1>
+  <p class="sub">解析内联长度前缀编码的 Rust 源码高亮格式，实时渲染语法着色</p>
 
-<div class="legend" id="legend"></div>
+  <div class="legend" id="legend"></div>
 
-<div class="toolbar">
-  <label for="sampleSelect">示例代码：</label>
-  <select id="sampleSelect"></select>
-  <button id="copyBtn">📋 复制编码文本</button>
-</div>
+  <div class="toolbar">
+    <label for="sampleSelect">示例代码：</label>
+    <select id="sampleSelect"></select>
+    <button id="copyBtn">📋 复制编码文本</button>
+  </div>
 
-<div class="panes">
-  <div class="pane">
-    <div class="pane-header">
-      <span>紧凑编码文本</span>
-      <span class="stats" id="encStats"></span>
+  <div class="panes">
+    <div class="pane">
+      <div class="pane-header">
+        <span>紧凑编码文本</span>
+        <span class="stats" id="encStats"></span>
+      </div>
+      <div class="pane-body">
+        <textarea id="encInput" spellcheck="false" style="word-break: break-all;"></textarea>
+      </div>
     </div>
-    <div class="pane-body">
-      <textarea id="encInput" spellcheck="false" wrap="off"></textarea>
+    <div class="pane">
+      <div class="pane-header">
+        <span>渲染输出</span>
+        <span class="stats" id="decStats"></span>
+      </div>
+      <div class="pane-body">
+        <pre class="code-output" id="output"><code></code></pre>
+      </div>
     </div>
   </div>
-  <div class="pane">
-    <div class="pane-header">
-      <span>渲染输出</span>
-      <span class="stats" id="decStats"></span>
-    </div>
-    <div class="pane-body">
-      <pre class="code-output" id="output"><code></code></pre>
-    </div>
+
+  <div class="about-format" id="about">
+    <strong>格式说明</strong>
+    <p style="margin-top:6px">
+      编码单元结构：<code>[长度(可选)][类型符/控制符][内容(仅普通Token)]</code>
+    </p>
+    <table>
+      <tr>
+        <th>类别</th>
+        <th>符</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>关键字</td>
+        <td><code>k</code></td>
+        <td><code>pub fn let impl match ...</code></td>
+      </tr>
+      <tr>
+        <td>类型</td>
+        <td><code>t</code></td>
+        <td><code>String Option u32 Self</code></td>
+      </tr>
+      <tr>
+        <td>函数</td>
+        <td><code>f</code></td>
+        <td><code>main new into</code></td>
+      </tr>
+      <tr>
+        <td>变量</td>
+        <td><code>v</code></td>
+        <td>普通标识符</td>
+      </tr>
+      <tr>
+        <td>宏</td>
+        <td><code>m</code></td>
+        <td><code>println! vec!</code></td>
+      </tr>
+      <tr>
+        <td>字符串</td>
+        <td><code>s</code></td>
+        <td><code>"hello"</code></td>
+      </tr>
+      <tr>
+        <td>数字</td>
+        <td><code>n</code></td>
+        <td><code>42 0x1A 1.5</code></td>
+      </tr>
+      <tr>
+        <td>注释</td>
+        <td><code>c</code></td>
+        <td><code>// ...</code></td>
+      </tr>
+      <tr>
+        <td>生命周期</td>
+        <td><code>l</code></td>
+        <td><code>'a 'static</code></td>
+      </tr>
+      <tr>
+        <td>操作符</td>
+        <td><code>o</code></td>
+        <td><code>+ -> => &</code></td>
+      </tr>
+      <tr>
+        <td>标点</td>
+        <td><code>p</code></td>
+        <td><code>() {} [] ; , :</code></td>
+      </tr>
+      <tr>
+        <td>属性</td>
+        <td><code>a</code></td>
+        <td><code>#[derive(...)]</code></td>
+      </tr>
+      <tr>
+        <td colspan="3"></td>
+      </tr>
+      <tr>
+        <td>空格</td>
+        <td><code>+</code></td>
+        <td>连续空格（控制符，无内容段）</td>
+      </tr>
+      <tr>
+        <td>换行</td>
+        <td><code>$</code></td>
+        <td>连续换行（控制符，无内容段）</td>
+      </tr>
+    </table>
   </div>
-</div>
 
-<div class="about-format" id="about">
-  <strong>格式说明</strong>
-  <p style="margin-top:6px">
-    编码单元结构：<code>[长度(可选)][类型符/控制符][内容(仅普通Token)]</code>
-  </p>
-  <table>
-    <tr><th>类别</th><th>符</th><th>说明</th></tr>
-    <tr><td>关键字</td><td><code>k</code></td><td><code>pub fn let impl match ...</code></td></tr>
-    <tr><td>类型</td><td><code>t</code></td><td><code>String Option u32 Self</code></td></tr>
-    <tr><td>函数</td><td><code>f</code></td><td><code>main new into</code></td></tr>
-    <tr><td>变量</td><td><code>v</code></td><td>普通标识符</td></tr>
-    <tr><td>宏</td><td><code>m</code></td><td><code>println! vec!</code></td></tr>
-    <tr><td>字符串</td><td><code>s</code></td><td><code>"hello"</code></td></tr>
-    <tr><td>数字</td><td><code>n</code></td><td><code>42 0x1A 1.5</code></td></tr>
-    <tr><td>注释</td><td><code>c</code></td><td><code>// ...</code></td></tr>
-    <tr><td>生命周期</td><td><code>l</code></td><td><code>'a 'static</code></td></tr>
-    <tr><td>操作符</td><td><code>o</code></td><td><code>+ -> => &</code></td></tr>
-    <tr><td>标点</td><td><code>p</code></td><td><code>() {} [] ; , :</code></td></tr>
-    <tr><td>属性</td><td><code>a</code></td><td><code>#[derive(...)]</code></td></tr>
-    <tr><td colspan="3"></td></tr>
-    <tr><td>空格</td><td><code>+</code></td><td>连续空格（控制符，无内容段）</td></tr>
-    <tr><td>换行</td><td><code>$</code></td><td>连续换行（控制符，无内容段）</td></tr>
-  </table>
-</div>
+  <script>
+    // ─── 解码器 ───────────────────────────────────────────────────────────────
+    function decodeCompact(encoded) {
+      const tokens = [];
+      let i = 0;
+      while (i < encoded.length) {
+        let count = 0, hasDigit = false;
+        while (i < encoded.length && encoded[i] >= '0' && encoded[i] <= '9') {
+          count = count * 10 + (encoded.charCodeAt(i) - 48);
+          i++;
+          hasDigit = true;
+        }
+        if (!hasDigit) count = 1;
+        if (i >= encoded.length) break;
 
-<script>
-// ─── 解码器 ───────────────────────────────────────────────────────────────
-function decodeCompact(encoded) {
-  const tokens = [];
-  let i = 0;
-  while (i < encoded.length) {
-    let count = 0, hasDigit = false;
-    while (i < encoded.length && encoded[i] >= '0' && encoded[i] <= '9') {
-      count = count * 10 + (encoded.charCodeAt(i) - 48);
-      i++;
-      hasDigit = true;
-    }
-    if (!hasDigit) count = 1;
-    if (i >= encoded.length) break;
-
-    const kindChar = encoded[i++];
-    if (kindChar === '+') {
-      tokens.push({ text: ' '.repeat(count), kind: '+' });
-      continue;
-    }
-    if (kindChar === '$') {
-      tokens.push({ text: '\n'.repeat(count), kind: '$' });
-      continue;
-    }
-    // styled token
-    let text = '';
-    let remaining = count;
-    while (remaining > 0 && i < encoded.length) {
-      const cp = encoded.codePointAt(i);
-      const uc = cp > 0xFFFF ? 2 : 1;
-      if (uc <= remaining) {
-        text += String.fromCodePoint(cp);
-        remaining -= uc;
-        i += cp > 0xFFFF ? 2 : 1;
-      } else break;
-    }
-    tokens.push({ text, kind: kindChar });
-  }
-  return tokens;
-}
-
-// ─── 渲染器 ───────────────────────────────────────────────────────────────
-function renderTokens(tokens) {
-  if (tokens.length === 0) return '<span class="hl-line" data-line="1"></span>';
-  let html = '';
-  let lineNum = 1;
-  for (const t of tokens) {
-    if (t.kind === '$') {
-      for (let j = 0; j < t.text.length; j++) {
-        html += '</span>\n<span class="hl-line" data-line="' + (++lineNum) + '">';
+        const kindChar = encoded[i++];
+        if (kindChar === '+') {
+          tokens.push({ text: ' '.repeat(count), kind: '+' });
+          continue;
+        }
+        if (kindChar === '$') {
+          tokens.push({ text: '\n'.repeat(count), kind: '$' });
+          continue;
+        }
+        // styled token
+        let text = '';
+        let remaining = count;
+        while (remaining > 0 && i < encoded.length) {
+          const cp = encoded.codePointAt(i);
+          const uc = cp > 0xFFFF ? 2 : 1;
+          if (uc <= remaining) {
+            text += String.fromCodePoint(cp);
+            remaining -= uc;
+            i += cp > 0xFFFF ? 2 : 1;
+          } else break;
+        }
+        tokens.push({ text, kind: kindChar });
       }
-    } else if (t.kind === '+') {
-      html += t.text;
-    } else {
-      const escaped = t.text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-      html += '<span class="hl-' + t.kind + '">' + escaped + '</span>';
+      return tokens;
     }
-  }
-  return '<span class="hl-line" data-line="1">' + html + '</span>';
-}
 
-// ─── 颜色图例 ─────────────────────────────────────────────────────────────
-const kindNames = {
-  k: '关键字', t: '类型', f: '函数', v: '变量',
-  s: '字符串', n: '数字', c: '注释', l: '生命周期',
-  o: '操作符', p: '标点', a: '属性', m: '宏',
-};
-const legendEl = document.getElementById('legend');
-for (const [ch, name] of Object.entries(kindNames)) {
-  const span = document.createElement('span');
-  const swatch = document.createElement('span');
-  swatch.className = 'swatch';
-  swatch.style.background = 'var(--hl-' +
-    ({ k: 'keyword', t: 'type', f: 'function', v: 'variable',
-       s: 'string', n: 'number', c: 'comment', l: 'lifetime',
-       o: 'operator', p: 'punctuation', a: 'attribute', m: 'macro' }[ch]) + ')';
-  span.appendChild(swatch);
-  span.appendChild(document.createTextNode(ch + ' ' + name));
-  legendEl.appendChild(span);
-}
+    // ─── 渲染器 ───────────────────────────────────────────────────────────────
+    function renderTokens(tokens) {
+      if (tokens.length === 0) return '<span class="hl-line" data-line="1"></span>';
+      let html = '';
+      let lineNum = 1;
+      for (const t of tokens) {
+        if (t.kind === '$') {
+          for (let j = 0; j < t.text.length; j++) {
+            html += '</span>\n<span class="hl-line" data-line="' + (++lineNum) + '">';
+          }
+        } else if (t.kind === '+') {
+          html += t.text;
+        } else {
+          const escaped = t.text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+          html += '<span class="hl-' + t.kind + '">' + escaped + '</span>';
+        }
+      }
+      return '<span class="hl-line" data-line="1">' + html + '</span>';
+    }
 
-// ─── 示例数据 ─────────────────────────────────────────────────────────────
-const SAMPLES = [
-  {
-    name: "Simple Function",
-    encoded: "3kpub+2kfn+4vmainp(p)+p{$4+3klet+vx+o=+2n42p;$p}$"
-  },
-  {
-    name: "Hello World",
-    encoded: "2kfn+4vmainp(p)+p{$4+7vprintlno!p(13s\"hello world\"p)p;$p}$"
-  },
-  {
-    name: "Struct + Impl",
-    encoded: "p#p[6vderivep(5tDebugp)p]$3kpub+6kstruct+3tFooo<tTo>+p{$4+vxp:+3vi32p,$4+vyp:+tTp,$p}2$4kimplo<tTo>+3tFooo<tTo>+p{$4+3kpub+2kfn+3vnewp(vxp:+3vi32p,+vyp:+tTp)+2o->+4kSelf+p{$8+4kSelf+p{+vxp,+vy+p}$4+p}$p}$"
-  },
-  {
-    name: "Enum + Match",
-    encoded: "3kpub+4kenum+5tColor+p{$4+3tRgbp(2vu8p,+2vu8p,+2vu8p)p,$4+3tHsv+p{+vhp:+3vf64p,+vsp:+3vf64p,+vvp:+3vf64+p}p,$p}2$3kpub+2kfn+8vdescribep(vcp:+5tColorp)+2o->+6tString+p{$4+5kmatch+vc+p{$8+5tColor2o::3tRgbp(vrp,+vgp,+vbp)+2o=>+p{$12+6vformato!p(17s\"rgb({}, {}, {})\"p,+vrp,+vgp,+vbp)$8+p}$8+5tColor2o::3tHsv+p{+vhp,+vsp,+vv+p}+2o=>+p{$12+6vformato!p(17s\"hsv({}, {}, {})\"p,+vhp,+vsp,+vvp)$8+p}$4+p}$p}$"
-  },
-  {
-    name: "Trait + Generics",
-    encoded: "3kpub+5ktrait+4tIntoo<tTo>+p{$4+2kfn+4vintop(4kselfp)+2o->+tTp;$p}2$3kpub+2kfn+7vconverto<tIp,+tTo>p(5vinputp:+tIp)+2o->+tT$5kwhere$4+tIp:+4tIntoo<tTo>p,$p{$4+5vinputp.4vintop(p)$p}$"
-  },
-  {
-    name: "Lifetimes + Unsafe",
-    encoded: "3kpub+6kunsafe+5ktrait+4tSend+p{p}2$3kpub+2kfn+7vlongesto<2l'ao>p(vxp:+o&2l'a+3vstrp,+vyp:+o&2l'a+3vstrp)+2o->+o&2l'a+3vstr+p{$4+2kif+vxp.3vlenp(p)+o>+vyp.3vlenp(p)+p{+vx+p}+4kelse+p{+vy+p}$p}2$42c// Safety: caller must ensure ptr is valid$3kpub+6kunsafe+2kfn+4vreadp(3vptrp:+o*5kconst+2vu8p)+2o->+2vu8+p{$4+o*3vptr$p}$"
-  }
-];
+    // ─── 颜色图例 ─────────────────────────────────────────────────────────────
+    const kindNames = {
+      k: '关键字', t: '类型', f: '函数', v: '变量',
+      s: '字符串', n: '数字', c: '注释', l: '生命周期',
+      o: '操作符', p: '标点', a: '属性', m: '宏',
+    };
+    const legendEl = document.getElementById('legend');
+    for (const [ch, name] of Object.entries(kindNames)) {
+      const span = document.createElement('span');
+      const swatch = document.createElement('span');
+      swatch.className = 'swatch';
+      swatch.style.background = 'var(--hl-' +
+        ({
+          k: 'keyword', t: 'type', f: 'function', v: 'variable',
+          s: 'string', n: 'number', c: 'comment', l: 'lifetime',
+          o: 'operator', p: 'punctuation', a: 'attribute', m: 'macro'
+        }[ch]) + ')';
+      span.appendChild(swatch);
+      span.appendChild(document.createTextNode(ch + ' ' + name));
+      legendEl.appendChild(span);
+    }
 
-// ─── 交互 ──────────────────────────────────────────────────────────────────
-const select = document.getElementById('sampleSelect');
-const input = document.getElementById('encInput');
-const output = document.getElementById('output');
-const encStats = document.getElementById('encStats');
-const decStats = document.getElementById('decStats');
-const copyBtn = document.getElementById('copyBtn');
+    // ─── 示例数据 ─────────────────────────────────────────────────────────────
+    const SAMPLES = [
+      {
+        name: "Simple Function",
+        encoded: "3kpub+2kfn+4vmainp(p)+p{$4+3klet+vx+o=+2n42p;$p}$"
+      },
+      {
+        name: "Hello World",
+        encoded: "2kfn+4vmainp(p)+p{$4+7vprintlno!p(13s\"hello world\"p)p;$p}$"
+      },
+      {
+        name: "Struct + Impl",
+        encoded: "p#p[6vderivep(5tDebugp)p]$3kpub+6kstruct+3tFooo<tTo>+p{$4+vxp:+3vi32p,$4+vyp:+tTp,$p}2$4kimplo<tTo>+3tFooo<tTo>+p{$4+3kpub+2kfn+3vnewp(vxp:+3vi32p,+vyp:+tTp)+2o->+4kSelf+p{$8+4kSelf+p{+vxp,+vy+p}$4+p}$p}$"
+      },
+      {
+        name: "Enum + Match",
+        encoded: "3kpub+4kenum+5tColor+p{$4+3tRgbp(2vu8p,+2vu8p,+2vu8p)p,$4+3tHsv+p{+vhp:+3vf64p,+vsp:+3vf64p,+vvp:+3vf64+p}p,$p}2$3kpub+2kfn+8vdescribep(vcp:+5tColorp)+2o->+6tString+p{$4+5kmatch+vc+p{$8+5tColor2o::3tRgbp(vrp,+vgp,+vbp)+2o=>+p{$12+6vformato!p(17s\"rgb({}, {}, {})\"p,+vrp,+vgp,+vbp)$8+p}$8+5tColor2o::3tHsv+p{+vhp,+vsp,+vv+p}+2o=>+p{$12+6vformato!p(17s\"hsv({}, {}, {})\"p,+vhp,+vsp,+vvp)$8+p}$4+p}$p}$"
+      },
+      {
+        name: "Trait + Generics",
+        encoded: "3kpub+5ktrait+4tIntoo<tTo>+p{$4+2kfn+4vintop(4kselfp)+2o->+tTp;$p}2$3kpub+2kfn+7vconverto<tIp,+tTo>p(5vinputp:+tIp)+2o->+tT$5kwhere$4+tIp:+4tIntoo<tTo>p,$p{$4+5vinputp.4vintop(p)$p}$"
+      },
+      {
+        name: "Lifetimes + Unsafe",
+        encoded: "3kpub+6kunsafe+5ktrait+4tSend+p{p}2$3kpub+2kfn+7vlongesto<2l'ao>p(vxp:+o&2l'a+3vstrp,+vyp:+o&2l'a+3vstrp)+2o->+o&2l'a+3vstr+p{$4+2kif+vxp.3vlenp(p)+o>+vyp.3vlenp(p)+p{+vx+p}+4kelse+p{+vy+p}$p}2$42c// Safety: caller must ensure ptr is valid$3kpub+6kunsafe+2kfn+4vreadp(3vptrp:+o*5kconst+2vu8p)+2o->+2vu8+p{$4+o*3vptr$p}$"
+      }
+    ];
 
-SAMPLES.forEach((s, i) => {
-  const opt = document.createElement('option');
-  opt.value = i;
-  opt.textContent = s.name;
-  select.appendChild(opt);
-});
+    // ─── 交互 ──────────────────────────────────────────────────────────────────
+    const select = document.getElementById('sampleSelect');
+    const input = document.getElementById('encInput');
+    const output = document.getElementById('output');
+    const encStats = document.getElementById('encStats');
+    const decStats = document.getElementById('decStats');
+    const copyBtn = document.getElementById('copyBtn');
 
-function render() {
-  const raw = input.value;
-  const tokens = decodeCompact(raw);
-  output.querySelector('code').innerHTML = renderTokens(tokens);
+    SAMPLES.forEach((s, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = s.name;
+      select.appendChild(opt);
+    });
 
-  const rawLen = raw.length;
-  const tokCount = tokens.length;
-  const codeText = tokens.map(t => t.kind === '$' ? '\n' : t.kind === '+' ? ' '.repeat(t.text.length) : t.text).join('');
-  encStats.textContent = rawLen + ' chars, ' + tokCount + ' tokens';
-  decStats.textContent = codeText.length + ' code chars';
-}
+    function render() {
+      const raw = input.value;
+      const tokens = decodeCompact(raw);
+      output.querySelector('code').innerHTML = renderTokens(tokens);
 
-function loadSample(idx) {
-  input.value = SAMPLES[idx].encoded;
-  render();
-}
+      const rawLen = raw.length;
+      const tokCount = tokens.length;
+      const codeText = tokens.map(t => t.kind === '$' ? '\n' : t.kind === '+' ? ' '.repeat(t.text.length) : t.text).join('');
+      encStats.textContent = rawLen + ' chars, ' + tokCount + ' tokens';
+      decStats.textContent = codeText.length + ' code chars';
+    }
 
-select.addEventListener('change', () => loadSample(+select.value));
-input.addEventListener('input', render);
+    function loadSample(idx) {
+      input.value = SAMPLES[idx].encoded;
+      render();
+    }
 
-copyBtn.addEventListener('click', () => {
-  navigator.clipboard.writeText(input.value).then(() => {
-    copyBtn.textContent = '✅ 已复制';
-    setTimeout(() => { copyBtn.textContent = '📋 复制编码文本'; }, 1500);
-  });
-});
+    select.addEventListener('change', () => loadSample(+select.value));
+    input.addEventListener('input', render);
 
-// 初始加载
-loadSample(0);
-</script>
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(input.value).then(() => {
+        copyBtn.textContent = '✅ 已复制';
+        setTimeout(() => { copyBtn.textContent = '📋 复制编码文本'; }, 1500);
+      });
+    });
+
+    // 初始加载
+    loadSample(0);
+  </script>
 </body>
+
 </html>
