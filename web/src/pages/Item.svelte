@@ -1,17 +1,16 @@
 <script lang="ts">
   import type { ItemDoc } from "../types";
-  import { renderMarkdown } from "../lib/markdown";
   import { formatCfg } from "../lib/cfg";
   import { splitDisplayPath } from "../lib/path";
   import { l10nDerive } from "../l10n";
   import ImplBlock from "../components/detail/ImplBlock.svelte";
   import SourceItem from "../components/detail/SourceItem.svelte";
+  import DocBody from "../components/detail/DocBody.svelte";
   import { selectedItem as selectedItemStore } from "../lib/derived";
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: selectedItem = $selectedItemStore;
 
-  $: renderedDocs = renderMarkdown(selectedItem?.docs || l10n("nodoc"));
   $: impls = selectedItem?.impls ?? [];
 </script>
 
@@ -33,7 +32,7 @@
     </div>
   </div>
   <div class="detail-body">
-    <div class="markdown-body doc">{@html renderedDocs}</div>
+    <DocBody source={selectedItem?.docs} />
     <SourceItem source_code={selectedItem?.source_code ?? ""} source={selectedItem?.source} />
     {#if impls.length > 0}
       <section class="impls-section">

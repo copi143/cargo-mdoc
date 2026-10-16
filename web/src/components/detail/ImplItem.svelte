@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { CfgExpr, ImplItemDoc } from "../../types";
-  import { renderMarkdown } from "../../lib/markdown";
   import { l10nDerive } from "../../l10n";
   import SourceItem from "./SourceItem.svelte";
+  import DocBody from "./DocBody.svelte";
 
   export let item: ImplItemDoc;
   export let formatCfg: (cfg?: CfgExpr | null) => string = () => "";
@@ -23,8 +23,6 @@
       </span>
     {/if}
   </div>
-  <div class="markdown-body doc impl-item-doc">
-    {@html renderMarkdown(item.docs || l10n("nodoc"))}
-  </div>
+  <DocBody source={item.docs} className="impl-item-doc" />
   <SourceItem source_code={item.source_code} source={item.source} />
 </div>

@@ -1,7 +1,3 @@
-[nodoc]
-en-us = "No docs provided."
-zh-cn = "未提供文档"
-
 [cfg_label]
 en-us = "cfg"
 zh-cn = "cfg"
