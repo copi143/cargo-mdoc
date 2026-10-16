@@ -14,10 +14,6 @@ zh-cn = "实现 ({n})"
 en-us = "Methods & Associated Items"
 zh-cn = "方法与关联项"
 
-[source]
-en-us = "Source"
-zh-cn = "源码"
-
 [unknown_file]
 en-us = "Unknown file"
 zh-cn = "未知文件"

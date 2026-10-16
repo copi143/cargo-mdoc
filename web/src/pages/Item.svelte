@@ -40,6 +40,25 @@
   </div>
   <div class="detail-body">
     <div class="markdown-body doc">{@html renderedDocs}</div>
+    <div class="source-item">
+      <div class="source-header">
+        <span>
+          <span>{selectedItem.source?.file ?? l10n("unknown_file")}</span>
+          <span>
+            {#if selectedItem.source}
+              {selectedItem.source.line_start}
+              {#if selectedItem.source.line_end !== selectedItem.source.line_start}
+                - {selectedItem.source.line_end}
+              {/if}
+            {/if}
+          </span>
+        </span>
+        <CopyButton text={selectedItem?.source_code ?? ""} />
+      </div>
+      <pre class="source-code"><code class="hljs language-rust"
+          >{@html renderedSource}</code
+        ></pre>
+    </div>
     {#if impls.length > 0}
       <section class="impls-section">
         <h3>{l10n("impl_blocks", { n: impls.length })}</h3>
@@ -48,26 +67,6 @@
         {/each}
       </section>
     {/if}
-    <h3>{l10n("source")}</h3>
-    <div class="source-card">
-      <div class="source-item">
-        <div class="source-header">
-          <span class="source-header-left">
-            <span>{selectedItem.source?.file ?? l10n("unknown_file")}</span>
-            <span>
-              {#if selectedItem.source}
-                {selectedItem.source.line_start}
-                {#if selectedItem.source.line_end !== selectedItem.source.line_start}
-                  - {selectedItem.source.line_end}
-                {/if}
-              {/if}
-            </span>
-          </span>
-          <CopyButton text={selectedItem?.source_code ?? ""} />
-        </div>
-        <pre class="source-code"><code class="hljs language-rust">{@html renderedSource}</code></pre>
-      </div>
-    </div>
   </div>
 {:else}
   <div class="empty detail-empty">
