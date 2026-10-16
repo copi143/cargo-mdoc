@@ -6,12 +6,13 @@ use std::path::Path;
 
 use crate::cfg_expr::{and_cfg, parse_cfg_from_node};
 use crate::model::{
-    CfgExpr, Diagnostic, DiagnosticLevel, ImplDoc, ImplItemDoc, ItemDoc, ItemKind, SourceLocation,
-    Visibility,
+    CfgExpr, Deprecation, Diagnostic, DiagnosticLevel, ImplDoc, ImplItemDoc, ItemDoc, ItemKind,
+    SourceLocation, Visibility,
 };
 use crate::util::{
-    collect_attrs, extract_docs, join_path, module_path_string, resolve_module_file,
-    source_location, source_snippet, type_path_from_ast_type, visibility_from_ast,
+    build_signature, collect_attrs, extract_deprecated, extract_docs, extract_export_name,
+    join_path, module_path_string, resolve_module_file, source_location, source_snippet,
+    type_path_from_ast_type, visibility_from_ast,
 };
 
 pub struct RaCollector {
@@ -242,6 +243,9 @@ impl RaCollector {
             .unwrap_or_else(|| "<anonymous>".into());
 
         let attrs = collect_attrs(func.syntax());
+        let deprecated = extract_deprecated(&attrs);
+        let signature = build_signature(func.syntax(), &ItemKind::Function);
+        let export_name = extract_export_name(&attrs, &name);
         let cfg = and_cfg(inherited_cfg, parse_cfg_from_node(func.syntax()));
         let docs = extract_docs(&func);
 
@@ -256,6 +260,9 @@ impl RaCollector {
             source_location(workspace_root, current_file, source, func.syntax()),
             source_snippet(func.syntax()),
             Some(attrs),
+            signature,
+            deprecated,
+            export_name,
         );
 
         Ok(())
@@ -277,6 +284,9 @@ impl RaCollector {
             .unwrap_or_else(|| "<anonymous>".into());
 
         let attrs = collect_attrs(st.syntax());
+        let deprecated = extract_deprecated(&attrs);
+        let signature = build_signature(st.syntax(), &ItemKind::Struct);
+        let export_name = extract_export_name(&attrs, &name);
 
         self.push_item(
             package_id,
@@ -289,6 +299,9 @@ impl RaCollector {
             source_location(workspace_root, current_file, source, st.syntax()),
             source_snippet(st.syntax()),
             Some(attrs),
+            signature,
+            deprecated,
+            export_name,
         );
 
         Ok(())
@@ -310,6 +323,9 @@ impl RaCollector {
             .unwrap_or_else(|| "<anonymous>".into());
 
         let attrs = collect_attrs(en.syntax());
+        let deprecated = extract_deprecated(&attrs);
+        let signature = build_signature(en.syntax(), &ItemKind::Enum);
+        let export_name = extract_export_name(&attrs, &name);
 
         self.push_item(
             package_id,
@@ -322,6 +338,9 @@ impl RaCollector {
             source_location(workspace_root, current_file, source, en.syntax()),
             source_snippet(en.syntax()),
             Some(attrs),
+            signature,
+            deprecated,
+            export_name,
         );
 
         Ok(())
@@ -343,6 +362,9 @@ impl RaCollector {
             .unwrap_or_else(|| "<anonymous>".into());
 
         let attrs = collect_attrs(tr.syntax());
+        let deprecated = extract_deprecated(&attrs);
+        let signature = build_signature(tr.syntax(), &ItemKind::Trait);
+        let export_name = extract_export_name(&attrs, &name);
 
         self.push_item(
             package_id,
@@ -355,6 +377,9 @@ impl RaCollector {
             source_location(workspace_root, current_file, source, tr.syntax()),
             source_snippet(tr.syntax()),
             Some(attrs),
+            signature,
+            deprecated,
+            export_name,
         );
 
         Ok(())
@@ -377,6 +402,7 @@ impl RaCollector {
             .unwrap_or_else(|| "<anonymous>".into());
 
         let attrs = collect_attrs(module.syntax());
+        let deprecated = extract_deprecated(&attrs);
         let cfg = and_cfg(inherited_cfg.clone(), parse_cfg_from_node(module.syntax()));
 
         self.push_item(
@@ -390,6 +416,9 @@ impl RaCollector {
             source_location(workspace_root, current_file, source, module.syntax()),
             source_snippet(module.syntax()),
             Some(attrs.clone()),
+            None,
+            deprecated,
+            None,
         );
 
         mod_path.push(name.clone());
@@ -455,6 +484,10 @@ impl RaCollector {
                             .map(|n| n.text().to_string())
                             .unwrap_or_else(|| "<anonymous>".into());
 
+                        let attrs = collect_attrs(func.syntax());
+                        let deprecated = extract_deprecated(&attrs);
+                        let signature = build_signature(func.syntax(), &ItemKind::Function);
+                        let export_name = extract_export_name(&attrs, &name);
                         let item_cfg = and_cfg(cfg.clone(), parse_cfg_from_node(func.syntax()));
                         let docs = extract_docs(&func);
 
@@ -471,6 +504,9 @@ impl RaCollector {
                                 func.syntax(),
                             ),
                             source_code: source_snippet(func.syntax()),
+                            signature,
+                            deprecated,
+                            export_name,
                         });
                     }
                     _ => {}
@@ -531,6 +567,9 @@ impl RaCollector {
         source: SourceLocation,
         source_code: String,
         attributes: Option<Vec<String>>,
+        signature: Option<String>,
+        deprecated: Option<Deprecation>,
+        export_name: Option<String>,
     ) {
         let path = join_path(mod_path, &name);
         let module_path = module_path_string(mod_path);
@@ -550,9 +589,10 @@ impl RaCollector {
             cfg,
             source,
             source_code,
-            signature: None,
+            signature,
             attributes,
-            deprecated: None,
+            deprecated,
+            export_name,
             impls: Vec::new(),
         });
     }

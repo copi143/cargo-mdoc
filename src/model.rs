@@ -222,12 +222,13 @@ pub struct ItemDoc {
     pub cfg: CfgExpr,
     pub source: SourceLocation,
     pub source_code: String,
-    // signature and deprecated are reserved for future enhancement;
-    // signature would capture function type signatures from AST,
-    // deprecated would parse #[deprecated(...)] attributes
+    // signature captures function/item type signatures from AST,
+    // deprecated parses #[deprecated(...)] attributes,
+    // export_name is the binary symbol export name from #[export_name] / #[no_mangle].
     pub signature: Option<String>,
     pub attributes: Option<Vec<String>>,
     pub deprecated: Option<Deprecation>,
+    pub export_name: Option<String>,
     pub impls: Vec<ImplDoc>,
 }
 
@@ -260,6 +261,9 @@ pub struct ImplItemDoc {
     pub cfg: CfgExpr,
     pub source: SourceLocation,
     pub source_code: String,
+    pub signature: Option<String>,
+    pub deprecated: Option<Deprecation>,
+    pub export_name: Option<String>,
 }
 
 // An impl block associated with a type
