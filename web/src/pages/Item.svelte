@@ -20,22 +20,18 @@
 {#if selectedItem}
   {@const displayPath = splitDisplayPath(selectedItem.path)}
   <div class="detail-header">
-    <div class="left">
-      <p class={`kicker kind-badge kind-${selectedItem.kind.toLowerCase()}`}>
-        {l10n(":kind_" + selectedItem.kind.toLowerCase())}
-      </p>
-      <h2 class="detail-title">
-        {#if displayPath.namespace}
-          <span class="detail-title-namespace">{displayPath.namespace}</span>
-        {/if}
-        <span class="detail-title-name">{displayPath.name}</span>
-      </h2>
-    </div>
-    <div class="right">
-      <div class="cfg">
-        <span class="cfg-label">{l10n("cfg_label")}</span>
-        <code>{formatCfg(selectedItem.cfg)}</code>
-      </div>
+    <p class={`kicker kind-badge kind-${selectedItem.kind.toLowerCase()}`}>
+      {l10n(":kind_" + selectedItem.kind.toLowerCase())}
+    </p>
+    <h2 class="detail-title">
+      {#if displayPath.namespace}
+        <span class="detail-title-namespace">{displayPath.namespace}</span>
+      {/if}
+      <span class="detail-title-name">{displayPath.name}</span>
+    </h2>
+    <div class="cfg">
+      <span class="cfg-label">{l10n("cfg_label")}</span>
+      <code>{formatCfg(selectedItem.cfg)}</code>
     </div>
   </div>
   <div class="detail-body">

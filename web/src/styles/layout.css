@@ -181,21 +181,27 @@
   &.detail {
     flex: 1;
 
-    > .detail-header {
+    & > .detail-header {
       display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
+      gap: 12px;
       align-items: center;
-      justify-content: space-between;
 
-      > .left,
-      > .right {
+      & > .detail-title {
         display: inline-flex;
-        gap: 4px;
+        flex: 1;
+        align-items: baseline;
+
+        & > .detail-title-namespace {
+          font-weight: 400;
+        }
+
+        & > .detail-title-name {
+          font-weight: 700;
+        }
       }
     }
 
-    > .detail-body {
+    & > .detail-body {
       display: flex;
       flex-direction: column;
       gap: 12px;

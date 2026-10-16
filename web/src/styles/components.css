@@ -973,20 +973,6 @@
   overflow: auto;
 }
 
-.detail-title {
-  display: inline-flex;
-  gap: 0;
-  align-items: baseline;
-
-  > .detail-title-namespace {
-    font-weight: 400;
-  }
-
-  > .detail-title-name {
-    font-weight: 700;
-  }
-}
-
 .impls-section {
   display: flex;
   flex-direction: column;
