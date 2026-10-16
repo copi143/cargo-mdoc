@@ -6,66 +6,44 @@ pub use decode::decode_from_compact;
 pub use encode::encode_to_compact;
 pub use extract::{extract_tokens, extract_tokens_from_source};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum HighlightKind {
-    Keyword,
-    Type,
-    Function,
-    Variable,
-    StringLit,
-    Number,
-    Comment,
-    Lifetime,
-    Operator,
-    Punctuation,
-    Attribute,
-    Macro,
-    Default,
-    Space,
-    Newline,
+macro_rules! highlight_kind {
+    ($($name:ident = $char:expr),+ $(,)?) => {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        pub enum HighlightKind {
+            $($name),+
+        }
+        impl HighlightKind {
+            pub fn to_char(self) -> char {
+                match self {
+                    $(Self::$name => $char),+
+                }
+            }
+            pub fn from_char(c: char) -> Option<Self> {
+                match c {
+                    $($char => Some(Self::$name)),+,
+                    _ => None,
+                }
+            }
+        }
+    };
 }
 
-impl HighlightKind {
-    pub fn to_char(self) -> char {
-        match self {
-            Self::Keyword => 'k',
-            Self::Type => 't',
-            Self::Function => 'f',
-            Self::Variable => 'v',
-            Self::Macro => 'm',
-            Self::StringLit => 's',
-            Self::Number => 'n',
-            Self::Comment => 'c',
-            Self::Lifetime => 'l',
-            Self::Operator => 'o',
-            Self::Punctuation => 'p',
-            Self::Attribute => 'a',
-            Self::Default => '_',
-            Self::Space => '+',
-            Self::Newline => '$',
-        }
-    }
-
-    pub fn from_char(c: char) -> Option<Self> {
-        match c {
-            'k' => Some(Self::Keyword),
-            't' => Some(Self::Type),
-            'f' => Some(Self::Function),
-            'v' => Some(Self::Variable),
-            'm' => Some(Self::Macro),
-            's' => Some(Self::StringLit),
-            'n' => Some(Self::Number),
-            'c' => Some(Self::Comment),
-            'l' => Some(Self::Lifetime),
-            'o' => Some(Self::Operator),
-            'p' => Some(Self::Punctuation),
-            'a' => Some(Self::Attribute),
-            '_' => Some(Self::Default),
-            '+' => Some(Self::Space),
-            '$' => Some(Self::Newline),
-            _ => None,
-        }
-    }
+highlight_kind! {
+    Keyword = 'k',
+    Type = 't',
+    Function = 'f',
+    Variable = 'v',
+    Macro = 'm',
+    StringLit = 's',
+    Number = 'n',
+    Comment = 'c',
+    Lifetime = 'l',
+    Operator = 'o',
+    Punctuation = 'p',
+    Attribute = 'a',
+    Default = '_',
+    Space = '+',
+    Newline = '$',
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
