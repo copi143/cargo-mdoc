@@ -54,9 +54,7 @@
     } else {
       sliderStyle = "opacity: 0;";
     }
-  };
-
-
+  }
 </script>
 
 <aside class="panel list">
@@ -121,22 +119,20 @@
       on:input={(event) => onQueryChange(event.currentTarget.value)}
       aria-label={l10n("search_aria")}
     />
-    <div>
-      <div class="filters">
-        <div class="filter-slider" style={sliderStyle}></div>
-        {#each kindOptions as option, i}
-          <button
-            bind:this={buttonRefs[i]}
-            class:active={$kindFilterStore === option}
-            on:click={() => onKindChange(option)}
-          >
-            {l10n(":kind_" + option.toLowerCase())}
-            {#if option !== "All"}
-              <span class="count">{$countsStore[option] ?? 0}</span>
-            {/if}
-          </button>
-        {/each}
-      </div>
+    <div class="filters">
+      <div class="filter-slider" style={sliderStyle}></div>
+      {#each kindOptions as option, i}
+        <button
+          bind:this={buttonRefs[i]}
+          class:active={$kindFilterStore === option}
+          on:click={() => onKindChange(option)}
+        >
+          {l10n(":kind_" + option.toLowerCase())}
+          {#if option !== "All"}
+            <span class="count">{$countsStore[option] ?? 0}</span>
+          {/if}
+        </button>
+      {/each}
     </div>
   </div>
 

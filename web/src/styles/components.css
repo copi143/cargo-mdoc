@@ -67,6 +67,7 @@
   position: relative;
   display: inline-flex;
   flex-wrap: nowrap;
+  width: fit-content;
   border: 1px solid var(--line);
 
   & > .filter-slider {
@@ -164,6 +165,7 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  overflow: clip;
 }
 
 .source-line,

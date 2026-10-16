@@ -8,9 +8,15 @@ body {
   height: 100vh;
 }
 
-body {
+body,
+div,
+pre,
+aside,
+main,
+section {
   margin: 0;
-  overflow: hidden;
+  overflow: clip;
+  text-wrap: nowrap;
 }
 
 h1,
@@ -42,7 +48,7 @@ h3 {
   letter-spacing: 0.08em;
 }
 
-code,
-pre {
+pre,
+code {
   font-family: var(--mono);
 }
