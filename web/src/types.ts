@@ -48,6 +48,21 @@ export type ItemDoc = {
   impls?: ImplDoc[];
 };
 
+export type ExternalDocKind =
+  | "readme"
+  | "changelog"
+  | "license"
+  | "contributing"
+  | "code_of_conduct"
+  | "other";
+
+export type ExternalDoc = {
+  path: string;
+  name: string;
+  content?: string | null;
+  kind: ExternalDocKind;
+};
+
 export type PackageDoc = {
   id?: string;
   name: string;
@@ -57,6 +72,7 @@ export type PackageDoc = {
   license?: string;
   readme_path?: string;
   readme?: string;
+  documents?: ExternalDoc[];
   features?: Features;
   is_workspace_member?: boolean;
 };

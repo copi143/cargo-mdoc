@@ -22,7 +22,7 @@ use model::{
     Diagnostic, DiagnosticLevel, GeneratorInfo, InternalDoc, PackageId, PackageSourceKind,
     WorkspaceInfo,
 };
-use util::{package_id_for, rel_path};
+use util::{package_id_for, rel_path, GitIgnoreFilter};
 
 fn main() -> Result<()> {
     let cli = parse_args()?;
@@ -59,6 +59,9 @@ fn main() -> Result<()> {
     let metadata = load_metadata(&manifest_path)?;
     let workspace_root = PathBuf::from(metadata.workspace_root.as_std_path());
     let resolver = workspace_resolver(&workspace_root);
+
+    // Build git ignore filter to skip git-ignored files when reading sources/docs
+    let git_ignore = GitIgnoreFilter::new(&workspace_root);
 
     // Two lookup maps for resolving PackageId:
     //   metadata id   -> PackageId (for resolve graph / workspace members)
@@ -102,6 +105,7 @@ fn main() -> Result<()> {
             &workspace_root,
             package_id,
             is_workspace_member,
+            git_ignore.as_ref(),
         ));
     }
 
@@ -175,7 +179,7 @@ fn main() -> Result<()> {
             continue;
         }
 
-        collector.collect_crate(&workspace_root, &crate_root, &package_id, &package.name)?;
+        collector.collect_crate(&workspace_root, &crate_root, &package_id, &package.name, git_ignore.as_ref())?;
     }
 
     collector.associate_impls();

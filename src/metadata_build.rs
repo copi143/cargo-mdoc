@@ -5,10 +5,10 @@ use std::fs;
 use std::path::Path;
 
 use crate::model::{
-    CfgExpr, DeclaredDependencyEdge, DependencyKindDoc, PackageDoc, PackageId, PackageSource,
-    PackageSourceKind, TargetDoc,
+    CfgExpr, DeclaredDependencyEdge, DependencyKindDoc, ExternalDoc, ExternalDocKind, PackageDoc,
+    PackageId, PackageSource, PackageSourceKind, TargetDoc,
 };
-use crate::util::rel_path;
+use crate::util::{read_file_if_not_ignored, rel_path, GitIgnoreFilter};
 
 pub fn load_metadata(manifest_path: &Path) -> Result<Metadata> {
     MetadataCommand::new()
@@ -74,6 +74,7 @@ pub fn package_doc(
     workspace_root: &Path,
     package_id: PackageId,
     is_workspace_member: bool,
+    git_ignore: Option<&GitIgnoreFilter>,
 ) -> PackageDoc {
     let manifest_path = package.manifest_path.as_std_path();
     let manifest_rel = rel_path(workspace_root, manifest_path);
@@ -101,11 +102,14 @@ pub fn package_doc(
     let readme = if is_local {
         readme_path.as_deref().and_then(|path| {
             let resolved = workspace_root.join(path);
-            fs::read_to_string(&resolved).ok()
+            read_file_if_not_ignored(git_ignore, &resolved)
         })
     } else {
         None
     };
+
+    // Discover external documentation files before root_dir is moved into PackageDoc
+    let documents = collect_external_docs(&root_dir, workspace_root, is_local, git_ignore);
 
     PackageDoc {
         id: package_id,
@@ -130,12 +134,64 @@ pub fn package_doc(
         features: package.features.clone(),
         readme_path,
         readme,
+        documents,
         targets: package
             .targets
             .iter()
             .map(|target| target_doc(target, workspace_root))
             .collect(),
     }
+}
+
+/// Discovers common external documentation files in a crate root directory.
+/// Only reads content for local packages to avoid network access.
+fn collect_external_docs(
+    root_dir_rel: &str,
+    workspace_root: &Path,
+    is_local: bool,
+    git_ignore: Option<&GitIgnoreFilter>,
+) -> Vec<ExternalDoc> {
+    let candidates: Vec<(&str, ExternalDocKind)> = vec![
+        ("README.md", ExternalDocKind::Readme),
+        ("README", ExternalDocKind::Readme),
+        ("README.rst", ExternalDocKind::Readme),
+        ("README.txt", ExternalDocKind::Readme),
+        ("CHANGELOG.md", ExternalDocKind::Changelog),
+        ("CHANGES.md", ExternalDocKind::Changelog),
+        ("HISTORY.md", ExternalDocKind::Changelog),
+        ("LICENSE", ExternalDocKind::License),
+        ("LICENSE.md", ExternalDocKind::License),
+        ("LICENSE.txt", ExternalDocKind::License),
+        ("COPYING", ExternalDocKind::License),
+        ("CONTRIBUTING.md", ExternalDocKind::Contributing),
+        ("CONTRIBUTE.md", ExternalDocKind::Contributing),
+        ("CODE_OF_CONDUCT.md", ExternalDocKind::CodeOfConduct),
+    ];
+
+    let mut docs = Vec::new();
+    for (file_name, kind) in &candidates {
+        let path = workspace_root.join(root_dir_rel).join(file_name);
+        if !path.is_file() {
+            continue;
+        }
+
+        let rel_path = rel_path(workspace_root, &path);
+        let content = if is_local {
+            read_file_if_not_ignored(git_ignore, &path)
+        } else {
+            None
+        };
+
+        docs.push(ExternalDoc {
+            path: rel_path,
+            name: file_name.to_string(),
+            content,
+            kind: kind.clone(),
+        });
+    }
+
+    docs.sort_by(|a, b| a.path.cmp(&b.path));
+    docs
 }
 
 pub fn dependency_kind(kind: DependencyKind) -> DependencyKindDoc {

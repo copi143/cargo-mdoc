@@ -274,6 +274,10 @@
   &.home-readme {
     min-height: 100%;
   }
+
+  &.home-external-docs {
+    min-height: auto;
+  }
 }
 
 .home-graph {
@@ -1130,4 +1134,48 @@
   font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
+}
+
+.external-doc {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0;
+
+  h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+
+  .home-meta {
+    gap: 8px;
+    padding-top: 0;
+    font-size: 0.78rem;
+    border-top: none;
+  }
+
+  .markdown-body {
+    max-height: 240px;
+    margin-top: 6px;
+    overflow: auto;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .markdown-body h1,
+  .markdown-body h2,
+  .markdown-body h3,
+  .markdown-body h4,
+  .markdown-body h5,
+  .markdown-body h6 {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+  }
 }

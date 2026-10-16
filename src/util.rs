@@ -1,6 +1,10 @@
 use crate::model::{Deprecation, ItemKind, PackageId, SourceLocation, Visibility};
+use gix::ignore::Search as IgnoreSearch;
+use gix::objs::bstr::BStr;
+use gix::glob::pattern::Case;
 use ra_ap_syntax::ast::{HasAttrs, HasGenericParams, HasName, HasTypeBounds, HasVisibility};
 use ra_ap_syntax::{AstNode as _, SyntaxKind, SyntaxNode, ast};
+use std::fs;
 use std::path::{Path, PathBuf};
 
 // Collects all direct child ATTR nodes of a syntax node as raw text strings.
@@ -987,4 +991,70 @@ pub fn extract_export_name(attrs: &[String], item_name: &str) -> Option<String> 
             None
         }
     })
+}
+
+/// Filters file reads against git ignore rules.
+///
+/// Loads ignore patterns from the repository's `.gitignore`, `info/exclude`,
+/// and global excludes file, then reports whether a given path is ignored.
+pub struct GitIgnoreFilter {
+    search: IgnoreSearch,
+    workspace_root: PathBuf,
+}
+
+impl GitIgnoreFilter {
+    /// Opens the git repository at or above `workspace_root` and builds an
+    /// ignore searcher from its ignore configuration.
+    pub fn new(workspace_root: &Path) -> Option<Self> {
+        let repo = gix::open(workspace_root).ok()?;
+        let git_dir = repo.path().to_path_buf();
+        let mut buf = Vec::new();
+        let mut search = IgnoreSearch::from_git_dir(
+            &git_dir,
+            None,
+            &mut buf,
+            gix::ignore::search::Ignore { support_precious: false },
+        )
+        .ok()?;
+
+        // Also load .gitignore from the workspace root so working-tree
+        // ignore rules are honored.
+        let gitignore_path = workspace_root.join(".gitignore");
+        if let Ok(bytes) = fs::read(&gitignore_path) {
+            let _ = search.add_patterns_buffer(
+                &bytes,
+                gitignore_path,
+                Some(workspace_root),
+                gix::ignore::search::Ignore { support_precious: false },
+            );
+        }
+
+        Some(Self {
+            search,
+            workspace_root: workspace_root.to_path_buf(),
+        })
+    }
+
+    /// Returns `true` if `path` is ignored by git ignore rules.
+    pub fn is_ignored(&self, path: &Path) -> bool {
+        let rel = path.strip_prefix(&self.workspace_root).unwrap_or(path);
+        let rel_str = rel.to_string_lossy();
+        let bstr = BStr::new(rel_str.as_bytes());
+        self.search
+            .pattern_matching_relative_path(bstr, None, Case::Sensitive)
+            .is_some()
+    }
+}
+
+/// Reads a file's contents, returning `None` if the path is git-ignored.
+pub fn read_file_if_not_ignored(
+    filter: Option<&GitIgnoreFilter>,
+    path: &Path,
+) -> Option<String> {
+    if let Some(f) = filter {
+        if f.is_ignored(path) {
+            return None;
+        }
+    }
+    fs::read_to_string(path).ok()
 }

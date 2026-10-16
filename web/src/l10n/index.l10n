@@ -81,3 +81,27 @@ zh-cn = "没有可用的解析根节点"
 [no_packages_graph]
 en-us = "No resolve graph nodes were exported."
 zh-cn = "未导出解析图节点"
+
+[external_docs]
+en-us = "External Documents"
+zh-cn = "外部文档"
+
+[doc_kind_changelog]
+en-us = "Changelog"
+zh-cn = "变更日志"
+
+[doc_kind_license]
+en-us = "License"
+zh-cn = "许可证"
+
+[doc_kind_contributing]
+en-us = "Contributing"
+zh-cn = "贡献指南"
+
+[doc_kind_code_of_conduct]
+en-us = "Code of Conduct"
+zh-cn = "行为准则"
+
+[doc_kind_other]
+en-us = "Document"
+zh-cn = "文档"

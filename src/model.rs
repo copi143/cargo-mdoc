@@ -115,7 +115,36 @@ pub struct PackageDoc {
     pub features: BTreeMap<String, Vec<String>>,
     pub readme_path: Option<String>,
     pub readme: Option<String>,
+    /// Additional external documentation files discovered in the crate root
+    /// (e.g. CHANGELOG.md, LICENSE, CONTRIBUTING.md) beyond Cargo.toml's
+    /// declared `readme`.
+    pub documents: Vec<ExternalDoc>,
     pub targets: Vec<TargetDoc>,
+}
+
+/// An external documentation file found alongside a crate's source.
+#[derive(Debug, Clone, Serialize)]
+pub struct ExternalDoc {
+    /// Relative path from the workspace root, e.g. "CHANGELOG.md"
+    pub path: String,
+    /// File name, e.g. "CHANGELOG.md"
+    pub name: String,
+    /// File content (omitted for non-local or overly large files)
+    pub content: Option<String>,
+    /// Detected kind hint from file name
+    pub kind: ExternalDocKind,
+}
+
+/// Hint about the role of an external documentation file.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ExternalDocKind {
+    Readme,
+    Changelog,
+    License,
+    Contributing,
+    CodeOfConduct,
+    Other,
 }
 
 #[derive(Debug, Clone, Serialize)]

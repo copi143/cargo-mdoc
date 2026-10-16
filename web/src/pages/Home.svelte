@@ -9,6 +9,7 @@
     itemsStore,
     resolveGraphStore,
   } from "../lib/store";
+  import { selectedPackage } from "../lib/derived";
   import {
     counts as countsStore,
     topModules as topModulesStore,
@@ -18,9 +19,14 @@
   export let onSelectItem: (item: ItemDoc) => void = () => {};
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
+  $: selectedPkg = $selectedPackage;
 
   $: renderedReadme = renderMarkdown(
     $packageInfoStore?.readme || l10n("readme_not_loaded_err"),
+  );
+
+  $: externalDocs = ($selectedPkg?.documents ?? []).filter(
+    (doc) => doc.kind !== "readme" && doc.content,
   );
 </script>
 
@@ -58,6 +64,22 @@
           <strong>{$itemsStore.length}</strong>
         </div>
       </section>
+
+      {#if externalDocs.length > 0}
+        <section class="home-card home-external-docs">
+          <h3>{l10n("external_docs")}</h3>
+          {#each externalDocs as doc (doc.path)}
+            <div class="external-doc">
+              <h4>{doc.name}</h4>
+              <div class="home-meta">
+                <span>{l10n("doc_kind_" + doc.kind)}</span>
+                <strong>{doc.path}</strong>
+              </div>
+              <div class="markdown-body home-markdown">{@html renderMarkdown(doc.content)}</div>
+            </div>
+          {/each}
+        </section>
+      {/if}
 
       <section class="home-card">
         <h3>{l10n("top_modules")}</h3>

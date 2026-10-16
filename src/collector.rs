@@ -11,8 +11,8 @@ use crate::model::{
 };
 use crate::util::{
     build_signature, collect_attrs, extract_deprecated, extract_docs, extract_export_name,
-    join_path, module_path_string, resolve_module_file, source_location, source_snippet,
-    type_path_from_ast_type, visibility_from_ast,
+    join_path, module_path_string, read_file_if_not_ignored, resolve_module_file,
+    source_location, source_snippet, type_path_from_ast_type, visibility_from_ast, GitIgnoreFilter,
 };
 
 pub struct RaCollector {
@@ -39,6 +39,7 @@ impl RaCollector {
         crate_root: &Path,
         package_id: &str,
         package_name: &str,
+        git_ignore: Option<&GitIgnoreFilter>,
     ) -> Result<()> {
         let src = crate_root.join("src");
         let lib_rs = src.join("lib.rs");
@@ -56,6 +57,7 @@ impl RaCollector {
             &root,
             vec![package_name.to_string()],
             CfgExpr::True,
+            git_ignore,
         )?;
 
         Ok(())
@@ -72,8 +74,9 @@ impl RaCollector {
         file_path: &Path,
         mod_path: Vec<String>,
         inherited_cfg: CfgExpr,
+        git_ignore: Option<&GitIgnoreFilter>,
     ) -> Result<()> {
-        let source = fs::read_to_string(file_path)
+        let source = read_file_if_not_ignored(git_ignore, file_path)
             .with_context(|| format!("Failed reading {:?}", file_path))?;
 
         let parsed = SourceFile::parse(&source, Edition::CURRENT);
@@ -93,6 +96,7 @@ impl RaCollector {
             &source,
             mod_path,
             inherited_cfg,
+            git_ignore,
         )?;
 
         Ok(())
@@ -112,6 +116,7 @@ impl RaCollector {
         source: &str,
         mod_path: Vec<String>,
         inherited_cfg: CfgExpr,
+        git_ignore: Option<&GitIgnoreFilter>,
     ) -> Result<()> {
         for child in node.children() {
             match child.kind() {
@@ -191,6 +196,7 @@ impl RaCollector {
                         source,
                         mod_path.clone(),
                         inherited_cfg.clone(),
+                        git_ignore,
                     )?;
                 }
                 SyntaxKind::MODULE => {
@@ -204,6 +210,7 @@ impl RaCollector {
                             source,
                             mod_path.clone(),
                             inherited_cfg.clone(),
+                            git_ignore,
                         )?;
                     }
                 }
@@ -219,6 +226,7 @@ impl RaCollector {
                         source,
                         mod_path.clone(),
                         inherited_cfg.clone(),
+                        git_ignore,
                     )?;
                 }
             }
@@ -395,6 +403,7 @@ impl RaCollector {
         source: &str,
         mut mod_path: Vec<String>,
         inherited_cfg: CfgExpr,
+        git_ignore: Option<&GitIgnoreFilter>,
     ) -> Result<()> {
         let name = module
             .name()
@@ -433,6 +442,7 @@ impl RaCollector {
                 source,
                 mod_path,
                 cfg,
+                git_ignore,
             )?;
         } else {
             let Some(file) = resolve_module_file(current_file, &name) else {
@@ -449,7 +459,7 @@ impl RaCollector {
                 });
                 return Ok(());
             };
-            self.walk_file(workspace_root, crate_root, package_id, &file, mod_path, cfg)?;
+            self.walk_file(workspace_root, crate_root, package_id, &file, mod_path, cfg, git_ignore)?;
         }
 
         Ok(())
