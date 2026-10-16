@@ -14,10 +14,6 @@ zh-cn = "实现 ({n})"
 en-us = "Methods & Associated Items"
 zh-cn = "方法与关联项"
 
-[unknown_file]
-en-us = "Unknown file"
-zh-cn = "未知文件"
-
 [empty_select]
 en-us = "Select an item from the index to inspect its docs, cfg gates, and source location."
 zh-cn = "从索引中选择一个条目，查看其文档、条件编译门控和源码位置"

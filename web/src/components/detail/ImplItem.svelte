@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { CfgExpr, ImplItemDoc } from "../../types";
   import { renderMarkdown } from "../../lib/markdown";
-  import { renderRustSource } from "../../lib/highlight";
   import { l10nDerive } from "../../l10n";
+  import SourceItem from "./SourceItem.svelte";
 
   export let item: ImplItemDoc;
   export let formatCfg: (cfg?: CfgExpr | null) => string = () => "";
@@ -26,5 +26,5 @@
   <div class="markdown-body doc impl-item-doc">
     {@html renderMarkdown(item.docs || l10n("nodoc"))}
   </div>
-  <pre class="source-code"><code class="hljs language-rust">{@html renderRustSource(item.source_code)}</code></pre>
+  <SourceItem source_code={item.source_code} source={item.source} />
 </div>

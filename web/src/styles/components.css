@@ -913,38 +913,6 @@
   border-radius: 0;
 }
 
-.source-item {
-  & > .source-header {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: var(--muted-2);
-
-    & > :first-child {
-      display: flex;
-      flex: 1;
-      gap: 8px;
-      align-items: center;
-      justify-content: space-between;
-    }
-  }
-
-  & > .source-code {
-    margin: 0;
-    overflow: auto;
-    line-height: 1.55;
-    background: #fff;
-    border: 1px solid var(--line);
-
-    & code {
-      padding: 1em;
-      font-family: var(--mono);
-    }
-  }
-}
-
 .home-markdown {
   max-height: 360px;
   line-height: 1.6;

@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { CfgExpr, ImplDoc } from "../../types";
-  import { renderRustSource } from "../../lib/highlight";
   import { l10nDerive } from "../../l10n";
   import ImplItem from "./ImplItem.svelte";
+  import SourceItem from "./SourceItem.svelte";
 
   export let impl: ImplDoc;
   export let formatCfg: (cfg?: CfgExpr | null) => string = () => "";
@@ -29,12 +29,7 @@
     <span class="impl-toggle">▼</span>
   </summary>
   <div class="impl-body">
-    <div class="impl-meta">
-      <span class="source-meta">
-        {impl.source.file}:{impl.source.line_start}{#if impl.source.line_end !== impl.source.line_start}-{impl.source.line_end}{/if}
-      </span>
-    </div>
-    <pre class="source-code"><code class="hljs language-rust">{@html renderRustSource(impl.source_code)}</code></pre>
+    <SourceItem source_code={impl.source_code} source={impl.source} />
     {#if impl.items.length > 0}
       <div class="impl-items">
         <h4>{l10n("methods_and_items")}</h4>
