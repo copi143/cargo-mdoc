@@ -32,6 +32,7 @@
     @mixin button;
     color: var(--muted-2);
     background: none;
+    user-select: none;
 
     &:hover {
       color: #fff;
