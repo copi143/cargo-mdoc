@@ -44,6 +44,7 @@
     "Enum",
     "Trait",
     "Module",
+    "Macro",
   ];
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");

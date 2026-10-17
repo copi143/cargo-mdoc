@@ -34,6 +34,14 @@ zh-cn = "特质"
 en-us = "Module"
 zh-cn = "模块"
 
+[kind_macro]
+en-us = "Macro"
+zh-cn = "宏"
+
+[macros]
+en-us = "Macros"
+zh-cn = "宏"
+
 [roots]
 en-us = "Roots"
 zh-cn = "根节点"

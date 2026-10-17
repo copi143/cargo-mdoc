@@ -61,6 +61,7 @@
     "Enum",
     "Trait",
     "Module",
+    "Macro",
   ];
 
   const onHashChange = () => {

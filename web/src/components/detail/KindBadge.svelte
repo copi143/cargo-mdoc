@@ -46,5 +46,9 @@
     &.kind-module {
       background: rgb(from var(--kind-module) r g b / var(--kind-bg-opacity));
     }
+
+    &.kind-macro {
+      background: rgb(from var(--kind-macro) r g b / var(--kind-bg-opacity));
+    }
   }
 </style>

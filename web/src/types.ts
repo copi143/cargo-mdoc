@@ -1,4 +1,4 @@
-export type ItemKind = "Function" | "Struct" | "Enum" | "Trait" | "Module";
+export type ItemKind = "Function" | "Struct" | "Enum" | "Trait" | "Module" | "Macro";
 
 export type SourceLocation = {
   file: string;

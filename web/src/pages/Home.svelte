@@ -105,6 +105,10 @@
             <span>{l10n("traits")}</span>
             <strong>{$countsStore.Trait ?? 0}</strong>
           </div>
+          <div>
+            <span>{l10n("macros")}</span>
+            <strong>{$countsStore.Macro ?? 0}</strong>
+          </div>
         </div>
       </section>
 

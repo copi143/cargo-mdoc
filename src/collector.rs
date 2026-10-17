@@ -214,6 +214,19 @@ impl RaCollector {
                         )?;
                     }
                 }
+                SyntaxKind::MACRO_RULES => {
+                    if let Some(mr) = ast::MacroRules::cast(child.clone()) {
+                        self.collect_macro_rules(
+                            workspace_root,
+                            package_id,
+                            current_file,
+                            source,
+                            mr,
+                            mod_path.clone(),
+                            inherited_cfg.clone(),
+                        )?;
+                    }
+                }
                 // Recurse into unsupported nodes to find nested items;
                 // this handles items inside blocks, etc.
                 _ => {
@@ -461,6 +474,47 @@ impl RaCollector {
             };
             self.walk_file(workspace_root, crate_root, package_id, &file, mod_path, cfg, git_ignore)?;
         }
+
+        Ok(())
+    }
+
+    fn collect_macro_rules(
+        &mut self,
+        workspace_root: &Path,
+        package_id: &str,
+        current_file: &Path,
+        source: &str,
+        mr: ast::MacroRules,
+        mod_path: Vec<String>,
+        inherited_cfg: CfgExpr,
+    ) -> Result<()> {
+        let name = mr
+            .name()
+            .map(|n| n.text().to_string())
+            .unwrap_or_else(|| "<anonymous>".into());
+
+        let attrs = collect_attrs(mr.syntax());
+        let deprecated = extract_deprecated(&attrs);
+        let signature = build_signature(mr.syntax(), &ItemKind::Macro);
+        let export_name = extract_export_name(&attrs, &name);
+        let cfg = and_cfg(inherited_cfg, parse_cfg_from_node(mr.syntax()));
+        let docs = extract_docs(&mr);
+
+        self.push_item(
+            package_id,
+            name,
+            docs,
+            cfg,
+            ItemKind::Macro,
+            visibility_from_ast(mr.visibility()),
+            &mod_path,
+            source_location(workspace_root, current_file, source, mr.syntax()),
+            source_snippet(mr.syntax()),
+            Some(attrs),
+            signature,
+            deprecated,
+            export_name,
+        );
 
         Ok(())
     }

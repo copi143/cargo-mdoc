@@ -341,6 +341,7 @@ pub fn build_signature(node: &SyntaxNode, kind: &ItemKind) -> Option<String> {
             signature_for_trait(&tr)
         }
         ItemKind::Module => None,
+        ItemKind::Macro => Some(node.text().to_string()),
     }
 }
 

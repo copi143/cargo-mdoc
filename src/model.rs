@@ -18,7 +18,7 @@ pub enum CfgExpr {
 }
 
 // Only basic item kinds are tracked in the MVP;
-// TypeAlias, Constant, Static, Union, Macro, and Impl are intentionally excluded
+// TypeAlias, Constant, Static, and Union are intentionally excluded
 // to keep the analysis scope manageable.
 #[derive(Debug, Clone, Serialize)]
 pub enum ItemKind {
@@ -27,6 +27,7 @@ pub enum ItemKind {
     Enum,
     Trait,
     Module,
+    Macro,
 }
 
 #[derive(Debug, Clone, Serialize)]

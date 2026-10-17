@@ -40,4 +40,8 @@ body {
   &.kind-module {
     color: var(--kind-module);
   }
+
+  &.kind-macro {
+    color: var(--kind-macro);
+  }
 }
