@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { ItemDoc, ItemKind, PackageDoc } from "../../types";
   import { l10nDerive } from "../../l10n";
-  import { formatSource } from "../../lib/path";
   import {
     selectedPathStore,
     kindFilterStore,
@@ -17,6 +16,7 @@
     selectedPackageName as selectedPackageNameStore,
     featureNamesList as featureNamesListStore,
   } from "../../lib/derived";
+  import ListItem from "./ListItem.svelte";
 
   export let onHome: () => void = () => {};
   export let onSelectItem: (item: ItemDoc) => void = () => {};
@@ -141,18 +141,12 @@
       <div class="empty">{l10n("no_matches")}</div>
     {:else}
       {#each pageItems as item, i}
-        <button
-          class:selected={item.path === $selectedPathStore}
-          style={`--i: ${i}`}
-          on:click={() => onSelectItem(item)}
-        >
-          <span class="row-main">
-            <span class="path">{item.path}</span>
-            <span class="source-line">{formatSource(item, l10n)}</span>
-          </span>
-          <span class={`kind kind-${item.kind.toLowerCase()}`}>{l10n(":kind_" + item.kind.toLowerCase())}</span
-          >
-        </button>
+        <ListItem
+          {item}
+          index={i}
+          selectedPath={$selectedPathStore}
+          onSelect={onSelectItem}
+        />
       {/each}
     {/if}
     {#if totalPages > 1}

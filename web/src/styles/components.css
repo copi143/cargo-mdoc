@@ -114,58 +114,6 @@
   min-height: 0;
   padding-right: 6px;
   overflow: auto;
-
-  button {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px;
-    text-align: left;
-    cursor: pointer;
-    background: #fff;
-    border: 1px solid transparent;
-    border-radius: 0;
-    opacity: 0;
-    transition:
-      transform 0.15s ease,
-      border-color 0.2s ease,
-      box-shadow 0.2s ease;
-    animation: listIn 0.4s ease forwards;
-    animation-delay: calc(var(--i) * 0.02s);
-
-    &:hover {
-      border-color: var(--line);
-      box-shadow: var(--shadow-soft);
-      transform: translateY(-1px);
-    }
-
-    &.selected {
-      border-color: var(--accent);
-      box-shadow: 0 12px 24px rgba(31, 111, 235, 0.14);
-    }
-  }
-
-  .path {
-    font-size: 0.95rem;
-    color: var(--ink);
-    word-break: break-word;
-  }
-
-  .kind {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    text-wrap: nowrap;
-  }
-}
-
-.row-main {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  overflow: clip;
 }
 
 .source-line,
