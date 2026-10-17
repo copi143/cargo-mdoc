@@ -3,6 +3,7 @@
   import { l10nDerive } from "../../l10n";
   import ImplItem from "./ImplItem.svelte";
   import SourceItem from "./SourceItem.svelte";
+  import CfgBadge from "./CfgBadge.svelte";
 
   export let impl: ImplDoc;
   export let formatCfg: (cfg?: CfgExpr | null) => string = () => "";
@@ -20,12 +21,7 @@
 <details class="impl-block">
   <summary class="impl-header">
     <span class="impl-label">{implLabel(impl)}</span>
-    {#if impl.cfg.kind !== "True"}
-      <span class="cfg">
-        <span class="cfg-label">{l10n("cfg_label")}</span>
-        <code>{formatCfg(impl.cfg)}</code>
-      </span>
-    {/if}
+    <CfgBadge cfg={impl.cfg} {formatCfg} />
     <span class="impl-toggle">▼</span>
   </summary>
   <div class="impl-body">

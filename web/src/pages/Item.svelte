@@ -6,6 +6,7 @@
   import ImplBlock from "../components/detail/ImplBlock.svelte";
   import SourceItem from "../components/detail/SourceItem.svelte";
   import DocBody from "../components/detail/DocBody.svelte";
+  import CfgBadge from "../components/detail/CfgBadge.svelte";
   import { selectedItem as selectedItemStore } from "../lib/derived";
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
@@ -26,10 +27,7 @@
       {/if}
       <span class="detail-title-name">{displayPath.name}</span>
     </h2>
-    <div class="cfg">
-      <span class="cfg-label">{l10n("cfg_label")}</span>
-      <code>{formatCfg(selectedItem.cfg)}</code>
-    </div>
+    <CfgBadge cfg={selectedItem.cfg} {formatCfg} as="div" showWhenTrue={true} />
   </div>
   <div class="detail-body">
     <DocBody source={selectedItem?.docs} />

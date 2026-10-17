@@ -1,7 +1,3 @@
-[cfg_label]
-en-us = "cfg"
-zh-cn = "cfg"
-
 [impl_blocks]
 en-us = "Impls ({n})"
 zh-cn = "实现 ({n})"
