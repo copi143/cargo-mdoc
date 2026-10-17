@@ -30,6 +30,13 @@
   let currentPage = 0;
   const pageSize = 100;
 
+  let listItemsEl: HTMLDivElement;
+
+  function scrollTo(page: number) {
+    currentPage = page;
+    listItemsEl.scrollTo(0, 0);
+  }
+
   const kindOptions: Array<"All" | ItemKind> = [
     "All",
     "Function",
@@ -136,11 +143,11 @@
     </div>
   </div>
 
-  <div class="list-items">
+  <div bind:this={listItemsEl} class="list-items">
     {#if $filteredItemsStore.length === 0}
       <div class="empty">{l10n("no_matches")}</div>
     {:else}
-      {#each pageItems as item, i}
+      {#each pageItems as item, i (`${pageOffset + i}`)}
         <ListItem
           {item}
           index={i}
@@ -154,20 +161,20 @@
         <button
           class="page-btn"
           disabled={clampedPage === 0}
-          on:click={() => (currentPage = clampedPage - 1)}
-        >&lsaquo;</button>
+          on:click={() => scrollTo(clampedPage - 1)}>&lsaquo;</button
+        >
         {#each Array(totalPages) as _, p}
           <button
             class="page-btn"
             class:active={p === clampedPage}
-            on:click={() => (currentPage = p)}
-          >{p + 1}</button>
+            on:click={() => scrollTo(p)}>{p + 1}</button
+          >
         {/each}
         <button
           class="page-btn"
           disabled={clampedPage >= totalPages - 1}
-          on:click={() => (currentPage = clampedPage + 1)}
-        >&rsaquo;</button>
+          on:click={() => scrollTo(clampedPage + 1)}>&rsaquo;</button
+        >
       </div>
     {/if}
   </div>
