@@ -7,6 +7,7 @@
   import SourceItem from "../components/detail/SourceItem.svelte";
   import DocBody from "../components/detail/DocBody.svelte";
   import CfgBadge from "../components/detail/CfgBadge.svelte";
+  import KindBadge from "../components/detail/KindBadge.svelte";
   import { selectedItem as selectedItemStore } from "../lib/derived";
 
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
@@ -18,9 +19,7 @@
 {#if selectedItem}
   {@const displayPath = splitDisplayPath(selectedItem.path)}
   <div class="detail-header">
-    <p class={`kicker kind-badge kind-${selectedItem.kind.toLowerCase()}`}>
-      {l10n(":kind_" + selectedItem.kind.toLowerCase())}
-    </p>
+    <KindBadge kind={selectedItem.kind} as="p" className="kicker" />
     <h2 class="detail-title">
       {#if displayPath.namespace}
         <span class="detail-title-namespace">{displayPath.namespace}</span>

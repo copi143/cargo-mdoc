@@ -41,33 +41,3 @@ body {
     color: var(--kind-module);
   }
 }
-
-.kind-badge {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  padding: 4px 8px;
-  font-size: 0.75rem;
-  background: rgb(from var(--kind-default) r g b / var(--kind-bg-opacity));
-  border: 1px solid currentColor;
-
-  &.kind-function {
-    background: rgb(from var(--kind-function) r g b / var(--kind-bg-opacity));
-  }
-
-  &.kind-struct {
-    background: rgb(from var(--kind-struct) r g b / var(--kind-bg-opacity));
-  }
-
-  &.kind-enum {
-    background: rgb(from var(--kind-enum) r g b / var(--kind-bg-opacity));
-  }
-
-  &.kind-trait {
-    background: rgb(from var(--kind-trait) r g b / var(--kind-bg-opacity));
-  }
-
-  &.kind-module {
-    background: rgb(from var(--kind-module) r g b / var(--kind-bg-opacity));
-  }
-}
