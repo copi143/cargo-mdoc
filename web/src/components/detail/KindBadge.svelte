@@ -12,8 +12,7 @@
 
 <svelte:element
   this={as}
-  class={`kind-badge kind-${kind.toLowerCase()}`}
-  class:{className}
+  class={`kind-badge kind-${kind.toLowerCase()} ${className}`}
 >
   {label}
 </svelte:element>
