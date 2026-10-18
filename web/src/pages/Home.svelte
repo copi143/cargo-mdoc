@@ -4,11 +4,7 @@
   import { l10nDerive } from "../l10n";
   import GraphPreview from "../components/depgraph/GraphPreview.svelte";
   import ItemList from "../components/detail/ItemList.svelte";
-  import {
-    packageInfoStore,
-    itemsStore,
-    resolveGraphStore,
-  } from "../lib/store";
+  import { packageInfoStore, itemsStore, resolveGraphStore } from "../lib/store";
   import { selectedPackage } from "../lib/derived";
   import {
     counts as countsStore,
@@ -21,9 +17,7 @@
   $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: selectedPkg = $selectedPackage;
 
-  $: renderedReadme = renderMarkdown(
-    $packageInfoStore?.readme || l10n("readme_not_loaded_err"),
-  );
+  $: renderedReadme = renderMarkdown($packageInfoStore?.readme || l10n("readme_not_loaded_err"));
 
   $: externalDocs = ($selectedPkg?.documents ?? []).filter(
     (doc) => doc.kind !== "readme" && doc.content,
@@ -41,7 +35,7 @@
     <section class="home-card home-readme">
       <h3>{l10n("readme")}</h3>
       {#if $packageInfoStore?.readme}
-        <div class="markdown-body home-markdown">{@html renderedReadme}</div>
+        <main class="markdown-body home-markdown">{@html renderedReadme}</main>
         <div class="home-meta">
           <span>{l10n("path")}</span>
           <strong>{$packageInfoStore.readme_path ?? l10n("readme_default")}</strong>
@@ -75,7 +69,9 @@
                 <span>{l10n("doc_kind_" + doc.kind)}</span>
                 <strong>{doc.path}</strong>
               </div>
-              <div class="markdown-body home-markdown">{@html renderMarkdown(doc.content)}</div>
+              <main class="markdown-body home-markdown">
+                {@html renderMarkdown(doc.content)}
+              </main>
             </div>
           {/each}
         </section>
@@ -114,7 +110,11 @@
 
       <section class="home-card">
         <h3>{l10n("highlights")}</h3>
-        <ItemList items={$prominentItemsStore} {onSelectItem} emptyMessage={l10n("no_highlights")} />
+        <ItemList
+          items={$prominentItemsStore}
+          {onSelectItem}
+          emptyMessage={l10n("no_highlights")}
+        />
       </section>
     </div>
   </div>

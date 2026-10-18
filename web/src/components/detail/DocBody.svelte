@@ -22,13 +22,13 @@
   onmouseleave={() => (showCopy = false)}
 >
   <CopyButton text={source ?? ""} />
-  <div class="markdown-body doc {className}">
+  <main class="markdown-body doc {className}">
     {#if hasDocs}
       {@html rendered}
     {:else}
       <p class="doc-empty">{l10n("nodoc")}</p>
     {/if}
-  </div>
+  </main>
 </div>
 
 <style>

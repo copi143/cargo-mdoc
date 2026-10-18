@@ -6,6 +6,7 @@ html,
 body {
   width: 100vw;
   height: 100vh;
+  line-height: 1.4;
 }
 
 body,
@@ -51,4 +52,5 @@ h3 {
 pre,
 code {
   font-family: var(--mono);
+  line-height: 1.4;
 }

@@ -1,70 +1,75 @@
 .markdown-body {
   overflow: auto;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
 
-  > :first-child {
+  & > :first-child {
     margin-top: 0;
   }
 
-  > :last-child {
+  & > :last-child {
     margin-bottom: 0;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    margin: 1.2em 0 0.5em;
-    line-height: 1.2;
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6 {
+    padding-top: 0.5em;
+    margin: 0.5em 0;
     color: var(--ink);
+    border-top: 1px solid var(--line);
   }
 
-  p,
-  ul,
-  ol,
-  blockquote,
-  pre,
-  table {
+  & p,
+  & ul,
+  & ol {
+    margin: 0 0 0.5em;
+  }
+
+  & blockquote,
+  & pre,
+  & table {
     margin: 0 0 1em;
   }
 
-  ul,
-  ol {
+  & ul,
+  & ol {
     padding-left: 1.4em;
   }
 
-  li + li {
+  & li + li {
     margin-top: 0.25em;
   }
 
-  a {
+  & a {
     color: var(--accent);
   }
 
-  code {
+  & code {
     padding: 0.12em 0.35em;
     background: rgba(31, 111, 235, 0.06);
     border: 1px solid rgba(31, 111, 235, 0.14);
     border-radius: 0;
   }
 
-  pre {
-    padding: 14px;
+  & pre {
+    padding: 1em;
     overflow: auto;
     background: #f8fbff;
     border: 1px solid var(--line);
 
-    code {
+    & > code {
       padding: 0;
       background: transparent;
       border: none;
     }
   }
 
-  blockquote {
-    padding: 0 0 0 14px;
+  & blockquote {
+    padding: 0 0 0 1em;
     color: var(--muted-2);
     border-left: 3px solid var(--accent);
   }
