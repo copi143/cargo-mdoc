@@ -250,6 +250,7 @@ fn main() -> Result<()> {
         declared_dependencies,
         resolve_graph,
         items,
+        macro_calls: collector.macro_calls,
         diagnostics,
     };
 

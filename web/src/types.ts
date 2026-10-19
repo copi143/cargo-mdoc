@@ -89,6 +89,17 @@ export type PackageInfo = PackageDoc;
 
 export type Counts = Partial<Record<ItemKind, number>>;
 
+export type MacroCallDoc = {
+  id: string;
+  package_id: string;
+  path: string;
+  name: string;
+  module_path: string;
+  source: SourceLocation;
+  source_code: string;
+  attributes: string[] | null;
+};
+
 export type ResolveGraphNode = {
   id: string;
   name: string;

@@ -259,7 +259,26 @@ pub struct ItemDoc {
     pub attributes: Option<Vec<String>>,
     pub deprecated: Option<Deprecation>,
     pub export_name: Option<String>,
+    /// True when the item is a `macro_rules!` definition marked `#[macro_export]`.
+    pub is_macro_export: bool,
     pub impls: Vec<ImplDoc>,
+}
+
+/// A macro invocation (e.g. `my_macro!(...)` or `foo::bar!(...)`).
+/// Macro calls are not items themselves, but are collected as call sites
+/// so consumers can see which macros are used and where.
+#[derive(Debug, Clone, Serialize)]
+pub struct MacroCallDoc {
+    pub id: String,
+    pub package_id: PackageId,
+    /// Resolved macro path, e.g. "crate::my_macro" or "serde::Serialize".
+    pub path: String,
+    /// Short name, e.g. "my_macro".
+    pub name: String,
+    pub module_path: String,
+    pub source: SourceLocation,
+    pub source_code: String,
+    pub attributes: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -321,5 +340,7 @@ pub struct InternalDoc {
     pub declared_dependencies: Vec<DeclaredDependencyEdge>,
     pub resolve_graph: Option<ResolveGraph>,
     pub items: Vec<ItemDoc>,
+    /// Macro call sites discovered while walking the crate's sources.
+    pub macro_calls: Vec<MacroCallDoc>,
     pub diagnostics: Vec<Diagnostic>,
 }

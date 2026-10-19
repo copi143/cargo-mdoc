@@ -1,22 +1,22 @@
 use anyhow::{Context, Result};
 use ra_ap_syntax::ast::{self, AstNode, HasName, HasVisibility};
 use ra_ap_syntax::{Edition, SourceFile, SyntaxKind, SyntaxNode};
-use std::fs;
 use std::path::Path;
 
 use crate::cfg_expr::{and_cfg, parse_cfg_from_node};
 use crate::model::{
     CfgExpr, Deprecation, Diagnostic, DiagnosticLevel, ImplDoc, ImplItemDoc, ItemDoc, ItemKind,
-    SourceLocation, Visibility,
+    SourceLocation, Visibility, MacroCallDoc,
 };
 use crate::util::{
     build_signature, collect_attrs, extract_deprecated, extract_docs, extract_export_name,
-    join_path, module_path_string, read_file_if_not_ignored, resolve_module_file,
+    has_macro_export, join_path, module_path_string, path_to_string, read_file_if_not_ignored, resolve_module_file,
     source_location, source_snippet, type_path_from_ast_type, visibility_from_ast, GitIgnoreFilter,
 };
 
 pub struct RaCollector {
     pub items: Vec<ItemDoc>,
+    pub macro_calls: Vec<MacroCallDoc>,
     pub impls: Vec<ImplDoc>,
     pub diagnostics: Vec<Diagnostic>,
 }
@@ -25,6 +25,7 @@ impl RaCollector {
     pub fn new() -> Self {
         Self {
             items: Vec::new(),
+            macro_calls: Vec::new(),
             impls: Vec::new(),
             diagnostics: Vec::new(),
         }
@@ -132,6 +133,19 @@ impl RaCollector {
                             inherited_cfg.clone(),
                         )?;
                     }
+                    // Recurse into the function body so macro calls and other
+                    // nested constructs inside are also discovered.
+                    self.walk_syntax_node(
+                        workspace_root,
+                        crate_root,
+                        package_id,
+                        child,
+                        current_file,
+                        source,
+                        mod_path.clone(),
+                        inherited_cfg.clone(),
+                        git_ignore,
+                    )?;
                 }
                 SyntaxKind::STRUCT => {
                     if let Some(st) = ast::Struct::cast(child.clone()) {
@@ -145,6 +159,19 @@ impl RaCollector {
                             inherited_cfg.clone(),
                         )?;
                     }
+                    // Recurse into the item body so nested macro calls are
+                    // also discovered.
+                    self.walk_syntax_node(
+                        workspace_root,
+                        crate_root,
+                        package_id,
+                        child,
+                        current_file,
+                        source,
+                        mod_path.clone(),
+                        inherited_cfg.clone(),
+                        git_ignore,
+                    )?;
                 }
                 SyntaxKind::ENUM => {
                     if let Some(en) = ast::Enum::cast(child.clone()) {
@@ -158,6 +185,19 @@ impl RaCollector {
                             inherited_cfg.clone(),
                         )?;
                     }
+                    // Recurse into the item body so nested macro calls are
+                    // also discovered.
+                    self.walk_syntax_node(
+                        workspace_root,
+                        crate_root,
+                        package_id,
+                        child,
+                        current_file,
+                        source,
+                        mod_path.clone(),
+                        inherited_cfg.clone(),
+                        git_ignore,
+                    )?;
                 }
                 SyntaxKind::TRAIT => {
                     if let Some(tr) = ast::Trait::cast(child.clone()) {
@@ -171,6 +211,19 @@ impl RaCollector {
                             inherited_cfg.clone(),
                         )?;
                     }
+                    // Recurse into the item body so nested macro calls are
+                    // also discovered.
+                    self.walk_syntax_node(
+                        workspace_root,
+                        crate_root,
+                        package_id,
+                        child,
+                        current_file,
+                        source,
+                        mod_path.clone(),
+                        inherited_cfg.clone(),
+                        git_ignore,
+                    )?;
                 }
                 SyntaxKind::IMPL => {
                     if let Some(imp) = ast::Impl::cast(child.clone()) {
@@ -224,6 +277,21 @@ impl RaCollector {
                             mr,
                             mod_path.clone(),
                             inherited_cfg.clone(),
+                        )?;
+                    }
+                }
+                SyntaxKind::MACRO_CALL => {
+                    if let Some(call) = ast::MacroCall::cast(child.clone()) {
+                        self.collect_macro_call(
+                            workspace_root,
+                            crate_root,
+                            package_id,
+                            current_file,
+                            source,
+                            call,
+                            mod_path.clone(),
+                            inherited_cfg.clone(),
+                            git_ignore,
                         )?;
                     }
                 }
@@ -284,6 +352,7 @@ impl RaCollector {
             signature,
             deprecated,
             export_name,
+            false,
         );
 
         Ok(())
@@ -323,6 +392,7 @@ impl RaCollector {
             signature,
             deprecated,
             export_name,
+            false,
         );
 
         Ok(())
@@ -362,6 +432,7 @@ impl RaCollector {
             signature,
             deprecated,
             export_name,
+            false,
         );
 
         Ok(())
@@ -401,6 +472,7 @@ impl RaCollector {
             signature,
             deprecated,
             export_name,
+            false,
         );
 
         Ok(())
@@ -441,6 +513,7 @@ impl RaCollector {
             None,
             deprecated,
             None,
+            false,
         );
 
         mod_path.push(name.clone());
@@ -499,6 +572,7 @@ impl RaCollector {
         let export_name = extract_export_name(&attrs, &name);
         let cfg = and_cfg(inherited_cfg, parse_cfg_from_node(mr.syntax()));
         let docs = extract_docs(&mr);
+        let is_export = has_macro_export(&attrs);
 
         self.push_item(
             package_id,
@@ -514,7 +588,68 @@ impl RaCollector {
             signature,
             deprecated,
             export_name,
+            is_export,
         );
+
+        Ok(())
+    }
+
+    // Collects a macro call site, e.g. `my_macro!(...)` or `foo::bar!(...)`.
+    // Macro calls are not items, but recording them lets consumers see which
+    // macros are used and where, and to correlate call sites with definitions.
+    fn collect_macro_call(
+        &mut self,
+        workspace_root: &Path,
+        crate_root: &Path,
+        package_id: &str,
+        current_file: &Path,
+        source: &str,
+        call: ast::MacroCall,
+        mod_path: Vec<String>,
+        inherited_cfg: CfgExpr,
+        git_ignore: Option<&GitIgnoreFilter>,
+    ) -> Result<()> {
+        let path = call
+            .path()
+            .map(|p| path_to_string(&p))
+            .unwrap_or_else(|| "<anonymous>".into());
+        let name = path
+            .split("::")
+            .last()
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| "<anonymous>".into());
+
+        let attrs = collect_attrs(call.syntax());
+        let source_loc = source_location(workspace_root, current_file, source, call.syntax());
+        let id = format!(
+            "macro_call:{}:{}:{}",
+            package_id, path, source_loc.line_start
+        );
+
+        self.macro_calls.push(MacroCallDoc {
+            id,
+            package_id: package_id.to_string(),
+            path,
+            name,
+            module_path: module_path_string(&mod_path),
+            source: source_loc,
+            source_code: source_snippet(call.syntax()),
+            attributes: Some(attrs),
+        });
+
+        // Still recurse into the call's token tree in case it contains nested
+        // items or further macro calls worth recording.
+        self.walk_syntax_node(
+            workspace_root,
+            crate_root,
+            package_id,
+            call.syntax().clone(),
+            current_file,
+            source,
+            mod_path,
+            inherited_cfg,
+            git_ignore,
+        )?;
 
         Ok(())
     }
@@ -634,6 +769,7 @@ impl RaCollector {
         signature: Option<String>,
         deprecated: Option<Deprecation>,
         export_name: Option<String>,
+        is_macro_export: bool,
     ) {
         let path = join_path(mod_path, &name);
         let module_path = module_path_string(mod_path);
@@ -657,6 +793,7 @@ impl RaCollector {
             attributes,
             deprecated,
             export_name,
+            is_macro_export,
             impls: Vec::new(),
         });
     }

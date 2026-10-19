@@ -22,6 +22,12 @@ pub fn collect_attrs(node: &SyntaxNode) -> Vec<String> {
     out
 }
 
+/// Returns true when any attribute mentions `macro_export`
+/// (e.g. `#[macro_export]` or `#[macro_export::...]`).
+pub fn has_macro_export(attrs: &[String]) -> bool {
+    attrs.iter().any(|attr| attr.contains("macro_export"))
+}
+
 // Extracts doc text from any syntax node that may carry doc comments.
 // Uses ra_ap_syntax's HasAttrs trait, which properly handles
 // ///, //!, /** ... */, and #[doc = "..."] forms including escaped quotes.
@@ -359,7 +365,8 @@ fn visibility_to_string(vis: Option<ast::Visibility>) -> String {
     }
 }
 
-fn path_to_string(path: &ast::Path) -> String {
+/// Renders an AST path to a string, e.g. "crate::foo::bar".
+pub fn path_to_string(path: &ast::Path) -> String {
     let mut parts = Vec::new();
     let mut current = Some(path.clone());
     while let Some(p) = current {
