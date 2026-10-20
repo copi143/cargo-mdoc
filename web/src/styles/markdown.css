@@ -23,6 +23,22 @@
     border-top: 1px solid var(--line);
   }
 
+  & h3 {
+    border-top-color: rgb(from var(--line) r g b / 0.8);
+  }
+
+  & h4 {
+    border-top-color: rgb(from var(--line) r g b / 0.6);
+  }
+
+  & h5 {
+    border-top-color: rgb(from var(--line) r g b / 0.4);
+  }
+
+  & h6 {
+    border-top-color: rgb(from var(--line) r g b / 0.2);
+  }
+
   & p,
   & ul,
   & ol {
