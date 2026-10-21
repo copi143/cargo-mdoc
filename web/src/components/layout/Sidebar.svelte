@@ -17,6 +17,7 @@
     featureNamesList as featureNamesListStore,
   } from "../../lib/derived";
   import ListItem from "./ListItem.svelte";
+  import Pagination from "./Pagination.svelte";
 
   export let onHome: () => void = () => {};
   export let onSelectItem: (item: ItemDoc) => void = () => {};
@@ -157,26 +158,6 @@
         />
       {/each}
     {/if}
-    {#if totalPages > 1}
-      <div class="pagination">
-        <button
-          class="page-btn"
-          disabled={clampedPage === 0}
-          on:click={() => scrollTo(clampedPage - 1)}>&lsaquo;</button
-        >
-        {#each Array(totalPages) as _, p}
-          <button
-            class="page-btn"
-            class:active={p === clampedPage}
-            on:click={() => scrollTo(p)}>{p + 1}</button
-          >
-        {/each}
-        <button
-          class="page-btn"
-          disabled={clampedPage >= totalPages - 1}
-          on:click={() => scrollTo(clampedPage + 1)}>&rsaquo;</button
-        >
-      </div>
-    {/if}
+    <Pagination page={clampedPage} {totalPages} onPageChange={scrollTo} />
   </div>
 </aside>

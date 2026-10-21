@@ -132,48 +132,6 @@
   border-radius: 0;
 }
 
-.pagination {
-  position: sticky;
-  bottom: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  justify-content: center;
-  padding: 12px 0;
-  background: var(--paper);
-  border-top: 1px solid var(--line);
-}
-
-.page-btn {
-  display: grid;
-  place-items: center;
-  min-width: 32px;
-  height: 32px;
-  padding: 0 6px;
-  font-size: 0.8rem;
-  color: var(--muted);
-  cursor: pointer;
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 0;
-
-  &:hover:not(:disabled) {
-    color: var(--ink);
-    border-color: var(--muted-2);
-  }
-
-  &:disabled {
-    cursor: default;
-    opacity: 0.35;
-  }
-
-  &.active {
-    font-weight: 600;
-    color: var(--accent);
-    border-color: var(--accent);
-  }
-}
-
 .home-card {
   display: flex;
   flex: 0 0 auto;
