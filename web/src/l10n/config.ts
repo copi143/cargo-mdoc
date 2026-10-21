@@ -19,10 +19,7 @@ export const L10nConfigSchema = z
 export type L10nConfig = z.infer<typeof L10nConfigSchema>;
 
 export const l10nConfig = (() => {
-  const configToml = fs.readFileSync(
-    path.join(import.meta.dirname, "config.toml"),
-    "utf-8",
-  );
+  const configToml = fs.readFileSync(path.join(import.meta.dirname, "config.toml"), "utf-8");
   const config = parse(configToml);
   const result = L10nConfigSchema.safeParse(config);
   if (!result.success) {
@@ -64,16 +61,13 @@ export const l10nFile = (() => {
 
 export default (() => {
   const langs = Object.fromEntries(
-    Object.entries(l10nConfig).filter(([k, v]) => k !== "default"),
+    Object.entries(l10nConfig).filter(([k, _]) => k !== "default"),
   ) as Record<string, { name: string; display: string; fallback: string }>;
   const fallbackMap = Object.fromEntries(
     Object.entries(langs).map(([k, v]) => [k, v.fallback]),
   ) as Record<string, string>;
   const trans = Object.fromEntries(
-    Object.keys(langs).map((k) => [
-      k,
-      {} as Record<string, Record<string, string>>,
-    ]),
+    Object.keys(langs).map((k) => [k, {} as Record<string, Record<string, string>>]),
   );
   for (const [file, data] of Object.entries(l10nFile)) {
     const prefix = file.replace(/\.l10n$/, "");
