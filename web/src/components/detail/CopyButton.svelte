@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { l10nDerive } from "../../l10n";
 
   export let text = "";
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
 
   let copied = false;
 

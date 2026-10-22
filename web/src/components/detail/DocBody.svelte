@@ -1,12 +1,10 @@
 <script lang="ts">
   import { renderMarkdown } from "../../lib/markdown";
-  import { l10nDerive } from "../../l10n";
   import CopyButton from "./CopyButton.svelte";
 
   export let source: string | null = null;
   export let className: string = "";
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: rendered = renderMarkdown(source ?? "");
   $: hasDocs = source != null && source.trim().length > 0;
 

@@ -4,6 +4,7 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import l10nData from "./src/l10n/config.ts";
 
 const projSrcDir = path.join(import.meta.dirname, "src");
+const l10nIndex = path.join(projSrcDir, "l10n/index.ts");
 
 export default defineConfig({
   plugins: [
@@ -32,21 +33,34 @@ export default defineConfig({
       },
     },
     {
-      name: "file-path",
+      name: "l10n-auto-bind",
+      enforce: "pre",
       transform(code, id) {
-        if (
-          id.startsWith(projSrcDir) &&
-          (id.endsWith(".ts") || id.endsWith(".svelte"))
-        ) {
-          const relPath = path.relative(projSrcDir, id);
+        // 仅处理主请求；?svelte&type=style 等子请求会直接跳过，
+        // 否则 JS 注入会进入 CSS 模块导致 postcss 解析失败
+        if (id.includes("?")) return null;
+        const file = id.split("?")[0];
+        if (!file.startsWith(projSrcDir) || !file.endsWith(".svelte")) return null;
+        const ns = path.relative(projSrcDir, file).replace(/\.svelte$/, "");
+        let relImport = path
+          .relative(path.dirname(file), l10nIndex)
+          .replace(/\.ts$/, "");
+        if (!relImport.startsWith(".")) relImport = "./" + relImport;
+        const inject =
+          `import { l10nDerive } from "${relImport}";\n` +
+          `  $: l10n = $l10nDerive("${ns}");\n`;
+        const scriptMatch = code.match(/<script(?![^>]*\bcontext=)[^>]*>/);
+        if (scriptMatch && scriptMatch.index !== undefined) {
+          const at = scriptMatch.index + scriptMatch[0].length;
           return {
-            code: code.replace(
-              /['"]\$\$_FILE_PATH_\$\$['"]/g,
-              JSON.stringify(relPath),
-            ),
+            code: code.slice(0, at) + "\n" + inject + code.slice(at),
             map: null,
           };
         }
+        return {
+          code: `<script lang="ts">\n${inject}</script>\n\n` + code,
+          map: null,
+        };
       },
     },
   ],

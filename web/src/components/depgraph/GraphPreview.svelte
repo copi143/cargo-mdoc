@@ -1,10 +1,8 @@
 <script lang="ts">
   import type { ResolveGraph } from "../../types";
-  import { l10nDerive } from "../../l10n";
 
   export let resolveGraph: ResolveGraph | null = null;
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
 
   let graphNodeById = new Map<string, ResolveGraph["nodes"][number]>();
   let graphIncoming: Record<string, number> | undefined;

@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { ItemDoc, ItemKind, PackageDoc } from "../../types";
-  import { l10nDerive } from "../../l10n";
   import {
     selectedPathStore,
     kindFilterStore,
@@ -48,7 +47,6 @@
     "Macro",
   ];
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: totalPages = Math.max(1, Math.ceil($filteredItemsStore.length / pageSize));
   $: if ($filteredItemsStore) currentPage = 0;
   $: clampedPage = Math.min(currentPage, totalPages - 1);

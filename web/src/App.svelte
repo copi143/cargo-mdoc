@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { locale, l10nDerive } from "./l10n";
+  import { locale } from "./l10n";
   import Topbar from "./components/layout/Topbar.svelte";
   import Sidebar from "./components/layout/Sidebar.svelte";
   import Home from "./pages/Home.svelte";
@@ -30,7 +30,6 @@
   ResolveGraph,
 } from "./types";
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: document.documentElement.lang = $locale;
 
   const selectPackage = (id: string) => {

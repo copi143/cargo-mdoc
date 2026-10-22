@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { ItemDoc } from "../../types";
   import { formatSource } from "../../lib/path";
-  import { l10nDerive } from "../../l10n";
   import { onMount } from "svelte";
 
   export let item: ItemDoc;
@@ -36,7 +35,6 @@
     return rets;
   }
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: pathCandidates = abbreviations(item.path, "::");
   $: sourceCandidates = abbreviations(formatSource(item, l10n), "/");
   $: pathDisplayed = pathCandidates[0];

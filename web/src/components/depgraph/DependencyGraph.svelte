@@ -12,12 +12,10 @@
     MIN_SCALE,
     MAX_SCALE,
   } from "../../lib/graph";
-  import { l10nDerive } from "../../l10n";
 
   export let resolveGraph: ResolveGraph | null = null;
   export let onClose: () => void = () => {};
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
 
   let mode: "list" | "graph" = "list";
   let selectedNodeId = "";

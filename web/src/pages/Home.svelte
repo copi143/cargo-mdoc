@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { ItemDoc, PackageInfo, ResolveGraph } from "../types";
   import { renderMarkdown } from "../lib/markdown";
-  import { l10nDerive } from "../l10n";
   import GraphPreview from "../components/depgraph/GraphPreview.svelte";
   import ItemList from "../components/detail/ItemList.svelte";
   import { packageInfoStore, itemsStore, resolveGraphStore } from "../lib/store";
@@ -14,7 +13,6 @@
 
   export let onSelectItem: (item: ItemDoc) => void = () => {};
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: selectedPkg = $selectedPackage;
 
   $: renderedReadme = renderMarkdown($packageInfoStore?.readme || l10n("readme_not_loaded_err"));

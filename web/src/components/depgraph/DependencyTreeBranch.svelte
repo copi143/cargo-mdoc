@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { ResolveGraph } from "../../types";
-  import { l10nDerive } from "../../l10n";
 
   export let resolveGraph: ResolveGraph;
   export let nodeId: string;
@@ -10,7 +9,6 @@
   export let edgeLabel = "";
   export let pathIds: string[] = [];
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
 
   const nodeById = new Map(resolveGraph.nodes.map((node) => [node.id, node]));
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { GeneratorInfo, ItemDoc, PackageInfo } from "../../types";
-  import { locale, langs, l10nDerive } from "../../l10n";
+  import { locale, langs } from "../../l10n";
   import {
     packageInfoStore,
     itemsStore,
@@ -10,7 +10,6 @@
 
   export let onOpenGraph: () => void = () => {};
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: currentLocale = $locale;
 
   const locales = Object.entries(langs).map(

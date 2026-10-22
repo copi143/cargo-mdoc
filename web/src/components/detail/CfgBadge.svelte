@@ -1,13 +1,11 @@
 <script lang="ts">
   import type { CfgExpr } from "../../types";
-  import { l10nDerive } from "../../l10n";
 
   export let cfg: CfgExpr | null | undefined;
   export let formatCfg: (cfg?: CfgExpr | null) => string = () => "";
   export let as: "div" | "span" = "span";
   export let showWhenTrue: boolean = false;
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: hidden = !cfg || (cfg.kind === "True" && !showWhenTrue);
 </script>
 

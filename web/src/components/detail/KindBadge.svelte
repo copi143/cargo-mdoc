@@ -1,12 +1,10 @@
 <script lang="ts">
   import type { ItemKind } from "../../types";
-  import { l10nDerive } from "../../l10n";
 
   export let kind: ItemKind;
   export let as: "p" | "span" = "span";
   export let className: string | undefined;
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: label = l10n(":kind_" + kind.toLowerCase());
 </script>
 

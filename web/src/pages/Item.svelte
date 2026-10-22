@@ -2,7 +2,6 @@
   import type { ItemDoc } from "../types";
   import { formatCfg } from "../lib/cfg";
   import { splitDisplayPath } from "../lib/path";
-  import { l10nDerive } from "../l10n";
   import ImplBlock from "../components/detail/ImplBlock.svelte";
   import SourceItem from "../components/detail/SourceItem.svelte";
   import DocBody from "../components/detail/DocBody.svelte";
@@ -10,7 +9,6 @@
   import KindBadge from "../components/detail/KindBadge.svelte";
   import { selectedItem as selectedItemStore } from "../lib/derived";
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
   $: selectedItem = $selectedItemStore;
 
   $: impls = selectedItem?.impls ?? [];

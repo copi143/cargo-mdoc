@@ -1,13 +1,11 @@
 <script lang="ts">
   import type { SourceLocation } from "../../types";
   import { renderRustSource } from "../../lib/highlight";
-  import { l10nDerive } from "../../l10n";
   import CopyButton from "./CopyButton.svelte";
 
   export let source_code: string;
   export let source: SourceLocation | undefined;
 
-  $: l10n = $l10nDerive("$$_FILE_PATH_$$");
 </script>
 
 <div class="source-item">
