@@ -5,7 +5,6 @@
 
   export let source_code: string;
   export let source: SourceLocation | undefined;
-
 </script>
 
 <div class="source-item">

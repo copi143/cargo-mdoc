@@ -148,12 +148,7 @@
       <div class="empty">{l10n("no_matches")}</div>
     {:else}
       {#each pageItems as item, i (`${pageOffset + i}`)}
-        <ListItem
-          {item}
-          index={i}
-          selectedPath={$selectedPathStore}
-          onSelect={onSelectItem}
-        />
+        <ListItem {item} index={i} selectedPath={$selectedPathStore} onSelect={onSelectItem} />
       {/each}
     {/if}
     <Pagination page={clampedPage} {totalPages} onPageChange={scrollTo} />

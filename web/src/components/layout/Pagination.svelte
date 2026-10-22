@@ -6,16 +6,12 @@
 
 {#if totalPages > 1}
   <div class="pagination">
-    <button
-      class="page-btn"
-      disabled={page === 0}
-      on:click={() => onPageChange(page - 1)}>&lsaquo;</button
+    <button class="page-btn" disabled={page === 0} on:click={() => onPageChange(page - 1)}
+      >&lsaquo;</button
     >
     {#each Array(totalPages) as _, p}
-      <button
-        class="page-btn"
-        class:active={p === page}
-        on:click={() => onPageChange(p)}>{p + 1}</button
+      <button class="page-btn" class:active={p === page} on:click={() => onPageChange(p)}
+        >{p + 1}</button
       >
     {/each}
     <button

@@ -47,14 +47,12 @@ export const sortNodeIds = (
   left: string,
   right: string,
   nodeById: Map<string, ResolveGraph["nodes"][number]>,
-): number =>
-  resolveNodeLabel(left, nodeById).localeCompare(resolveNodeLabel(right, nodeById));
+): number => resolveNodeLabel(left, nodeById).localeCompare(resolveNodeLabel(right, nodeById));
 
 export const uniqueSorted = (
   values: string[],
   nodeById: Map<string, ResolveGraph["nodes"][number]>,
-): string[] =>
-  Array.from(new Set(values)).sort((a, b) => sortNodeIds(a, b, nodeById));
+): string[] => Array.from(new Set(values)).sort((a, b) => sortNodeIds(a, b, nodeById));
 
 export const buildLayers = (
   startNodeId: string,
@@ -73,9 +71,7 @@ export const buildLayers = (
 
     for (const nodeId of frontier) {
       const neighbors = uniqueSorted(
-        (direction === "downstream"
-          ? outgoingMap.get(nodeId)
-          : incomingMap.get(nodeId)) ?? [],
+        (direction === "downstream" ? outgoingMap.get(nodeId) : incomingMap.get(nodeId)) ?? [],
         new Map(),
       );
 
@@ -152,11 +148,7 @@ export const buildLayout = (
 ): GraphLayoutResult => {
   const empty: GraphLayoutResult = { nodes: [], edges: [], width: 0, height: 0 };
 
-  if (
-    !resolveGraph ||
-    nodeById.size === 0 ||
-    resolveGraph.nodes.length === 0
-  ) {
+  if (!resolveGraph || nodeById.size === 0 || resolveGraph.nodes.length === 0) {
     return empty;
   }
 
@@ -180,8 +172,7 @@ export const buildLayout = (
   }
 
   for (const edge of resolveGraph.edges) {
-    const bothInFocus =
-      focusSet.size > 0 && focusSet.has(edge.from) && focusSet.has(edge.to);
+    const bothInFocus = focusSet.size > 0 && focusSet.has(edge.from) && focusSet.has(edge.to);
     g.setEdge(edge.from, edge.to, { weight: bothInFocus ? 2 : 1 });
   }
 
@@ -203,9 +194,7 @@ export const buildLayout = (
     })
     .filter((n): n is NonNullable<typeof n> => n !== null);
 
-  const uniqueXs = [...new Set(nodeEntries.map((n) => Math.round(n.x)))].sort(
-    (a, b) => a - b,
-  );
+  const uniqueXs = [...new Set(nodeEntries.map((n) => Math.round(n.x)))].sort((a, b) => a - b);
   const xToLayer = new Map(uniqueXs.map((x, i) => [x, i]));
   for (const n of nodeEntries) {
     n.layer = xToLayer.get(Math.round(n.x)) ?? 0;

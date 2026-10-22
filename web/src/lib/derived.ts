@@ -12,48 +12,38 @@ import {
 import { filterItems } from "./filter";
 import { moduleDepth } from "./path";
 
-export const workspacePackages = derived(
-  packagesStore,
-  ($packages) => $packages.filter((p) => p.is_workspace_member !== false),
+export const workspacePackages = derived(packagesStore, ($packages) =>
+  $packages.filter((p) => p.is_workspace_member !== false),
 );
 
 export const selectedPackage = derived(
   [workspacePackages, selectedPackageIdStore],
-  ([$packages, $id]) =>
-    $packages.find((p) => (p.id ?? p.name) === $id) ?? null,
+  ([$packages, $id]) => $packages.find((p) => (p.id ?? p.name) === $id) ?? null,
 );
 
-export const featureNamesList = derived(
-  selectedPackage,
-  ($pkg) => ($pkg?.features ? Object.keys($pkg.features).sort() : []),
+export const featureNamesList = derived(selectedPackage, ($pkg) =>
+  $pkg?.features ? Object.keys($pkg.features).sort() : [],
 );
 
-export const selectedPackageName = derived(
-  selectedPackage,
-  ($pkg) => $pkg?.name ?? "",
-);
+export const selectedPackageName = derived(selectedPackage, ($pkg) => $pkg?.name ?? "");
 
-export const crateItems = derived(
-  [itemsStore, selectedPackageIdStore],
-  ([$items, $id]) =>
-    !$id ? $items : $items.filter((item) => item.package_id === $id),
+export const crateItems = derived([itemsStore, selectedPackageIdStore], ([$items, $id]) =>
+  !$id ? $items : $items.filter((item) => item.package_id === $id),
 );
 
 export const filteredItems = derived(
-  [
-    itemsStore,
-    queryStore,
-    kindFilterStore,
-    selectedPackageIdStore,
-    enabledFeaturesStore,
-  ],
+  [itemsStore, queryStore, kindFilterStore, selectedPackageIdStore, enabledFeaturesStore],
   ([$items, $query, $kindFilter, $selectedPackageId, $enabledFeatures]) =>
-    filterItems($items, {
-      query: $query,
-      kindFilter: $kindFilter,
-      selectedPackageId: $selectedPackageId,
-      enabledFeatures: $enabledFeatures,
-    }, $items),
+    filterItems(
+      $items,
+      {
+        query: $query,
+        kindFilter: $kindFilter,
+        selectedPackageId: $selectedPackageId,
+        enabledFeatures: $enabledFeatures,
+      },
+      $items,
+    ),
 );
 
 export const selectedItem = derived(

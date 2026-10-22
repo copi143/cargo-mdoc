@@ -3,30 +3,21 @@
 
   export let resolveGraph: ResolveGraph | null = null;
 
-
   let graphNodeById = new Map<string, ResolveGraph["nodes"][number]>();
   let graphIncoming: Record<string, number> | undefined;
   let graphOutgoing: Record<string, number> | undefined;
 
-  $: graphNodeById = new Map(
-    resolveGraph?.nodes.map((node) => [node.id, node]) ?? [],
-  );
+  $: graphNodeById = new Map(resolveGraph?.nodes.map((node) => [node.id, node]) ?? []);
 
-  $: graphIncoming = resolveGraph?.edges.reduce<Record<string, number>>(
-    (acc, edge) => {
-      acc[edge.to] = (acc[edge.to] ?? 0) + 1;
-      return acc;
-    },
-    {},
-  );
+  $: graphIncoming = resolveGraph?.edges.reduce<Record<string, number>>((acc, edge) => {
+    acc[edge.to] = (acc[edge.to] ?? 0) + 1;
+    return acc;
+  }, {});
 
-  $: graphOutgoing = resolveGraph?.edges.reduce<Record<string, number>>(
-    (acc, edge) => {
-      acc[edge.from] = (acc[edge.from] ?? 0) + 1;
-      return acc;
-    },
-    {},
-  );
+  $: graphOutgoing = resolveGraph?.edges.reduce<Record<string, number>>((acc, edge) => {
+    acc[edge.from] = (acc[edge.from] ?? 0) + 1;
+    return acc;
+  }, {});
 
   const resolveNodeLabel = (nodeId: string): string => {
     const node = graphNodeById.get(nodeId);
@@ -74,9 +65,7 @@
       {#if resolveGraph.roots.length}
         <div class="graph-pills">
           {#each resolveGraph.roots as rootId}
-            <span class="graph-pill" title={rootId}
-              >{resolveNodeLabel(rootId)}</span
-            >
+            <span class="graph-pill" title={rootId}>{resolveNodeLabel(rootId)}</span>
           {/each}
         </div>
       {:else}

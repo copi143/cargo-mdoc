@@ -20,10 +20,7 @@
           .join("");
   }
 
-  function abbreviations(
-    identifier: string,
-    separator: string = "/",
-  ): string[] {
+  function abbreviations(identifier: string, separator: string = "/"): string[] {
     let parts = identifier.split(separator);
     let rets = [identifier];
     for (let i = 0; i < parts.length - 1; i++) {

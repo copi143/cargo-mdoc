@@ -29,9 +29,7 @@ export const filterItems = (
     .filter((item) => {
       if (kindFilter !== "All" && item.kind !== kindFilter) return false;
       if (!q) return true;
-      return (
-        item.path.toLowerCase().includes(q) || item.docs.toLowerCase().includes(q)
-      );
+      return item.path.toLowerCase().includes(q) || item.docs.toLowerCase().includes(q);
     })
     .sort((a, b) => a.path.localeCompare(b.path));
 };

@@ -22,13 +22,7 @@
     loadingStore,
     errorStore,
   } from "./lib/store";
-  import type {
-  GeneratorInfo,
-  ItemDoc,
-  ItemKind,
-  PackageDoc,
-  ResolveGraph,
-} from "./types";
+  import type { GeneratorInfo, ItemDoc, ItemKind, PackageDoc, ResolveGraph } from "./types";
 
   $: document.documentElement.lang = $locale;
 
@@ -128,18 +122,13 @@
         } else {
           packageInfoStore.set(data.package ?? null);
           const pkgs = Array.isArray(data.packages) ? data.packages : [];
-          if (
-            data.package &&
-            !pkgs.find((p) => p.name === data.package?.name)
-          ) {
+          if (data.package && !pkgs.find((p) => p.name === data.package?.name)) {
             packagesStore.set([data.package as PackageDoc, ...pkgs]);
           } else {
             packagesStore.set(pkgs);
           }
           generatorStore.set(data.generator ?? null);
-          resolveGraphStore.set(
-            data.resolve_graph || data.lock_graph || null,
-          );
+          resolveGraphStore.set(data.resolve_graph || data.lock_graph || null);
           itemsStore.set(Array.isArray(data.items) ? data.items : []);
         }
 

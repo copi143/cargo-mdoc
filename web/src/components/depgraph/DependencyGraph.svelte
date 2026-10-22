@@ -16,7 +16,6 @@
   export let resolveGraph: ResolveGraph | null = null;
   export let onClose: () => void = () => {};
 
-
   let mode: "list" | "graph" = "list";
   let selectedNodeId = "";
   let layout: ReturnType<typeof buildLayout> | null = null;
@@ -70,9 +69,7 @@
     panY = cy - (cy - panY) * (newScale / scale);
   };
 
-  $: nodeById = new Map(
-    resolveGraph?.nodes.map((node) => [node.id, node]) ?? [],
-  );
+  $: nodeById = new Map(resolveGraph?.nodes.map((node) => [node.id, node]) ?? []);
 
   $: {
     const nextIncoming = new Map<string, string[]>();
@@ -93,21 +90,25 @@
   }
 
   $: if (resolveGraph) {
-    const fallbackNodeId =
-      resolveGraph.roots[0] ?? resolveGraph.nodes[0]?.id ?? "";
+    const fallbackNodeId = resolveGraph.roots[0] ?? resolveGraph.nodes[0]?.id ?? "";
     if (!selectedNodeId || !nodeById.has(selectedNodeId)) {
       selectedNodeId = fallbackNodeId;
     }
   }
 
-  $: layout = resolveGraph && mode === "graph" ? buildLayout(resolveGraph, selectedNodeId, nodeById, incomingMap, outgoingMap) : null;
+  $: layout =
+    resolveGraph && mode === "graph"
+      ? buildLayout(resolveGraph, selectedNodeId, nodeById, incomingMap, outgoingMap)
+      : null;
 
-  $: selectedUpstreamNodeIds = layout && selectedNodeId
-    ? collectReachable(selectedNodeId, "upstream", outgoingMap, incomingMap)
-    : new Set<string>();
-  $: selectedDownstreamNodeIds = layout && selectedNodeId
-    ? collectReachable(selectedNodeId, "downstream", outgoingMap, incomingMap)
-    : new Set<string>();
+  $: selectedUpstreamNodeIds =
+    layout && selectedNodeId
+      ? collectReachable(selectedNodeId, "upstream", outgoingMap, incomingMap)
+      : new Set<string>();
+  $: selectedDownstreamNodeIds =
+    layout && selectedNodeId
+      ? collectReachable(selectedNodeId, "downstream", outgoingMap, incomingMap)
+      : new Set<string>();
 
   $: layoutCanvasWidth = layout?.width ?? 0;
   $: layoutCanvasHeight = layout?.height ?? 0;
@@ -128,10 +129,7 @@
     if (!isPanning) return;
     const dx = event.clientX - dragStartX;
     const dy = event.clientY - dragStartY;
-    if (
-      !didDrag &&
-      (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)
-    ) {
+    if (!didDrag && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
       didDrag = true;
     }
     if (didDrag) {
@@ -144,9 +142,7 @@
     if (!isPanning) return;
     isPanning = false;
     try {
-      (event.currentTarget as HTMLElement).releasePointerCapture(
-        event.pointerId,
-      );
+      (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
     } catch {
       /* ignore */
     }
@@ -177,12 +173,7 @@
 </script>
 
 {#if resolveGraph}
-  <div
-    class="graph-overlay"
-    role="dialog"
-    aria-modal="true"
-    aria-label={l10n("dep_graph_aria")}
-  >
+  <div class="graph-overlay" role="dialog" aria-modal="true" aria-label={l10n("dep_graph_aria")}>
     <button
       class="graph-backdrop"
       type="button"
@@ -199,16 +190,8 @@
           </p>
         </div>
         <div class="graph-modal-actions">
-          <div
-            class="graph-mode-switch"
-            role="tablist"
-            aria-label={l10n("graph_view_mode")}
-          >
-            <button
-              class:active={mode === "list"}
-              type="button"
-              on:click={() => setMode("list")}
-            >
+          <div class="graph-mode-switch" role="tablist" aria-label={l10n("graph_view_mode")}>
+            <button class:active={mode === "list"} type="button" on:click={() => setMode("list")}>
               {l10n("list_mode")}
             </button>
             <button
@@ -223,20 +206,12 @@
             </button>
           </div>
           {#if mode === "graph"}
-            <button class="ghost" type="button" on:click={zoomIn}
-              >{l10n("zoom_in")}</button
-            >
-            <button class="ghost" type="button" on:click={zoomOut}
-              >{l10n("zoom_out")}</button
-            >
+            <button class="ghost" type="button" on:click={zoomIn}>{l10n("zoom_in")}</button>
+            <button class="ghost" type="button" on:click={zoomOut}>{l10n("zoom_out")}</button>
             <span class="graph-zoom-level">{Math.round(scale * 100)}%</span>
-            <button class="ghost" type="button" on:click={resetPan}
-              >{l10n("reset_view")}</button
-            >
+            <button class="ghost" type="button" on:click={resetPan}>{l10n("reset_view")}</button>
           {/if}
-          <button class="ghost" type="button" on:click={onClose}
-            >{l10n("close")}</button
-          >
+          <button class="ghost" type="button" on:click={onClose}>{l10n("close")}</button>
         </div>
       </div>
 

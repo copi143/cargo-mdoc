@@ -5,7 +5,6 @@
   export let items: ItemDoc[] = [];
   export let onSelectItem: (item: ItemDoc) => void = () => {};
   export let emptyMessage = "";
-
 </script>
 
 {#if items.length}

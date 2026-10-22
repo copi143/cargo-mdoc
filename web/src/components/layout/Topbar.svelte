@@ -1,12 +1,7 @@
 <script lang="ts">
   import type { GeneratorInfo, ItemDoc, PackageInfo } from "../../types";
   import { locale, langs } from "../../l10n";
-  import {
-    packageInfoStore,
-    itemsStore,
-    generatorStore,
-    resolveGraphStore,
-  } from "../../lib/store";
+  import { packageInfoStore, itemsStore, generatorStore, resolveGraphStore } from "../../lib/store";
 
   export let onOpenGraph: () => void = () => {};
 
@@ -25,17 +20,12 @@
       <p class="brand-title">
         <span class="brand-name">{$packageInfoStore?.name ?? l10n("doc_index")}</span>
         {#if $packageInfoStore}
-          <span class="brand-version"
-            >{$packageInfoStore.version ?? l10n("version_unknown")}</span
-          >
+          <span class="brand-version">{$packageInfoStore.version ?? l10n("version_unknown")}</span>
         {/if}
       </p>
       {#if $packageInfoStore}
         <p class="brand-meta">
-          <span
-            >{l10n("edition")}{$packageInfoStore.edition ??
-              l10n("edition_unknown")}</span
-          >
+          <span>{l10n("edition")}{$packageInfoStore.edition ?? l10n("edition_unknown")}</span>
           {#if $packageInfoStore.license}
             <span class="dot">{l10n("separator")}</span>
             <span>{$packageInfoStore.license}</span>

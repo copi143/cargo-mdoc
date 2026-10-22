@@ -42,13 +42,9 @@ export default defineConfig({
         const file = id.split("?")[0];
         if (!file.startsWith(projSrcDir) || !file.endsWith(".svelte")) return null;
         const ns = path.relative(projSrcDir, file).replace(/\.svelte$/, "");
-        let relImport = path
-          .relative(path.dirname(file), l10nIndex)
-          .replace(/\.ts$/, "");
+        let relImport = path.relative(path.dirname(file), l10nIndex).replace(/\.ts$/, "");
         if (!relImport.startsWith(".")) relImport = "./" + relImport;
-        const inject =
-          `import { l10nDerive } from "${relImport}";\n` +
-          `  $: l10n = $l10nDerive("${ns}");\n`;
+        const inject = `import { l10nDerive } from "${relImport}";\n  $: l10n = $l10nDerive("${ns}");\n`;
         const scriptMatch = code.match(/<script(?![^>]*\bcontext=)[^>]*>/);
         if (scriptMatch && scriptMatch.index !== undefined) {
           const at = scriptMatch.index + scriptMatch[0].length;

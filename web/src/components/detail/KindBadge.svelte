@@ -8,10 +8,7 @@
   $: label = l10n(":kind_" + kind.toLowerCase());
 </script>
 
-<svelte:element
-  this={as}
-  class={`kind-badge kind-${kind.toLowerCase()} ${className}`}
->
+<svelte:element this={as} class={`kind-badge kind-${kind.toLowerCase()} ${className}`}>
   {label}
 </svelte:element>
 

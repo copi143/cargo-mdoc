@@ -1,7 +1,5 @@
 <script lang="ts">
-
   export let text = "";
-
 
   let copied = false;
 

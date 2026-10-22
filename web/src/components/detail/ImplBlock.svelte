@@ -7,7 +7,6 @@
   export let impl: ImplDoc;
   export let formatCfg: (cfg?: CfgExpr | null) => string = () => "";
 
-
   const implLabel = (impl: ImplDoc): string => {
     if (impl.trait_name) {
       return `impl ${impl.trait_name} for ${impl.target_path}`;

@@ -9,7 +9,6 @@
   export let edgeLabel = "";
   export let pathIds: string[] = [];
 
-
   const nodeById = new Map(resolveGraph.nodes.map((node) => [node.id, node]));
 
   const childrenFor = (
@@ -33,13 +32,9 @@
   $: children = childrenFor(nodeId);
   $: isCycle = pathIds.includes(nodeId);
   $: branchClass =
-    direction === "downstream"
-      ? "graph-tree-node--downstream"
-      : "graph-tree-node--upstream";
+    direction === "downstream" ? "graph-tree-node--downstream" : "graph-tree-node--upstream";
   $: edgeClass =
-    direction === "downstream"
-      ? "graph-tree-edge--downstream"
-      : "graph-tree-edge--upstream";
+    direction === "downstream" ? "graph-tree-edge--downstream" : "graph-tree-edge--upstream";
 </script>
 
 {#if node && !isCycle}
@@ -62,11 +57,7 @@
           </div>
 
           <div class="graph-tree-node-meta">
-            <span
-              >{direction === "downstream"
-                ? l10n("depends_on")
-                : l10n("depended_by")}</span
-            >
+            <span>{direction === "downstream" ? l10n("depends_on") : l10n("depended_by")}</span>
             <span>{edgeLabel || l10n("edge_unknown")}</span>
             {#if node.source}
               <span>{node.source}</span>
