@@ -2,6 +2,7 @@ import { writable } from "svelte/store";
 import type {
   ItemDoc,
   ItemKind,
+  MacroCallDoc,
   PackageDoc,
   PackageInfo,
   ResolveGraph,
@@ -10,6 +11,7 @@ import type {
 } from "../types";
 
 export const itemsStore = writable<ItemDoc[]>([]);
+export const macroCallsStore = writable<MacroCallDoc[]>([]);
 export const packagesStore = writable<PackageDoc[]>([]);
 export const resolveGraphStore = writable<ResolveGraph | null>(null);
 export const generatorStore = writable<GeneratorInfo | null>(null);

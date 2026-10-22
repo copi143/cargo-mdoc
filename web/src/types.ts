@@ -40,11 +40,17 @@ export type Features = Record<string, string[]>;
 export type ItemDoc = {
   package_id?: string;
   path: string;
+  name?: string;
+  module_path?: string;
   docs: string;
   cfg: CfgExpr;
   kind: ItemKind;
   source?: SourceLocation;
   source_code?: string;
+  signature?: string | null;
+  attributes?: string[] | null;
+  export_name?: string | null;
+  is_macro_export?: boolean;
   impls?: ImplDoc[];
 };
 

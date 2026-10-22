@@ -8,6 +8,7 @@
   import DependencyGraph from "./components/depgraph/DependencyGraph.svelte";
   import {
     itemsStore,
+    macroCallsStore,
     packagesStore,
     resolveGraphStore,
     generatorStore,
@@ -22,7 +23,14 @@
     loadingStore,
     errorStore,
   } from "./lib/store";
-  import type { GeneratorInfo, ItemDoc, ItemKind, PackageDoc, ResolveGraph } from "./types";
+  import type {
+    GeneratorInfo,
+    ItemDoc,
+    ItemKind,
+    MacroCallDoc,
+    PackageDoc,
+    ResolveGraph,
+  } from "./types";
 
   $: document.documentElement.lang = $locale;
 
@@ -112,6 +120,7 @@
           resolve_graph?: ResolveGraph | null;
           lock_graph?: ResolveGraph | null;
           items?: ItemDoc[];
+          macro_calls?: MacroCallDoc[];
         };
 
         if (Array.isArray(data)) {
@@ -119,6 +128,7 @@
           packagesStore.set([]);
           resolveGraphStore.set(null);
           itemsStore.set(data);
+          macroCallsStore.set([]);
         } else {
           packageInfoStore.set(data.package ?? null);
           const pkgs = Array.isArray(data.packages) ? data.packages : [];
@@ -130,6 +140,9 @@
           generatorStore.set(data.generator ?? null);
           resolveGraphStore.set(data.resolve_graph || data.lock_graph || null);
           itemsStore.set(Array.isArray(data.items) ? data.items : []);
+          macroCallsStore.set(
+            Array.isArray(data.macro_calls) ? data.macro_calls : [],
+          );
         }
 
         onHashChange();

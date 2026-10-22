@@ -2,6 +2,10 @@
 en-us = "Impls ({n})"
 zh-cn = "实现 ({n})"
 
+[macro_calls]
+en-us = "Call Sites ({n})"
+zh-cn = "调用点 ({n})"
+
 [methods_and_items]
 en-us = "Methods & Associated Items"
 zh-cn = "方法与关联项"

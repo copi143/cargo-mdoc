@@ -1,7 +1,8 @@
 import { derived } from "svelte/store";
-import type { Counts } from "../types";
+import type { Counts, MacroCallDoc } from "../types";
 import {
   itemsStore,
+  macroCallsStore,
   packagesStore,
   queryStore,
   kindFilterStore,
@@ -70,4 +71,40 @@ export const prominentItems = derived(itemsStore, ($items) =>
     .filter((item) => item.kind !== "Module")
     .sort((a, b) => a.path.localeCompare(b.path))
     .slice(0, 8),
+);
+
+// Indexes macro call sites by the macro name they invoke, so a macro
+// definition can be matched with every place it is used.
+export const macroCallsByName = derived(macroCallsStore, ($calls) => {
+  const map = new Map<string, MacroCallDoc[]>();
+  for (const call of $calls) {
+    const list = map.get(call.name);
+    if (list) {
+      list.push(call);
+    } else {
+      map.set(call.name, [call]);
+    }
+  }
+  return map;
+});
+
+// Call sites of the currently selected macro; empty for non-macro items.
+export const selectedMacroCalls = derived(
+  [selectedItem, macroCallsByName],
+  ([$item, $calls]) => {
+    if (!$item || $item.kind !== "Macro" || !$item.name) return [];
+    const calls = $calls.get($item.name) ?? [];
+    // Call sites inside the defining crate come first, then the ones
+    // coming from other crates (typical for `#[macro_export]` macros).
+    return [...calls].sort((a, b) => {
+      const sameA = a.package_id === $item.package_id ? 0 : 1;
+      const sameB = b.package_id === $item.package_id ? 0 : 1;
+      if (sameA !== sameB) return sameA - sameB;
+      return (
+        a.module_path.localeCompare(b.module_path) ||
+        a.source.file.localeCompare(b.source.file) ||
+        a.source.line_start - b.source.line_start
+      );
+    });
+  },
 );

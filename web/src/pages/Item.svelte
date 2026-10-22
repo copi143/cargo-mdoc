@@ -7,11 +7,17 @@
   import DocBody from "../components/detail/DocBody.svelte";
   import CfgBadge from "../components/detail/CfgBadge.svelte";
   import KindBadge from "../components/detail/KindBadge.svelte";
-  import { selectedItem as selectedItemStore } from "../lib/derived";
+  import MacroCall from "../components/detail/MacroCall.svelte";
+  import ExportBadge from "../components/detail/ExportBadge.svelte";
+  import {
+    selectedItem as selectedItemStore,
+    selectedMacroCalls as selectedMacroCallsStore,
+  } from "../lib/derived";
 
   $: selectedItem = $selectedItemStore;
 
   $: impls = selectedItem?.impls ?? [];
+  $: macroCalls = $selectedMacroCallsStore;
 </script>
 
 {#if selectedItem}
@@ -25,6 +31,9 @@
       <span class="detail-title-name">{displayPath.name}</span>
     </h2>
     <CfgBadge cfg={selectedItem.cfg} {formatCfg} as="div" showWhenTrue={true} />
+    {#if selectedItem.is_macro_export}
+      <ExportBadge as="div" />
+    {/if}
   </div>
   <div class="detail-body">
     <DocBody source={selectedItem?.docs} />
@@ -34,6 +43,14 @@
         <h3>{l10n("impl_blocks", { n: impls.length })}</h3>
         {#each impls as impl (impl.id)}
           <ImplBlock {impl} {formatCfg} />
+        {/each}
+      </section>
+    {/if}
+    {#if macroCalls.length > 0}
+      <section class="macro-calls-section">
+        <h3>{l10n("macro_calls", { n: macroCalls.length })}</h3>
+        {#each macroCalls as call (call.id)}
+          <MacroCall {call} />
         {/each}
       </section>
     {/if}
