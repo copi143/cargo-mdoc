@@ -51,6 +51,8 @@ export type ItemDoc = {
   attributes?: string[] | null;
   export_name?: string | null;
   is_macro_export?: boolean;
+  is_macro_expanded?: boolean;
+  expanded_from?: string | null;
   impls?: ImplDoc[];
 };
 
@@ -95,15 +97,28 @@ export type PackageInfo = PackageDoc;
 
 export type Counts = Partial<Record<ItemKind, number>>;
 
+export type ExpandedItemDoc = {
+  name: string;
+  kind: ItemKind;
+  docs: string;
+  signature?: string | null;
+  source_code: string;
+};
+
 export type MacroCallDoc = {
   id: string;
   package_id: string;
   path: string;
   name: string;
   module_path: string;
+  cfg: CfgExpr;
   source: SourceLocation;
   source_code: string;
   attributes: string[] | null;
+  expanded_code?: string | null;
+  expanded_items?: ExpandedItemDoc[];
+  matched_arm?: number | null;
+  expansion_error?: string | null;
 };
 
 export type ResolveGraphNode = {

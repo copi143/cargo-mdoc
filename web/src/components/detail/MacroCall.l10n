@@ -1,0 +1,11 @@
+[expansion]
+en-us = "Expansion"
+zh-cn = "展开结果"
+
+[generated_items]
+en-us = "Generated Items"
+zh-cn = "生成的条目"
+
+[expansion_error]
+en-us = "Expansion failed"
+zh-cn = "展开失败"

@@ -7,6 +7,8 @@ use std::path::PathBuf;
 mod cfg_expr;
 mod cli;
 mod collector;
+mod expand;
+mod format;
 mod lockfile;
 mod metadata_build;
 mod model;
@@ -183,6 +185,9 @@ fn main() -> Result<()> {
     }
 
     collector.associate_impls();
+    // Macro calls can only be expanded once every definition of the
+    // workspace has been collected.
+    collector.expand_macro_calls();
     diagnostics.append(&mut collector.diagnostics);
 
     let mut items = collector.items;

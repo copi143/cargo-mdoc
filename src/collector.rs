@@ -1,12 +1,13 @@
 use anyhow::{Context, Result};
 use ra_ap_syntax::ast::{self, AstNode, HasName, HasVisibility};
 use ra_ap_syntax::{Edition, SourceFile, SyntaxKind, SyntaxNode};
+use std::collections::HashMap;
 use std::path::Path;
 
 use crate::cfg_expr::{and_cfg, parse_cfg_from_node};
 use crate::model::{
-    CfgExpr, Deprecation, Diagnostic, DiagnosticLevel, ImplDoc, ImplItemDoc, ItemDoc, ItemKind,
-    SourceLocation, Visibility, MacroCallDoc,
+    CfgExpr, Deprecation, Diagnostic, DiagnosticLevel, ExpandedItemDoc, ImplDoc, ImplItemDoc,
+    ItemDoc, ItemKind, MacroCallDoc, SourceLocation, Visibility,
 };
 use crate::util::{
     build_signature, collect_attrs, extract_deprecated, extract_docs, extract_export_name,
@@ -17,6 +18,12 @@ use crate::util::{
 pub struct RaCollector {
     pub items: Vec<ItemDoc>,
     pub macro_calls: Vec<MacroCallDoc>,
+    /// Syntax nodes of the collected macro calls, kept in the same order as
+    /// `macro_calls` so that calls can be expanded once every definition of
+    /// the workspace is known.
+    macro_call_nodes: Vec<ast::MacroCall>,
+    /// `macro_rules!` definitions indexed by the macro name.
+    macro_defs: HashMap<String, ast::MacroRules>,
     pub impls: Vec<ImplDoc>,
     pub diagnostics: Vec<Diagnostic>,
 }
@@ -26,6 +33,8 @@ impl RaCollector {
         Self {
             items: Vec::new(),
             macro_calls: Vec::new(),
+            macro_call_nodes: Vec::new(),
+            macro_defs: HashMap::new(),
             impls: Vec::new(),
             diagnostics: Vec::new(),
         }
@@ -574,6 +583,10 @@ impl RaCollector {
         let docs = extract_docs(&mr);
         let is_export = has_macro_export(&attrs);
 
+        // Remember the definition so that calls to this macro can be
+        // expanded once the whole workspace has been collected.
+        self.macro_defs.insert(name.clone(), mr.clone());
+
         self.push_item(
             package_id,
             name,
@@ -620,6 +633,7 @@ impl RaCollector {
             .unwrap_or_else(|| "<anonymous>".into());
 
         let attrs = collect_attrs(call.syntax());
+        let cfg = and_cfg(inherited_cfg.clone(), parse_cfg_from_node(call.syntax()));
         let source_loc = source_location(workspace_root, current_file, source, call.syntax());
         let id = format!(
             "macro_call:{}:{}:{}",
@@ -632,10 +646,19 @@ impl RaCollector {
             path,
             name,
             module_path: module_path_string(&mod_path),
+            cfg,
             source: source_loc,
             source_code: source_snippet(call.syntax()),
             attributes: Some(attrs),
+            expanded_code: None,
+            expanded_items: Vec::new(),
+            matched_arm: None,
+            expansion_error: None,
         });
+
+        // Keep the syntax node around: the call can only be expanded once
+        // the definition of the macro is known.
+        self.macro_call_nodes.push(call.clone());
 
         // Still recurse into the call's token tree in case it contains nested
         // items or further macro calls worth recording.
@@ -754,6 +777,70 @@ impl RaCollector {
         }
     }
 
+    // Expands the collected macro calls against the `macro_rules!` definitions
+    // found in the workspace. Items produced by an expansion are added to the
+    // item list and marked as expanded, so consumers can tell them apart from
+    // items that are written by hand.
+    pub fn expand_macro_calls(&mut self) {
+        let defs = std::mem::take(&mut self.macro_defs);
+        let nodes = std::mem::take(&mut self.macro_call_nodes);
+        let mut expanded_items: Vec<ItemDoc> = Vec::new();
+
+        for (call, node) in self.macro_calls.iter_mut().zip(nodes.iter()) {
+            let Some(def) = defs.get(&call.name) else {
+                continue;
+            };
+            let Some(expansion) = crate::expand::expand_macro_call(def, node) else {
+                continue;
+            };
+
+            call.matched_arm = expansion.matched_arm;
+            call.expansion_error = expansion.error;
+            call.expanded_code = Some(expansion.code.clone());
+            call.expanded_items = expansion
+                .items
+                .iter()
+                .map(|item| ExpandedItemDoc {
+                    name: item.name.clone(),
+                    kind: item.kind.clone(),
+                    docs: item.docs.clone(),
+                    signature: item.signature.clone(),
+                    source_code: item.source_code.clone(),
+                })
+                .collect();
+
+            // Items produced by the expansion belong to the call site.
+            let module_path = format!("{}::{}", call.module_path, call.name);
+            for item in &expansion.items {
+                let path = format!("{}::{}", module_path, item.name);
+                let id = format!("item:{}:{}:{}", call.package_id, path, call.source.line_start);
+                expanded_items.push(ItemDoc {
+                    id,
+                    package_id: call.package_id.clone(),
+                    path,
+                    name: item.name.clone(),
+                    module_path: module_path.clone(),
+                    kind: item.kind.clone(),
+                    visibility: Visibility::Crate,
+                    docs: item.docs.clone(),
+                    cfg: call.cfg.clone(),
+                    source: call.source.clone(),
+                    source_code: item.source_code.clone(),
+                    signature: item.signature.clone(),
+                    attributes: None,
+                    deprecated: None,
+                    export_name: None,
+                    is_macro_export: false,
+                    is_macro_expanded: true,
+                    expanded_from: Some(call.name.clone()),
+                    impls: Vec::new(),
+                });
+            }
+        }
+
+        self.items.extend(expanded_items);
+    }
+
     fn push_item(
         &mut self,
         package_id: &str,
@@ -794,6 +881,8 @@ impl RaCollector {
             deprecated,
             export_name,
             is_macro_export,
+            is_macro_expanded: false,
+            expanded_from: None,
             impls: Vec::new(),
         });
     }

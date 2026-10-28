@@ -6,6 +6,10 @@ zh-cn = "实现 ({n})"
 en-us = "Call Sites ({n})"
 zh-cn = "调用点 ({n})"
 
+[expanded_from]
+en-us = "expanded from {name}"
+zh-cn = "由 {name} 展开"
+
 [methods_and_items]
 en-us = "Methods & Associated Items"
 zh-cn = "方法与关联项"

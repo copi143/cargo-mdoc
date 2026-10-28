@@ -28,6 +28,13 @@ ra_ap_parser = "0.0.358"
 ra_ap_tt = "0.0.358"
 ra_ap_cfg = { version = "0.0.358", features = ["syntax"] }
 ra_ap_mbe = "0.0.358"
+# Needed to convert between the syntax tree and the token trees used by
+# ra_ap_mbe; it must stay in sync with the ra_ap_* versions above.
+ra_ap_syntax-bridge = "0.0.358"
+ra_ap_span = "0.0.358"
+# ra_ap_mbe drives its expansion through a salsa database. The version is
+# pinned to the one ra_ap_mbe depends on, as the API is not semver stable.
+salsa = "0.28.5"
 
 gix = "0.89.0"
 

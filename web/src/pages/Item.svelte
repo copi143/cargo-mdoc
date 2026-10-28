@@ -31,6 +31,11 @@
       <span class="detail-title-name">{displayPath.name}</span>
     </h2>
     <CfgBadge cfg={selectedItem.cfg} {formatCfg} as="div" showWhenTrue={true} />
+    {#if selectedItem.is_macro_expanded && selectedItem.expanded_from}
+      <span class="expanded-from">
+        {l10n("expanded_from", { name: selectedItem.expanded_from })}
+      </span>
+    {/if}
     {#if selectedItem.is_macro_export}
       <ExportBadge as="div" />
     {/if}

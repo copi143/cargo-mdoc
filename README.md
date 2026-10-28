@@ -180,6 +180,7 @@ a::b::c
 * 加载并遍历 Rust 源码文件
 * 构建模块树与 API 路径
 * 提取并建模 `cfg` 条件表达式
+* 追踪宏调用，并对工作区内的 `macro_rules!` 展开其内容
 * 生成稳定的中间表示（IR）与 JSON 输出
 
 关键依赖及其角色定位如下：
@@ -194,10 +195,15 @@ a::b::c
   * 用于解析与规范化 `cfg` 相关表达式
   * 作为条件表达式 IR 的输入来源，而非最终表示
 
-* `ra_ap_mbe` / `ra_ap_tt`
+* `ra_ap_mbe` / `ra_ap_tt` / `ra_ap_syntax-bridge`
 
-  * 为最低限度的 `macro_rules!` 识别提供语法支持
-  * 不承担完整宏展开或 hygienic 语义
+  * 提供 `macro_rules!` 的定义解析与 token 级展开
+  * 展开结果用于还原宏生成的条目，不承担 hygienic 语义
+
+* `salsa`
+
+  * `ra_ap_mbe` 的展开引擎需要数据库句柄；此处仅使用其内置的空实现，
+    宏展开本身不依赖增量查询能力
 
 * `serde` / `serde_json`
 

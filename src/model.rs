@@ -261,7 +261,21 @@ pub struct ItemDoc {
     pub export_name: Option<String>,
     /// True when the item is a `macro_rules!` definition marked `#[macro_export]`.
     pub is_macro_export: bool,
+    /// True when the item was produced by expanding a macro call.
+    pub is_macro_expanded: bool,
+    /// Name of the macro the item was expanded from, if any.
+    pub expanded_from: Option<String>,
     pub impls: Vec<ImplDoc>,
+}
+
+/// An item that a macro expansion produced.
+#[derive(Debug, Clone, Serialize)]
+pub struct ExpandedItemDoc {
+    pub name: String,
+    pub kind: ItemKind,
+    pub docs: String,
+    pub signature: Option<String>,
+    pub source_code: String,
 }
 
 /// A macro invocation (e.g. `my_macro!(...)` or `foo::bar!(...)`).
@@ -276,9 +290,19 @@ pub struct MacroCallDoc {
     /// Short name, e.g. "my_macro".
     pub name: String,
     pub module_path: String,
+    pub cfg: CfgExpr,
     pub source: SourceLocation,
     pub source_code: String,
     pub attributes: Option<Vec<String>>,
+    /// The expanded token stream rendered as Rust source, when the macro
+    /// could be expanded against a definition found in the workspace.
+    pub expanded_code: Option<String>,
+    /// Items the expansion produced.
+    pub expanded_items: Vec<ExpandedItemDoc>,
+    /// Index of the macro rule that matched the call.
+    pub matched_arm: Option<u32>,
+    /// Description of the failure, when the expansion was only partial.
+    pub expansion_error: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]

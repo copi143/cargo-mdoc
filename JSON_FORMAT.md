@@ -16,6 +16,7 @@ precise item-to-package attribution.
   "declared_dependencies": [],
   "resolve_graph": {},
   "items": [],
+  "macro_calls": [],
   "diagnostics": []
 }
 ```
@@ -122,6 +123,39 @@ left as `null` or `unknown`.
 ```
 
 `items[].package_id` always references a valid entry from `packages[].id`.
+
+`kind` is one of `Function`, `Struct`, `Enum`, `Trait`, `Module` or `Macro`. Items produced by a
+macro expansion are reported as regular items with `is_macro_expanded` set to `true` and
+`expanded_from` naming the macro they come from. A `macro_rules!` definition marked with
+`#[macro_export]` has `is_macro_export` set to `true`.
+
+## Macro Calls
+
+Every macro invocation is reported as a call site:
+
+```json
+{
+  "id": "macro_call:pkg:app@0.1.0|workspace|Cargo.toml:double:12",
+  "package_id": "pkg:app@0.1.0|workspace|Cargo.toml",
+  "path": "double",
+  "name": "double",
+  "module_path": "app",
+  "cfg": { "kind": "True" },
+  "source": { "file": "src/lib.rs", "line_start": 12, "line_end": 12 },
+  "source_code": "double!(21)",
+  "attributes": [],
+  "expanded_code": "21 + 21",
+  "expanded_items": [],
+  "matched_arm": 0,
+  "expansion_error": null
+}
+```
+
+`expanded_code` holds the expanded token stream, re-formatted into a readable, rustfmt-like layout.
+It is present when the macro could be expanded against a `macro_rules!` definition found in the
+workspace; `expanded_items` lists the items the expansion defines, and `matched_arm` is the index
+of the macro rule that matched. `expansion_error` describes why an expansion was only partial.
+Expansion is token based: hygiene rules and macros defined in other crates are not modelled.
 
 ## CfgExpr
 
